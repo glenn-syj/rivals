@@ -25,7 +25,7 @@ dependencies {
 	implementation("org.springframework.boot:spring-boot-starter-web")
 	implementation("org.springframework.boot:spring-boot-starter-webflux")
 
-	implementation("com.github.f4b6a3:ulid-creator:5.2.0")
+	implementation("io.hypersistence:hypersistence-utils-hibernate-63:3.7.3")
 
 	developmentOnly("org.springframework.boot:spring-boot-devtools")
 	developmentOnly("org.springframework.boot:spring-boot-docker-compose")
