@@ -1,0 +1,4 @@
+spring:
+  profiles:
+    # prod 고려 전까지는 dev만 active로 이용할 예정
+    active: dev 
