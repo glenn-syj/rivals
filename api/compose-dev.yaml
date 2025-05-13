@@ -1,0 +1,23 @@
+services:
+  mariadb:
+    image: "mariadb:latest"
+    env_file:
+      - .env.dev
+    environment:
+      - "MARIADB_DATABASE=${MARIADB_DATABASE}"
+      - "MARIADB_USER=${MARIADB_USER}"
+      - "MARIADB_PASSWORD=${MARIADB_PASSWORD}"
+      - "MARIADB_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}"
+    ports:
+      - "${MARIADB_PORT}:3306"
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    networks:
+      - rivals-network
+
+volumes:
+  mariadb_data:
+
+networks:
+  rivals-network:
+    driver: bridge
