@@ -24,6 +24,12 @@ import java.util.UUID;
                         name = "idx_riot_accounts_game_name_tag_line",
                         columnList = "game_name,tag_line"
                 )
+        },
+        uniqueConstraints = {
+                @UniqueConstraint(
+                        name = "uk_riot_accounts_puuid",  // 명시적인 이름
+                        columnNames = "puuid"
+                )
         }
 )
 @EntityListeners(AuditingEntityListener.class)
@@ -64,6 +70,14 @@ public class RiotAccount {
 
     public String getPuuid() {
         return puuid;
+    }
+
+    public String getGameName() {
+        return gameName;
+    }
+
+    public String getTagLine() {
+        return tagLine;
     }
 
     public String getFullGameName() {
