@@ -9,6 +9,7 @@ import java.util.Optional;
 
 @Repository
 public interface RiotAccountRepository extends JpaRepository<RiotAccount, Long> {
+    // 추후 성능 상 문제 발생할 시: Projection 변경 고려 (조회용)
     Optional<RiotAccount> findByGameNameAndTagLine(String gameName, String tagLine);
     Optional<RiotAccount> findByPuuid(String puuid);
 }
