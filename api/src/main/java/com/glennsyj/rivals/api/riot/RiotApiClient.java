@@ -16,7 +16,7 @@ public class RiotApiClient {
         this.riotKorWebClient = riotKorWebClient;
     }
 
-    public String getPUUID(String gameName, String tagLine) {
+    public RiotAccountResponse getAccountInfo(String gameName, String tagLine) {
         try {
             return riotAsiaWebClient.get()
                     .uri("/riot/account/v1/accounts/by-riot-id/{gameName}/{tagLine}",
@@ -25,7 +25,6 @@ public class RiotApiClient {
                     .retrieve()
                     .bodyToMono(RiotAccountResponse.class)
                     .blockOptional()
-                    .map(RiotAccountResponse::puuid)
                     .orElseThrow(() -> new IllegalStateException("소환사를 찾을 수 없습니다: " + gameName + "#" + tagLine));
         } catch (WebClientResponseException e) {
             throw new IllegalStateException("Riot API 호출 실패: " + e.getMessage(), e);

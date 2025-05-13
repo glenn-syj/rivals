@@ -17,13 +17,13 @@ class RiotApiClientIntegrationTest {
     private RiotApiClient riotApiClient;
 
     @Test
-    void getPUUID_실제API호출_테스트() {
+    void ACCOUNT_INFO_실제API호출_테스트() {
         // given
         String gameName = "hide on bush";
         String tagLine = "KR1";
 
         // when
-        String puuid = riotApiClient.getPUUID(gameName, tagLine);
+        String puuid = riotApiClient.getAccountInfo(gameName, tagLine).puuid();
 
         log.debug("puuid returned: {}", puuid);
         // then
