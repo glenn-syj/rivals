@@ -51,9 +51,9 @@ public class RiotAccount {
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    
+
     @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
     protected RiotAccount() {}
 
@@ -79,6 +79,8 @@ public class RiotAccount {
         return tagLine;
     }
 
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+
     public String getFullGameName() {
         return String.format("%s#%s", gameName, tagLine);
     }
@@ -86,6 +88,10 @@ public class RiotAccount {
     public void updateGameIdentity(String newGameName, String newTagLine) {
         this.gameName = newGameName;
         this.tagLine = newTagLine;
+    }
+
+    public void renewUpdatedAt() {
+        this.updatedAt = LocalDateTime.now();
     }
 
     private String getPuuidNoProxy() {
