@@ -14,6 +14,12 @@ spring:
     show-sql: true
     properties:
       hibernate:
+        generate_statistics: true
+        jdbc:
+          batch_size: 100  # 가장 많이 사용되는 값
+          order_inserts: true
+          order_updates: true
+          batch_versioned_data: true
         use_sql_comments: true
         format_sql: true
         dialect: org.hibernate.dialect.MariaDBDialect
@@ -32,6 +38,7 @@ riot:
 
 logging:
   level:
-    com.glennsyj.rivals: DEBUG
+    com.glennsyj.rivals: INFO
     org.hibernate.SQL: DEBUG
+    org.hibernate.stat: DEBUG
     org.hibernate.type.descriptor.sql: TRACE
