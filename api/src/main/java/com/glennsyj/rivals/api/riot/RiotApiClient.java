@@ -27,7 +27,7 @@ public class RiotApiClient {
                     .blockOptional()
                     .orElseThrow(() -> new IllegalStateException("소환사를 찾을 수 없습니다: " + gameName + "#" + tagLine));
         } catch (WebClientResponseException e) {
-            throw new IllegalStateException("Riot API 호출 실패: " + e.getMessage(), e);
+            throw new IllegalStateException("Riot API 호출 실패: " + e.getResponseBodyAsString(), e);
         }
     }
 }
