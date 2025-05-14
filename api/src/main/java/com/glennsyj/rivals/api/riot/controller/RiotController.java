@@ -24,24 +24,35 @@ public class RiotController {
     public ResponseEntity<RiotAccountResponse> findAccount(@PathVariable("gameName") String gameName
             , @PathVariable("tagLine") String tagLine) {
 
-        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-        RiotAccountResponse response = new RiotAccountResponse(account.getPuuid(),
+        try {
+            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+            RiotAccountResponse response = new RiotAccountResponse(account.getPuuid(),
                 account.getGameName(),
                 account.getTagLine());
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+
+        } catch (IllegalStateException e) {
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
     @GetMapping("/accounts/renew/{gameName}/{tagLine}")
     public ResponseEntity<RiotAccountResponse> renewAccount(@PathVariable("gameName") String gameName
             , @PathVariable("tagLine") String tagLine) {
 
-        RiotAccount account = riotAccountManager.renewAccount(gameName, tagLine);
-        RiotAccountResponse response = new RiotAccountResponse(account.getPuuid(),
-                account.getGameName(),
-                account.getTagLine());
+        try {
+            RiotAccount account = riotAccountManager.renewAccount(gameName, tagLine);
+            RiotAccountResponse response = new RiotAccountResponse(account.getPuuid(),
+                    account.getGameName(),
+                    account.getTagLine());
 
-        return ResponseEntity.ok(response);
+            return ResponseEntity.ok(response);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.notFound().build();
+        }
+
     }
 
 }
