@@ -1,7 +1,7 @@
 package com.glennsyj.rivals.api.riot.service;
 
 import com.glennsyj.rivals.api.config.TestContainerConfig;
-import com.glennsyj.rivals.api.riot.RiotApiClient;
+import com.glennsyj.rivals.api.riot.RiotAccountClient;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
@@ -31,7 +31,7 @@ class RiotAccountManagerIntegrationTest {
     private RiotAccountRepository accountRepository;
 
     @MockitoBean
-    private RiotApiClient riotApiClient;
+    private RiotAccountClient riotAccountClient;
 
     @BeforeEach
     void setUp() {
@@ -41,7 +41,7 @@ class RiotAccountManagerIntegrationTest {
     @Test
     void 정상_계정_등록_및_조회_흐름() {
         // given
-        when(riotApiClient.getAccountInfo("Hide", "KR1"))
+        when(riotAccountClient.getAccountInfo("Hide", "KR1"))
                 .thenReturn(new RiotAccountResponse("puuid123","Hide", "KR1" ));
 
         // when
@@ -59,13 +59,13 @@ class RiotAccountManagerIntegrationTest {
 
         // 2. 이미 등록되었으므로 ApiClient는 더 호출되어선 안됨
         accountManager.findOrRegisterAccount("Hide", "KR1");
-        verify(riotApiClient, times(1)).getAccountInfo(any(), any());
+        verify(riotAccountClient, times(1)).getAccountInfo(any(), any());
     }
 
     @Test
     void DB_제약조건_검증() {
         // given
-        when(riotApiClient.getAccountInfo(any(), any()))
+        when(riotAccountClient.getAccountInfo(any(), any()))
                 .thenReturn(new RiotAccountResponse("puuid123", "Hide", "KR1"));
 
         // when

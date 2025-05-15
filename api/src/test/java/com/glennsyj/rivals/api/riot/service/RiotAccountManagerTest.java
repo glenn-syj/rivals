@@ -1,6 +1,6 @@
 package com.glennsyj.rivals.api.riot.service;
 
-import com.glennsyj.rivals.api.riot.RiotApiClient;
+import com.glennsyj.rivals.api.riot.RiotAccountClient;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
@@ -29,7 +29,7 @@ class RiotAccountManagerTest {
     private RiotAccountRepository repository;
 
     @Mock
-    private RiotApiClient apiClient;
+    private RiotAccountClient apiClient;
 
     @InjectMocks
     private RiotAccountManager manager;
