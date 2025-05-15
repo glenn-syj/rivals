@@ -1,6 +1,6 @@
 package com.glennsyj.rivals.api.riot.service;
 
-import com.glennsyj.rivals.api.riot.RiotApiClient;
+import com.glennsyj.rivals.api.riot.RiotAccountClient;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
@@ -10,11 +10,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class RiotAccountManager {
     private final RiotAccountRepository riotAccountRepository;
-    private final RiotApiClient riotApiClient;
+    private final RiotAccountClient riotAccountClient;
 
-    public RiotAccountManager(RiotAccountRepository riotAccountRepository, RiotApiClient riotApiClient) {
+    public RiotAccountManager(RiotAccountRepository riotAccountRepository, RiotAccountClient riotAccountClient) {
         this.riotAccountRepository = riotAccountRepository;
-        this.riotApiClient = riotApiClient;
+        this.riotAccountClient = riotAccountClient;
     }
 
     @Transactional
@@ -35,7 +35,7 @@ public class RiotAccountManager {
     }
 
     private RiotAccount registerNewAccount(String gameName, String tagLine) {
-        RiotAccountResponse response = riotApiClient.getAccountInfo(gameName, tagLine);
+        RiotAccountResponse response = riotAccountClient.getAccountInfo(gameName, tagLine);
         // RiotAccount::updatedAt은 생성 시 자동으로 초기화
         RiotAccount account = new RiotAccount(
                 response.gameName(),

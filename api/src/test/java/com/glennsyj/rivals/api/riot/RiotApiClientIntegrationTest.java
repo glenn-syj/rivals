@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.riot;
 
+import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,7 +15,7 @@ class RiotApiClientIntegrationTest {
     private static final Logger log = LoggerFactory.getLogger(RiotApiClientIntegrationTest.class);
 
     @Autowired
-    private RiotApiClient riotApiClient;
+    private RiotAccountClient riotApiClient;
 
     @Test
     void ACCOUNT_INFO_실제API호출_테스트() {
