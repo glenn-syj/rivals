@@ -21,7 +21,7 @@ public class RiotController {
     }
 
     @GetMapping("/accounts/{gameName}/{tagLine}")
-    public ResponseEntity<RiotAccountResponse> findAccount(@PathVariable("gameName") String gameName
+    public ResponseEntity<?> findAccount(@PathVariable("gameName") String gameName
             , @PathVariable("tagLine") String tagLine) {
 
         try {
@@ -39,7 +39,7 @@ public class RiotController {
     }
 
     @GetMapping("/accounts/renew/{gameName}/{tagLine}")
-    public ResponseEntity<RiotAccountResponse> renewAccount(@PathVariable("gameName") String gameName
+    public ResponseEntity<?> renewAccount(@PathVariable("gameName") String gameName
             , @PathVariable("tagLine") String tagLine) {
 
         try {
