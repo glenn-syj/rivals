@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
@@ -41,7 +42,7 @@ public class RivalryRepositoryTest {
         RivalryParticipant participant = new RivalryParticipant(account, rivalry, RivalSide.LEFT);
 
         // when
-        rivalry.getParticipants().add(participant);
+        rivalry.addParticipant(participant);
         Rivalry found = rivalryRepository.save(rivalry);
 
         // then
@@ -62,14 +63,30 @@ public class RivalryRepositoryTest {
         RivalryParticipant participant4 = new RivalryParticipant(accountBothSide, rivalry, RivalSide.RIGHT);
 
         // when
-        rivalry.getParticipants().add(participant);
-        rivalry.getParticipants().add(participant2);
-        rivalry.getParticipants().add(participant3);
-        rivalry.getParticipants().add(participant4);
+        rivalry.addParticipant(participant);
+        rivalry.addParticipant(participant2);
+        rivalry.addParticipant(participant3);
+        rivalry.addParticipant(participant4);
         Rivalry found = rivalryRepository.save(rivalry);
 
         // then
         assertThat(found.getParticipants().size()).isEqualTo(4);
+    }
+
+    @Test
+    void 한쪽에_같은_계정이_중복_참여되면_오류가_난다() {
+
+        // given
+        Rivalry rivalry = new Rivalry();
+        RiotAccount account = new RiotAccount("Hide", "KR1", "puuid0");
+        RivalryParticipant participant = new RivalryParticipant(account, rivalry, RivalSide.LEFT);
+        RivalryParticipant participant2 = new RivalryParticipant(account, rivalry, RivalSide.LEFT);
+
+        // when * then
+        rivalry.addParticipant(participant);
+
+        assertThatThrownBy(() -> rivalry.addParticipant(participant2))
+                .isInstanceOf(IllegalArgumentException.class);
     }
 
 }
