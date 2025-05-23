@@ -3,6 +3,7 @@ package com.glennsyj.rivals.api.riot.controller;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
+import com.glennsyj.rivals.api.tft.service.TftLeagueEntryManager;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,9 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class RiotController {
 
     private final RiotAccountManager riotAccountManager;
+    private final TftLeagueEntryManager tftLeagueEntryManager;
 
-    public RiotController(RiotAccountManager riotAccountManager) {
+    public RiotController(RiotAccountManager riotAccountManager, TftLeagueEntryManager tftLeagueEntryManager) {
+
         this.riotAccountManager = riotAccountManager;
+        this.tftLeagueEntryManager = tftLeagueEntryManager;
     }
 
     @GetMapping("/accounts/{gameName}/{tagLine}")
@@ -47,6 +51,9 @@ public class RiotController {
             RiotAccountResponse response = new RiotAccountResponse(account.getPuuid(),
                     account.getGameName(),
                     account.getTagLine());
+
+            // 응답에는 포함되지 않더라도 갱신 요청 DB에 반영 이후 새로고침으로 해결 예정
+            tftLeagueEntryManager.renewEntry(account.getPuuid());
 
             return ResponseEntity.ok(response);
         } catch (IllegalStateException e) {
