@@ -2,7 +2,10 @@ package com.glennsyj.rivals.api.riot.controller;
 
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
+import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
+import com.glennsyj.rivals.api.tft.service.TftLeagueEntryManager;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -25,6 +28,9 @@ class RiotControllerTest {
     @MockitoBean
     private RiotAccountManager riotAccountManager;
 
+    @MockitoBean
+    private TftLeagueEntryManager tftLeagueEntryManager;
+
     @Test
     void 계정_조회_성공() throws Exception {
         // given
@@ -46,8 +52,11 @@ class RiotControllerTest {
     void 계정_갱신_성공() throws Exception {
         // given
         RiotAccount account = new RiotAccount("Hide", "KR1", "puuid123");
+        TftLeagueEntry entry = Mockito.mock(TftLeagueEntry.class);
         when(riotAccountManager.renewAccount("Hide", "KR1"))
                 .thenReturn(account);
+        when(tftLeagueEntryManager.renewEntry(account.getPuuid()))
+                .thenReturn(entry);
 
         // when & then
         mockMvc.perform(
