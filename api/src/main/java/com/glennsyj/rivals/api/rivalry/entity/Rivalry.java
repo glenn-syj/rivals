@@ -27,7 +27,7 @@ public class Rivalry {
     @OneToMany(mappedBy = "rivalry")
     private List<RivalryParticipant> participants = new ArrayList<>();
 
-    protected Rivalry() {
+    public Rivalry() {
     }
 
     public void addParticipant(RivalryParticipant participant) {
