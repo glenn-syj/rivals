@@ -48,4 +48,28 @@ public class RivalryRepositoryTest {
         assertThat(found.getParticipants().size()).isEqualTo(1);
     }
 
+    @Test
+    void 양측에_같은_계정이_하나_포함되어도_된다() {
+
+        // given
+        Rivalry rivalry = new Rivalry();
+        RiotAccount accountBothSide = new RiotAccount("Hide", "KR1", "puuid0");
+        RiotAccount accountLeftSide = new RiotAccount("Hide", "KR2", "puuid1");
+        RiotAccount accountRightSide = new RiotAccount("Hide", "KR3", "puuid2");
+        RivalryParticipant participant = new RivalryParticipant(accountBothSide, rivalry, RivalSide.LEFT);
+        RivalryParticipant participant2 = new RivalryParticipant(accountLeftSide, rivalry, RivalSide.RIGHT);
+        RivalryParticipant participant3 = new RivalryParticipant(accountRightSide, rivalry, RivalSide.LEFT);
+        RivalryParticipant participant4 = new RivalryParticipant(accountBothSide, rivalry, RivalSide.RIGHT);
+
+        // when
+        rivalry.getParticipants().add(participant);
+        rivalry.getParticipants().add(participant2);
+        rivalry.getParticipants().add(participant3);
+        rivalry.getParticipants().add(participant4);
+        Rivalry found = rivalryRepository.save(rivalry);
+
+        // then
+        assertThat(found.getParticipants().size()).isEqualTo(4);
+    }
+
 }
