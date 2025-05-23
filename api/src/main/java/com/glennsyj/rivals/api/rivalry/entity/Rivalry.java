@@ -30,6 +30,15 @@ public class Rivalry {
     protected Rivalry() {
     }
 
+    public void addParticipant(RivalryParticipant participant) {
+        if (!isDuplicatedOnSameSide(participant)) {
+            participants.add(participant);
+            participant.participate(this);
+        } else {
+            throw new IllegalArgumentException("Participant already exists on the same side.");
+        }
+    }
+
     public Long getId() {
         return id;
     }
@@ -40,5 +49,15 @@ public class Rivalry {
 
     public List<RivalryParticipant> getParticipants() {
         return participants;
+    }
+
+    private boolean isDuplicatedOnSameSide(RivalryParticipant participant) {
+        for (RivalryParticipant p : participants) {
+            if (p.getRiotAccount().equals(participant.getRiotAccount()) &&
+                    p.getSide() == participant.getSide()) {
+                return true;
+            }
+        }
+        return false;
     }
 }
