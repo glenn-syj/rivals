@@ -1,4 +1,4 @@
-package com.glennsyj.rivals.api.rival.repository;
+package com.glennsyj.rivals.api.rivalry.repository;
 
 import com.glennsyj.rivals.api.config.TestContainerConfig;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
