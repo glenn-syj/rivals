@@ -40,6 +40,10 @@ public class RivalryParticipant {
         this.side = side;
     }
 
+    public void participate(Rivalry rivalry) {
+        this.rivalry = rivalry;
+    }
+
     // Getters and Setters
     public Long getId() {
         return id;
