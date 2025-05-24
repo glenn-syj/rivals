@@ -98,12 +98,13 @@ class RivalryServiceTest {
 
         List<RivalryParticipantDto> participants = List.of(
                 new RivalryParticipantDto(account.getId(), RivalSide.LEFT),
-                new RivalryParticipantDto(account.getId(), RivalSide.LEFT)
+                new RivalryParticipantDto(account.getId(), RivalSide.LEFT),
+                new RivalryParticipantDto(account.getId(), RivalSide.RIGHT)
         );
         RivalryCreationDto creationDto = new RivalryCreationDto(participants);
 
         // Mock repository response
-        when(riotAccountRepository.findAllByIdIn(List.of(1L, 1L)))
+        when(riotAccountRepository.findAllByIdIn(List.of(1L, 1L, 1L)))
                 .thenReturn(List.of(account));
 
         // when & then
