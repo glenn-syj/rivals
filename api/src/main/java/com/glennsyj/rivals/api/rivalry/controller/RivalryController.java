@@ -1,14 +1,13 @@
 package com.glennsyj.rivals.api.rivalry.controller;
 
 import com.glennsyj.rivals.api.rivalry.model.RivalryCreationDto;
+import com.glennsyj.rivals.api.rivalry.model.RivalryDetailDto;
 import com.glennsyj.rivals.api.rivalry.model.RivalryResultDto;
 import com.glennsyj.rivals.api.rivalry.service.RivalryService;
+import jakarta.persistence.EntityNotFoundException;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
@@ -31,5 +30,16 @@ public class RivalryController {
         URI uri = URI.create("/api/v1/rivalries/" + rivalryId);
 
         return ResponseEntity.created(uri).body(response);
+    }
+
+    @GetMapping("/{rivalryId}")
+    public ResponseEntity<?> getRivalryById(@PathVariable Long rivalryId) {
+
+        try {
+            RivalryDetailDto response = rivalryService.findRivalryFrom(rivalryId);
+            return ResponseEntity.ok(response);
+        } catch (EntityNotFoundException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 }
