@@ -12,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -31,12 +32,8 @@ class RivalryServiceTest {
     @Mock
     private RiotAccountRepository riotAccountRepository;
 
+    @InjectMocks
     private RivalryService rivalryService;
-
-    @BeforeEach
-    void setUp() {
-        rivalryService = new RivalryService(rivalryRepository, riotAccountRepository);
-    }
 
     @Test
     @DisplayName("정상적인 DTO로 라이벌리 생성 시 성공하고 ID를 반환한다")
