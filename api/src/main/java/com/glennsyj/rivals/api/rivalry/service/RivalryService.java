@@ -2,26 +2,38 @@ package com.glennsyj.rivals.api.rivalry.service;
 
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
+import com.glennsyj.rivals.api.rivalry.entity.RivalSide;
 import com.glennsyj.rivals.api.rivalry.entity.Rivalry;
 import com.glennsyj.rivals.api.rivalry.entity.RivalryParticipant;
+import com.glennsyj.rivals.api.rivalry.model.ParticipantStatDto;
 import com.glennsyj.rivals.api.rivalry.model.RivalryCreationDto;
+import com.glennsyj.rivals.api.rivalry.model.RivalryDetailDto;
 import com.glennsyj.rivals.api.rivalry.model.RivalryParticipantDto;
 import com.glennsyj.rivals.api.rivalry.repository.RivalryRepository;
+import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
+import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
+import com.glennsyj.rivals.api.tft.model.TftStatusDto;
+import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
+import jakarta.persistence.EntityNotFoundException;
+import org.hibernate.annotations.NotFound;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @Service
 public class RivalryService {
 
     private RivalryRepository rivalryRepository;
     private RiotAccountRepository riotAccountRepository;
+    private TftLeagueEntryRepository tftLeagueEntryRepository;
 
-    public RivalryService(RivalryRepository rivalryRepository, RiotAccountRepository riotAccountRepository) {
+    public RivalryService(RivalryRepository rivalryRepository,
+                          RiotAccountRepository riotAccountRepository,
+                          TftLeagueEntryRepository tftLeagueEntryRepository) {
         this.rivalryRepository = rivalryRepository;
         this.riotAccountRepository = riotAccountRepository;
+        this.tftLeagueEntryRepository = tftLeagueEntryRepository;
     }
 
     @Transactional
@@ -61,5 +73,44 @@ public class RivalryService {
         }
 
         return rivalry.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public RivalryDetailDto findRivalryFrom(Long id) {
+
+        // 1. Rivalry 정보 불러오고 캐시로 이용할 맵 초기화
+        Rivalry rivalry = rivalryRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Map<Long, String> nameCacheMap = new HashMap<>();
+        Map<Long, TftStatusDto> leagueEntryCacheMap = new HashMap<>();
+
+        // 2. participants 기반 정보 불러오기
+        List<RivalryParticipant> participants = rivalry.getParticipants();
+        List<Long> participantsIds = participants.stream().map(RivalryParticipant::getId).toList();
+
+        List<RiotAccount> accounts = riotAccountRepository.findAllById(participantsIds);
+        accounts.forEach(account -> nameCacheMap.put(account.getId(), account.getFullGameName()));
+
+        List<TftLeagueEntry> leagueEntries = tftLeagueEntryRepository.findAllById(participantsIds);
+        leagueEntries.forEach(entry -> leagueEntryCacheMap.put(entry.getAccount().getId(), TftStatusDto.from(entry)));
+
+        // 3. RivalryDetailDto 생성 및 반환
+        List<ParticipantStatDto> leftStats = new ArrayList<>();
+        List<ParticipantStatDto> rightStats = new ArrayList<>();
+
+        for (RivalryParticipant participant : participants) {
+            Long participantId = participant.getId();
+            String fullName = nameCacheMap.get(participant.getRiotAccount().getId());
+            TftStatusDto status = leagueEntryCacheMap.get(participant.getRiotAccount().getId());
+
+            ParticipantStatDto participantStat = new ParticipantStatDto(participantId, fullName, status);
+
+            if (participant.getSide() == RivalSide.LEFT) {
+                leftStats.add(participantStat);
+            } else {
+                rightStats.add(participantStat);
+            }
+        }
+
+        return new RivalryDetailDto(id, leftStats, rightStats, rivalry.getCreatedAt());
     }
 }
