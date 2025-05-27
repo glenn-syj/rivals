@@ -2,9 +2,8 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { RivalryProvider } from "@/app/contexts/RivalryContext";
-import RivalryCart from "@/app/components/RivalryCart";
-import TeamSelectionModal from "@/app/components/TeamSelectionModal";
+import { RivalryProvider } from "@/contexts/RivalryContext";
+import RivalryCart from "@/components/RivalryCart";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -24,13 +23,6 @@ export default function RootLayout({
         <RivalryProvider>
           {children}
           <RivalryCart />
-          <TeamSelectionModal
-            player={undefined}
-            isOpen={false}
-            onClose={function (): void {
-              throw new Error("Function not implemented.");
-            }}
-          />
         </RivalryProvider>
       </body>
     </html>
