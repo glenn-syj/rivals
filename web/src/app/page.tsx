@@ -24,9 +24,14 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRivalry, type Player } from "@/contexts/RivalryContext";
+import { useRivalry } from "@/contexts/RivalryContext";
 import { mockTftData } from "@/lib/mockData";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
+
+export type Player = {
+  name: string;
+  tag: string;
+};
 
 export default function Component() {
   const [searchInput, setSearchInput] = useState("");
@@ -57,15 +62,15 @@ export default function Component() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="flex flex-col min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-purple-800/30 bg-slate-900/50 backdrop-blur-sm">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm">
         <Link href="/" className="flex items-center justify-center">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <Sword className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-slate-400 to-indigo-400 bg-clip-text text-transparent">
               Rivals
             </span>
           </div>
@@ -74,25 +79,25 @@ export default function Component() {
           <Button
             onClick={openRivalryCart}
             variant="ghost"
-            className="text-gray-300 hover:text-purple-400 relative"
+            className="text-gray-300 hover:text-indigo-400 relative"
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
             라이벌리 카트
             {getTotalPlayerCount() > 0 && (
-              <Badge className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
+              <Badge className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
                 {getTotalPlayerCount()}
               </Badge>
             )}
           </Button>
           <Link
             href="#features"
-            className="text-sm font-medium text-gray-300 hover:text-purple-400 transition-colors"
+            className="text-sm font-medium text-gray-300 hover:text-indigo-400 transition-colors"
           >
             기능
           </Link>
           <Link
             href="#how-it-works"
-            className="text-sm font-medium text-gray-300 hover:text-purple-400 transition-colors"
+            className="text-sm font-medium text-gray-300 hover:text-indigo-400 transition-colors"
           >
             사용법
           </Link>
@@ -102,20 +107,20 @@ export default function Component() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-purple-600/20 to-pink-600/20" />
+          <div className="absolute inset-0 bg-gradient-to-r from-slate-600/10 to-indigo-600/20" />
           <div className="container px-4 md:px-6 relative z-10">
             <div className="flex flex-col items-center space-y-4 text-center">
               <div className="space-y-2">
                 <Badge
                   variant="secondary"
-                  className="bg-purple-900/50 text-purple-300 border-purple-700"
+                  className="bg-slate-800/80 text-slate-300 border-slate-600"
                 >
                   <Star className="w-3 h-3 mr-1" />
                   Riot Games 공식 API 연동
                 </Badge>
                 <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl/none text-white">
                   TFT{" "}
-                  <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  <span className="bg-gradient-to-r from-slate-400 to-indigo-400 bg-clip-text text-transparent">
                     라이벌 관리
                   </span>
                   의 새로운 기준
@@ -137,11 +142,11 @@ export default function Component() {
                       setError("");
                     }}
                     onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                    className="flex-1 bg-slate-800/50 border-purple-700 text-white placeholder:text-gray-400"
+                    className="flex-1 bg-slate-800/50 border-slate-600 text-white placeholder:text-gray-400"
                   />
                   <Button
                     onClick={handleSearch}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="bg-gradient-to-r from-slate-600 to-indigo-600 hover:from-slate-700 hover:to-indigo-700"
                   >
                     <Search className="w-4 h-4 mr-2" />
                     검색
@@ -156,7 +161,7 @@ export default function Component() {
                 <Button
                   size="lg"
                   onClick={openRivalryCart}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                  className="bg-gradient-to-r from-slate-600 to-indigo-600 hover:from-slate-700 hover:to-indigo-700"
                 >
                   <GamepadIcon className="w-5 h-5 mr-2" />
                   지금 시작하기
@@ -164,7 +169,7 @@ export default function Component() {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="border-purple-700 text-purple-300 hover:bg-purple-900/50"
+                  className="border-slate-600 text-slate-300 hover:bg-slate-800/50"
                 >
                   <BarChart3 className="w-5 h-5 mr-2" />
                   데모 보기
@@ -184,7 +189,7 @@ export default function Component() {
               <div className="space-y-2">
                 <Badge
                   variant="secondary"
-                  className="bg-purple-900/50 text-purple-300 border-purple-700"
+                  className="bg-slate-800/80 text-slate-300 border-slate-600"
                 >
                   주요 기능
                 </Badge>
@@ -198,9 +203,9 @@ export default function Component() {
               </div>
             </div>
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
-              <Card className="bg-slate-800/50 border-purple-700/50 hover:border-purple-600 transition-colors">
+              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
                     <Search className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle className="text-white">
@@ -212,9 +217,9 @@ export default function Component() {
                   </CardDescription>
                 </CardHeader>
               </Card>
-              <Card className="bg-slate-800/50 border-purple-700/50 hover:border-purple-600 transition-colors">
+              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
                     <Users className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle className="text-white">
@@ -226,9 +231,9 @@ export default function Component() {
                   </CardDescription>
                 </CardHeader>
               </Card>
-              <Card className="bg-slate-800/50 border-purple-700/50 hover:border-purple-600 transition-colors">
+              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
                     <Trophy className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle className="text-white">라이벌 관계 관리</CardTitle>
@@ -238,9 +243,9 @@ export default function Component() {
                   </CardDescription>
                 </CardHeader>
               </Card>
-              <Card className="bg-slate-800/50 border-purple-700/50 hover:border-purple-600 transition-colors">
+              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
                     <BarChart3 className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle className="text-white">실시간 순위 추적</CardTitle>
@@ -249,9 +254,9 @@ export default function Component() {
                   </CardDescription>
                 </CardHeader>
               </Card>
-              <Card className="bg-slate-800/50 border-purple-700/50 hover:border-purple-600 transition-colors">
+              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
                     <Target className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle className="text-white">덱 조합 분석</CardTitle>
@@ -260,9 +265,9 @@ export default function Component() {
                   </CardDescription>
                 </CardHeader>
               </Card>
-              <Card className="bg-slate-800/50 border-purple-700/50 hover:border-purple-600 transition-colors">
+              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
                 <CardHeader>
-                  <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-12 h-12 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center mb-4">
                     <Crown className="w-6 h-6 text-white" />
                   </div>
                   <CardTitle className="text-white">
@@ -285,7 +290,7 @@ export default function Component() {
               <div className="space-y-2">
                 <Badge
                   variant="secondary"
-                  className="bg-purple-900/50 text-purple-300 border-purple-700"
+                  className="bg-slate-800/80 text-slate-300 border-slate-600"
                 >
                   사용법
                 </Badge>
@@ -296,7 +301,7 @@ export default function Component() {
             </div>
             <div className="mx-auto grid max-w-5xl items-center gap-6 py-12 lg:grid-cols-3 lg:gap-12">
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
                   1
                 </div>
                 <h3 className="text-xl font-bold text-white">Riot 계정 연동</h3>
@@ -306,7 +311,7 @@ export default function Component() {
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
                   2
                 </div>
                 <h3 className="text-xl font-bold text-white">
@@ -318,7 +323,7 @@ export default function Component() {
                 </p>
               </div>
               <div className="flex flex-col items-center space-y-4 text-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
                   3
                 </div>
                 <h3 className="text-xl font-bold text-white">함께 성장하기</h3>
@@ -355,11 +360,11 @@ export default function Component() {
                       setError("");
                     }}
                     onKeyPress={(e) => e.key === "Enter" && handleSearch()}
-                    className="flex-1 bg-slate-800/50 border-purple-700 text-white placeholder:text-gray-400"
+                    className="flex-1 bg-slate-800/50 border-slate-600 text-white placeholder:text-gray-400"
                   />
                   <Button
                     onClick={handleSearch}
-                    className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                    className="bg-gradient-to-r from-slate-600 to-indigo-600 hover:from-slate-700 hover:to-indigo-700"
                   >
                     시작하기
                   </Button>
@@ -375,32 +380,32 @@ export default function Component() {
       </main>
 
       {/* Footer */}
-      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t border-purple-800/30 bg-slate-900/50">
+      <footer className="flex flex-col gap-2 sm:flex-row py-6 w-full shrink-0 items-center px-4 md:px-6 border-t border-slate-700/50 bg-slate-900/80">
         <p className="text-xs text-gray-400">
           © 2024 Rivals. All rights reserved.
         </p>
         <nav className="sm:ml-auto flex gap-4 sm:gap-6">
           <Link
             href="https://github.com/glenn-syj/rivals"
-            className="text-xs text-gray-400 hover:text-purple-400 transition-colors"
+            className="text-xs text-gray-400 hover:text-indigo-400 transition-colors"
           >
             GitHub
           </Link>
           <Link
             href="#"
-            className="text-xs text-gray-400 hover:text-purple-400 transition-colors"
+            className="text-xs text-gray-400 hover:text-indigo-400 transition-colors"
           >
             이용약관
           </Link>
           <Link
             href="#"
-            className="text-xs text-gray-400 hover:text-purple-400 transition-colors"
+            className="text-xs text-gray-400 hover:text-indigo-400 transition-colors"
           >
             개인정보처리방침
           </Link>
           <Link
             href="#"
-            className="text-xs text-gray-400 hover:text-purple-400 transition-colors"
+            className="text-xs text-gray-400 hover:text-indigo-400 transition-colors"
           >
             고객지원
           </Link>
@@ -408,7 +413,7 @@ export default function Component() {
       </footer>
 
       <TeamSelectionModal
-        player={selectedPlayer}
+        player={null}
         isOpen={isTeamModalOpen}
         onClose={() => {
           setIsTeamModalOpen(false);

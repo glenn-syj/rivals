@@ -107,9 +107,9 @@ export default function SummonerPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-white text-lg">전적을 불러오는 중...</p>
         </div>
       </div>
@@ -118,7 +118,7 @@ export default function SummonerPage() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center max-w-md">
           <Card className="bg-red-900/20 border-red-700/50">
             <CardHeader>
@@ -145,15 +145,15 @@ export default function SummonerPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-purple-800/30 bg-slate-900/50 backdrop-blur-sm">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm">
         <Link href="/" className="flex items-center justify-center">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <Sword className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-slate-400 to-indigo-400 bg-clip-text text-transparent">
               Rivals
             </span>
           </div>
@@ -174,7 +174,7 @@ export default function SummonerPage() {
             <Button
               onClick={handleNewSearch}
               size="sm"
-              className="bg-purple-600 hover:bg-purple-700"
+              className="bg-indigo-600 hover:bg-indigo-700"
             >
               <Search className="w-4 h-4" />
             </Button>
@@ -187,12 +187,12 @@ export default function SummonerPage() {
           <Button
             onClick={openRivalryCart}
             variant="ghost"
-            className="text-gray-300 hover:text-purple-400 relative"
+            className="text-gray-300 hover:text-indigo-400 relative"
           >
             <ShoppingCart className="w-4 h-4 mr-2" />
             라이벌리 카트
             {getTotalPlayerCount() > 0 && (
-              <Badge className="absolute -top-2 -right-2 bg-purple-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
+              <Badge className="absolute -top-2 -right-2 bg-indigo-600 text-white text-xs min-w-[20px] h-5 flex items-center justify-center rounded-full">
                 {getTotalPlayerCount()}
               </Badge>
             )}
@@ -200,7 +200,7 @@ export default function SummonerPage() {
           <Button
             onClick={() => router.back()}
             variant="ghost"
-            className="text-gray-300 hover:text-purple-400"
+            className="text-gray-300 hover:text-indigo-400"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             뒤로가기
@@ -221,12 +221,12 @@ export default function SummonerPage() {
 
             {/* 메인 스탯 카드들 */}
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
-              <Card className="bg-slate-800/50 border-purple-700/50 hover:border-purple-600 transition-colors">
+              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
                 <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Crown className="w-8 h-8 text-white" />
                   </div>
-                  <CardTitle className="text-purple-400">현재 랭크</CardTitle>
+                  <CardTitle className="text-indigo-400">현재 랭크</CardTitle>
                   <div className="text-3xl font-bold text-white">
                     {tftStatus.tier} {tftStatus.rank}
                   </div>
@@ -282,7 +282,7 @@ export default function SummonerPage() {
               <Button
                 size="lg"
                 onClick={handleAddToRivalry}
-                className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+                className="bg-gradient-to-r from-slate-600 to-indigo-600 hover:from-slate-700 hover:to-indigo-700"
               >
                 <Users className="w-5 h-5 mr-2" />
                 라이벌리에 추가하기
@@ -290,7 +290,7 @@ export default function SummonerPage() {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-purple-700 text-purple-300 hover:bg-purple-900/50"
+                className="border-slate-600 text-slate-300 hover:bg-slate-800/50"
                 onClick={() => window.location.reload()}
               >
                 전적 새로고침
