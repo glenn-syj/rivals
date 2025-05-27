@@ -35,7 +35,7 @@ public class TftLeagueEntryManager {
      */
     @Transactional
     public TftLeagueEntry findOrCreateEntry(Long accountId) {
-        return tftLeagueEntryRepository.findByAccount_Id(accountId)
+        return tftLeagueEntryRepository.findFirstByAccount_IdOrderByUpdatedAtDesc(accountId)
             .orElseGet(() -> {
                 RiotAccount account = riotAccountRepository.findById(accountId)
                     .orElseThrow(() -> new IllegalStateException("계정을 찾을 수 없습니다: " + accountId));
