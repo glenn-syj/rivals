@@ -86,12 +86,12 @@ public class RivalryService {
 
         // 2. participants 기반 정보 불러오기
         List<RivalryParticipant> participants = rivalry.getParticipants();
-        List<Long> participantsIds = participants.stream().map(RivalryParticipant::getId).toList();
+        List<Long> participantsAccountIds = participants.stream().map((participant) -> participant.getRiotAccount().getId()).toList();
 
-        List<RiotAccount> accounts = riotAccountRepository.findAllById(participantsIds);
+        List<RiotAccount> accounts = riotAccountRepository.findAllById(participantsAccountIds);
         accounts.forEach(account -> nameCacheMap.put(account.getId(), account.getFullGameName()));
 
-        List<TftLeagueEntry> leagueEntries = tftLeagueEntryRepository.findAllById(participantsIds);
+        List<TftLeagueEntry> leagueEntries = tftLeagueEntryRepository.findAllByAccount_IdIn(participantsAccountIds);
         leagueEntries.forEach(entry -> leagueEntryCacheMap.put(entry.getAccount().getId(), TftStatusDto.from(entry)));
 
         // 3. RivalryDetailDto 생성 및 반환
