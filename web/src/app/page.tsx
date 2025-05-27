@@ -27,16 +27,16 @@ import { useRouter } from "next/navigation";
 import { useRivalry } from "@/contexts/RivalryContext";
 import { mockTftData } from "@/lib/mockData";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
+import { RiotAccountResponse } from "@/lib/types";
+import { findRiotAccount } from "@/lib/api";
 
-export type Player = {
-  name: string;
-  tag: string;
-};
+export type Player = RiotAccountResponse;
 
 export default function Component() {
   const [searchInput, setSearchInput] = useState("");
   const [error, setError] = useState("");
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [selectedPlayer, setSelectedPlayer] =
+    useState<RiotAccountResponse | null>(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const router = useRouter();
   const { openRivalryCart, getTotalPlayerCount } = useRivalry();
@@ -50,14 +50,12 @@ export default function Component() {
       return;
     }
 
-    const searchKey = searchInput.trim();
-    if (mockTftData[searchKey as keyof typeof mockTftData]) {
-      // 전적 페이지로 이동
+    try {
+      const [gameName, tagLine] = parts;
+      await findRiotAccount(gameName, tagLine);
       router.push(`/summoner/${encodeURIComponent(searchInput.trim())}`);
-    } else {
-      setError(
-        "소환사를 찾을 수 없습니다. 다음 중 하나를 시도해보세요: Hide on bush#KR1, Faker#KR1, 승상싱#KR1"
-      );
+    } catch (err) {
+      setError("소환사를 찾을 수 없습니다");
     }
   };
 
