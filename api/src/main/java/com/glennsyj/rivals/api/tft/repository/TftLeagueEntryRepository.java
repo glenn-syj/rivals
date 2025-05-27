@@ -20,4 +20,8 @@ public interface TftLeagueEntryRepository extends JpaRepository<TftLeagueEntry, 
      * 일반 TFT 랭크 정보만 조회 (초고속 제외)
      */
     Optional<TftLeagueEntry> findByAccount_Id(Long account_id);
+
+    Optional<TftLeagueEntry> findFirstByPuuidOrderByUpdatedAtDesc(String puuid);
+
+    Optional<TftLeagueEntry> findFirstByAccount_IdOrderByUpdatedAtDesc(Long accountId);
 }
