@@ -25,35 +25,11 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRivalry } from "@/contexts/RivalryContext";
-import { mockTftData } from "@/lib/mockData";
 import { Input } from "@/components/ui/input";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
 import type { Player } from "@/contexts/RivalryContext";
-
-interface TftStatus {
-  tier: string;
-  rank: string;
-  leaguePoints: number;
-  wins: number;
-  losses: number;
-  hotStreak: boolean;
-  averageRank: number;
-  top4Rate: number;
-  lpChange: number;
-  winStreak?: number;
-  loseStreak?: number;
-  serverRank: number;
-  totalGames: number;
-  recentGames: number[];
-  seasonHigh: { tier: string; lp: number };
-  preferredComps: string[];
-}
-
-interface RiotAccount {
-  puuid: string;
-  gameName: string;
-  tagLine: string;
-}
+import { findRiotAccount, getTftStatus } from "@/lib/api";
+import type { RiotAccountResponse, TftStatusDto } from "@/lib/types";
 
 export default function SummonerPage() {
   const params = useParams();
@@ -62,36 +38,86 @@ export default function SummonerPage() {
   const { openRivalryCart, getTotalPlayerCount, addPlayerToTeam } =
     useRivalry();
 
-  const [account, setAccount] = useState<RiotAccount | null>(null);
-  const [tftStatus, setTftStatus] = useState<TftStatus | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const [account, setAccount] = useState<RiotAccountResponse | null>(null);
+  const [tftStatus, setTftStatus] = useState<TftStatusDto | null>(null);
   const [searchInput, setSearchInput] = useState("");
   const [searchError, setSearchError] = useState("");
-  const [selectedPlayer, setSelectedPlayer] = useState<Player | null>(null);
+  const [selectedPlayer, setSelectedPlayer] =
+    useState<RiotAccountResponse | null>(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
   useEffect(() => {
+    // 이미 데이터를 가져왔다면 중복 요청하지 않음
+    if (account && tftStatus) return;
+
+    let isMounted = true;
+
     const fetchData = async () => {
       if (!encodedName) return;
 
-      const decodedName = decodeURIComponent(encodedName);
+      try {
+        setIsLoading(true);
+        const decodedName = decodeURIComponent(encodedName);
+        
+        console.log('Before cleaning:', decodedName);
+        
+        const [gameName, tagLine] = decodedName.split('#');
+        // &nbsp;(0xA0)와 일반 공백을 포함한 모든 종류의 공백 제거
+        const trimmedGameName = gameName.replace(/^[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+|[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+$/g, '');
+        const trimmedTagLine = tagLine.replace(/^[\s\u00A0]+|[\s\u00A0]+$/g, '');
 
-      // 목업 데이터에서 조회
-      const data = mockTftData[decodedName as keyof typeof mockTftData];
+        console.log('After cleaning:', {
+          gameName: trimmedGameName,
+          tagLine: trimmedTagLine,
+          charCodes: Array.from(trimmedGameName).map(c => `0x${c.charCodeAt(0).toString(16)}`)
+        });
 
-      if (data) {
-        setAccount(data.account);
-        setTftStatus(data.tftStatus);
-      } else {
-        setError("소환사를 찾을 수 없습니다");
+        const [accountResponse, tftResponse] = await Promise.all([
+          findRiotAccount(trimmedGameName, trimmedTagLine),
+          getTftStatus(trimmedGameName, trimmedTagLine)
+        ]);
+
+        // 컴포넌트가 마운트된 상태일 때만 상태 업데이트
+        if (isMounted) {
+          setAccount(accountResponse);
+          setTftStatus(tftResponse);
+        }
+      } catch (err) {
+        if (isMounted) {
+          setError(
+            err instanceof Error ? err.message : "소환사를 찾을 수 없습니다"
+          );
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
       }
-
-      setIsLoading(false);
     };
 
     fetchData();
-  }, [encodedName]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [encodedName]); // account와 tftStatus는 의존성 배열에서 제외
+
+  useEffect(() => {
+    console.log("Account state changed:", account);
+  }, [account]);
+
+  useEffect(() => {
+    console.log("TftStatus state changed:", tftStatus);
+  }, [tftStatus]);
+
+  console.log("Render States:", {
+    isLoading,
+    error,
+    hasAccount: !!account,
+    hasTftStatus: !!tftStatus,
+  });
 
   const handleAddToRivalry = () => {
     if (account) {
@@ -110,11 +136,24 @@ export default function SummonerPage() {
     }
 
     const searchKey = searchInput.trim();
-    if (mockTftData[searchKey as keyof typeof mockTftData]) {
+    if (searchKey) {
       router.push(`/summoner/${encodeURIComponent(searchInput.trim())}`);
     } else {
       setSearchError("소환사를 찾을 수 없습니다");
     }
+  };
+
+  const addToRivalry = (side: "left" | "right") => {
+    if (!account) return;
+
+    const player: Player = {
+      puuid: account.puuid,
+      gameName: account.gameName,
+      tagLine: account.tagLine,
+      id: account.id, // summoner API에서 받아온 ID
+    };
+
+    addPlayerToTeam(player, side);
   };
 
   if (isLoading) {
@@ -153,6 +192,10 @@ export default function SummonerPage() {
         </div>
       </div>
     );
+  }
+
+  if (!account || !tftStatus) {
+    return <div>데이터를 불러오는 중...</div>;
   }
 
   return (
@@ -247,7 +290,7 @@ export default function SummonerPage() {
                         </CardTitle>
                         <CardDescription className="text-gray-300 mt-1">
                           {tftStatus.leaguePoints} LP • 서버 #
-                          {tftStatus.serverRank || "N/A"}
+                          {tftStatus.serverRank || "KR"}
                         </CardDescription>
                       </div>
                       {tftStatus.hotStreak && (
