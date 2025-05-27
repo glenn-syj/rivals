@@ -39,11 +39,12 @@ public class RivalryService {
     @Transactional
     public Long createRivalryFrom(RivalryCreationDto creationDto) {
 
+        System.out.println("creationDto: " + creationDto);
         List<Long> accountIds = creationDto.participants().stream()
-                .map((RivalryParticipantDto::id))
+                .map((dto) -> Long.valueOf(dto.id()))
                 .toList();
-
-        List<RiotAccount> accounts = riotAccountRepository.findAllByIdIn(accountIds);
+        System.out.println(accountIds);
+        List<RiotAccount> accounts = riotAccountRepository.findAllById(accountIds);
 
         // 중간 검증: account를 하나도 찾을 수 없을 시
         if (accounts.isEmpty()) {
@@ -60,13 +61,13 @@ public class RivalryService {
 
         for (RivalryParticipantDto dto : creationDto.participants()) {
             RivalryParticipant participant = new RivalryParticipant(
-                    accountMap.get(dto.id()), rivalry, dto.side()
+                    accountMap.get(Long.valueOf(dto.id())), rivalry, dto.side()
             );
             rivalry.addParticipant(participant);
         }
 
         rivalry = rivalryRepository.save(rivalry);
-
+        System.out.println("rv size: " + rivalry.getParticipants().size());
         // 최종 검증: dto 내 participant 수와 영속화된 participant 수 비교
         if (accountIds.size() != rivalry.getParticipants().size()) {
             throw new IllegalArgumentException("Some of accounts not found");
@@ -101,8 +102,7 @@ public class RivalryService {
             Long participantId = participant.getId();
             String fullName = nameCacheMap.get(participant.getRiotAccount().getId());
             TftStatusDto status = leagueEntryCacheMap.get(participant.getRiotAccount().getId());
-
-            ParticipantStatDto participantStat = new ParticipantStatDto(participantId, fullName, status);
+            ParticipantStatDto participantStat = new ParticipantStatDto(participantId.toString(), fullName, status);
 
             if (participant.getSide() == RivalSide.LEFT) {
                 leftStats.add(participantStat);
@@ -111,6 +111,6 @@ public class RivalryService {
             }
         }
 
-        return new RivalryDetailDto(id, leftStats, rightStats, rivalry.getCreatedAt());
+        return new RivalryDetailDto(id.toString(), leftStats, rightStats, rivalry.getCreatedAt());
     }
 }
