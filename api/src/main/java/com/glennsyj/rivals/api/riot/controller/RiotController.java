@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("api/v1/riot")
+@RequestMapping("/api/v1/riot")
 public class RiotController {
 
     private final RiotAccountManager riotAccountManager;
@@ -32,11 +32,13 @@ public class RiotController {
             RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
             RiotAccountResponse response = new RiotAccountResponse(account.getPuuid(),
                 account.getGameName(),
-                account.getTagLine());
+                account.getTagLine(),
+                String.valueOf(account.getId()));
 
             return ResponseEntity.ok(response);
 
         } catch (IllegalStateException e) {
+            System.out.println(e.getMessage());
             return ResponseEntity.notFound().build();
         }
 
@@ -50,7 +52,8 @@ public class RiotController {
             RiotAccount account = riotAccountManager.renewAccount(gameName, tagLine);
             RiotAccountResponse response = new RiotAccountResponse(account.getPuuid(),
                     account.getGameName(),
-                    account.getTagLine());
+                    account.getTagLine(),
+                    String.valueOf(account.getId()));
 
             // 응답에는 포함되지 않더라도 갱신 요청 DB에 반영 이후 새로고침으로 해결 예정
             tftLeagueEntryManager.renewEntry(account.getPuuid());

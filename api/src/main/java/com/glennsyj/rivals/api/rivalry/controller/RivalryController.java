@@ -23,9 +23,9 @@ public class RivalryController {
 
     @PostMapping("")
     public ResponseEntity<?> createRivalry(@Valid @RequestBody RivalryCreationDto creationDto) {
-
+        System.out.println("creationDto: " + creationDto);
         Long rivalryId = rivalryService.createRivalryFrom(creationDto);
-        RivalryResultDto response = new RivalryResultDto(rivalryId);
+        RivalryResultDto response = new RivalryResultDto(rivalryId.toString());
 
         URI uri = URI.create("/api/v1/rivalries/" + rivalryId);
 
@@ -33,10 +33,10 @@ public class RivalryController {
     }
 
     @GetMapping("/{rivalryId}")
-    public ResponseEntity<?> getRivalryById(@PathVariable Long rivalryId) {
+    public ResponseEntity<?> getRivalryById(@PathVariable String rivalryId) {
 
         try {
-            RivalryDetailDto response = rivalryService.findRivalryFrom(rivalryId);
+            RivalryDetailDto response = rivalryService.findRivalryFrom(Long.valueOf(rivalryId));
             return ResponseEntity.ok(response);
         } catch (EntityNotFoundException e) {
             return ResponseEntity.notFound().build();
