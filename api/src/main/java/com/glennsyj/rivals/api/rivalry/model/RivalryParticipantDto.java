@@ -5,12 +5,12 @@ import com.glennsyj.rivals.api.rivalry.entity.RivalSide;
 
 
 public record RivalryParticipantDto(
-    Long id,
+    String id,
     RivalSide side) {
 
     public static RivalryParticipantDto from(RivalryParticipant participant) {
         return new RivalryParticipantDto(
-                participant.getId(),
+                Long.toString(participant.getRiotAccount().getId()),
                 participant.getSide()
         );
     }
