@@ -13,11 +13,8 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Target, Star, Sword, Calendar, Users } from "lucide-react";
 import Link from "next/link";
-import {
-  mockRivalries,
-  type RivalryDetailDto,
-  type ParticipantStatDto,
-} from "@/lib/mockData";
+import { getRivalryById } from "@/lib/api";
+import type { RivalryDetailDto, ParticipantStatDto } from "@/lib/types";
 
 function PlayerStatCard({
   player,
@@ -27,8 +24,10 @@ function PlayerStatCard({
   teamColor: "blue" | "red";
 }) {
   const winRate =
-    player.wins + player.losses > 0
-      ? (player.wins / (player.wins + player.losses)) * 100
+    player.statistics.wins + player.statistics.losses > 0
+      ? (player.statistics.wins /
+          (player.statistics.wins + player.statistics.losses)) *
+        100
       : 0;
   const borderColor =
     teamColor === "blue" ? "border-slate-600/50" : "border-red-700/50";
@@ -45,13 +44,14 @@ function PlayerStatCard({
         <div className="flex items-center justify-between">
           <div>
             <CardTitle className="text-white text-lg">
-              {player.gameName}#{player.tagLine}
+              {player.fullName}
             </CardTitle>
             <CardDescription className="text-gray-400">
-              {player.tier} {player.rank} • {player.leaguePoints} LP
+              {player.statistics.tier} {player.statistics.rank} •{" "}
+              {player.statistics.leaguePoints} LP
             </CardDescription>
           </div>
-          {player.hotStreak && (
+          {player.statistics.hotStreak && (
             <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
               <Star className="w-3 h-3 mr-1" />
               연승
@@ -62,11 +62,15 @@ function PlayerStatCard({
       <CardContent className="space-y-3">
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
-            <p className="text-2xl font-bold text-green-400">{player.wins}</p>
+            <p className="text-2xl font-bold text-green-400">
+              {player.statistics.wins}
+            </p>
             <p className="text-xs text-gray-400">승리</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-red-400">{player.losses}</p>
+            <p className="text-2xl font-bold text-red-400">
+              {player.statistics.losses}
+            </p>
             <p className="text-xs text-gray-400">패배</p>
           </div>
           <div>
@@ -90,11 +94,12 @@ function TeamStats({
   teamName: string;
   teamColor: "blue" | "red";
 }) {
-  const totalWins = players.reduce((sum, p) => sum + p.wins, 0);
-  const totalLosses = players.reduce((sum, p) => sum + p.losses, 0);
+  const totalWins = players.reduce((sum, p) => sum + p.statistics.wins, 0);
+  const totalLosses = players.reduce((sum, p) => sum + p.statistics.losses, 0);
   const avgLP =
     players.length > 0
-      ? players.reduce((sum, p) => sum + p.leaguePoints, 0) / players.length
+      ? players.reduce((sum, p) => sum + p.statistics.leaguePoints, 0) /
+        players.length
       : 0;
   const teamWinRate =
     totalWins + totalLosses > 0
@@ -154,7 +159,7 @@ function TeamStats({
         ) : (
           players.map((player) => (
             <PlayerStatCard
-              key={player.puuid}
+              key={player.id}
               player={player}
               teamColor={teamColor}
             />
@@ -168,27 +173,30 @@ function TeamStats({
 export default function RivalryDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const rivalryId = Number.parseInt(params.rivalryId as string);
+  const rivalryId = params.rivalryId as string;
 
   const [rivalry, setRivalry] = useState<RivalryDetailDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const fetchRivalry = async () => {
-      // 목업 데이터에서 조회
-      const rivalryData = mockRivalries[rivalryId];
+    const fetchData = async () => {
+      if (!rivalryId) return;
 
-      if (rivalryData) {
-        setRivalry(rivalryData);
-      } else {
-        setError("라이벌리를 찾을 수 없습니다");
+      try {
+        setIsLoading(true);
+        const data = await getRivalryById(rivalryId);
+        setRivalry(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "라이벌리를 찾을 수 없습니다"
+        );
+      } finally {
+        setIsLoading(false);
       }
-
-      setIsLoading(false);
     };
 
-    fetchRivalry();
+    fetchData();
   }, [rivalryId]);
 
   if (isLoading) {
