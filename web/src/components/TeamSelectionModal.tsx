@@ -1,12 +1,7 @@
 "use client";
-import { Button } from "@/app/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,@/app/contexts/RivalryContext
-  CardTitle,
-} from "@/app/components/ui/card";
-import { Badge } from "@/app/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
 import { useRivalry, type Player } from "@/contexts/RivalryContext";
 
