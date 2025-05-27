@@ -49,4 +49,18 @@ public class TftLeagueEntryController {
         }
     }
 
+    @GetMapping(path="/{gameName}/{tagLine}")
+    public ResponseEntity<?> getTftStatusFrom(@PathVariable String gameName, @PathVariable String tagLine) {
+        try {
+            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+            TftLeagueEntry entry = tftLeagueEntryManager.findOrCreateEntry(account.getId());
+
+            TftStatusDto dto = TftStatusDto.from(entry);
+
+            return ResponseEntity.ok(dto);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
