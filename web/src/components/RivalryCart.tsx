@@ -1,14 +1,11 @@
 "use client";
-import { Button } from "@/app/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,@/app/contexts/RivalryContext
-  CardTitle,
-} from "@/app/components/ui/card";
-import { Badge } from "@/app/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeftRight, Users, Trash2 } from "lucide-react";
 import { useRivalry, type Player } from "@/contexts/RivalryContext";
+import { createMockRivalry } from "@/lib/mockData";
+import { useRouter } from "next/navigation";
 
 interface PlayerCardProps {
   player: Player;
@@ -106,12 +103,12 @@ function TeamSection({
 export default function RivalryCart() {
   const {
     rivalry,
-    addPlayerToTeam,
     closeRivalryCart,
     clearRivalry,
     canCreateRivalry,
     getTotalPlayerCount,
   } = useRivalry();
+  const router = useRouter();
 
   const handleCreateRivalry = () => {
     if (!canCreateRivalry()) {
@@ -119,12 +116,16 @@ export default function RivalryCart() {
       return;
     }
 
-    // 여기서 실제 라이벌리 생성 API 호출
+    // 목업 라이벌리 생성
+    const rivalryId = createMockRivalry(rivalry.leftTeam, rivalry.rightTeam);
+
     console.log("라이벌리 생성:", rivalry);
-    alert(
-      `라이벌리가 생성되었습니다!\nLEFT TEAM: ${rivalry.leftTeam.length}명\nRIGHT TEAM: ${rivalry.rightTeam.length}명`
-    );
+    alert(`라이벌리가 생성되었습니다! ID: ${rivalryId}`);
+
+    // 라이벌리 상세 페이지로 이동
     clearRivalry();
+    closeRivalryCart();
+    router.push(`/rivalry/${rivalryId}`);
   };
 
   if (!rivalry.isOpen) return null;
