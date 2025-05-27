@@ -31,9 +31,11 @@ function PlayerStatCard({
       ? (player.wins / (player.wins + player.losses)) * 100
       : 0;
   const borderColor =
-    teamColor === "blue" ? "border-blue-700/50" : "border-red-700/50";
+    teamColor === "blue" ? "border-slate-600/50" : "border-red-700/50";
   const hoverColor =
-    teamColor === "blue" ? "hover:border-blue-600" : "hover:border-red-600";
+    teamColor === "blue"
+      ? "hover:border-indigo-500/50"
+      : "hover:border-red-600";
 
   return (
     <Card
@@ -68,7 +70,7 @@ function PlayerStatCard({
             <p className="text-xs text-gray-400">패배</p>
           </div>
           <div>
-            <p className="text-2xl font-bold text-purple-400">
+            <p className="text-2xl font-bold text-indigo-400">
               {winRate.toFixed(1)}%
             </p>
             <p className="text-xs text-gray-400">승률</p>
@@ -99,10 +101,10 @@ function TeamStats({
       ? (totalWins / (totalWins + totalLosses)) * 100
       : 0;
 
-  const titleColor = teamColor === "blue" ? "text-blue-400" : "text-red-400";
-  const bgColor = teamColor === "blue" ? "bg-blue-900/20" : "bg-red-900/20";
+  const titleColor = teamColor === "blue" ? "text-indigo-400" : "text-red-400";
+  const bgColor = teamColor === "blue" ? "bg-slate-800/30" : "bg-red-900/20";
   const borderColor =
-    teamColor === "blue" ? "border-blue-700/50" : "border-red-700/50";
+    teamColor === "blue" ? "border-slate-600/50" : "border-red-700/50";
 
   return (
     <div className="space-y-4">
@@ -110,12 +112,12 @@ function TeamStats({
         <h2 className={`text-2xl font-bold ${titleColor} flex items-center`}>
           <div
             className={`w-4 h-4 ${
-              teamColor === "blue" ? "bg-blue-500" : "bg-red-500"
+              teamColor === "blue" ? "bg-indigo-500" : "bg-red-500"
             } rounded-full mr-3`}
           />
           {teamName}
         </h2>
-        <Badge variant="secondary" className="bg-purple-900/50 text-purple-300">
+        <Badge variant="secondary" className="bg-slate-800/80 text-slate-300">
           {players.length}명
         </Badge>
       </div>
@@ -191,9 +193,9 @@ export default function RivalryDetailPage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center">
-          <div className="w-16 h-16 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <div className="w-16 h-16 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
           <p className="text-white text-lg">라이벌리를 불러오는 중...</p>
         </div>
       </div>
@@ -202,7 +204,7 @@ export default function RivalryDetailPage() {
 
   if (error || !rivalry) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center max-w-md">
           <Card className="bg-red-900/20 border-red-700/50">
             <CardHeader>
@@ -237,15 +239,15 @@ export default function RivalryDetailPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
       {/* Header */}
-      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-purple-800/30 bg-slate-900/50 backdrop-blur-sm">
+      <header className="px-4 lg:px-6 h-16 flex items-center border-b border-slate-700/50 bg-slate-900/80 backdrop-blur-sm">
         <Link href="/" className="flex items-center justify-center">
           <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-to-br from-purple-400 to-pink-400 rounded-lg flex items-center justify-center">
+            <div className="w-8 h-8 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
               <Sword className="w-5 h-5 text-white" />
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">
+            <span className="text-xl font-bold bg-gradient-to-r from-slate-400 to-indigo-400 bg-clip-text text-transparent">
               Rivals
             </span>
           </div>
@@ -254,7 +256,7 @@ export default function RivalryDetailPage() {
           <Button
             onClick={() => router.back()}
             variant="ghost"
-            className="text-gray-300 hover:text-purple-400"
+            className="text-gray-300 hover:text-indigo-400"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             뒤로가기
@@ -268,7 +270,7 @@ export default function RivalryDetailPage() {
           <div className="flex items-center justify-center mb-4">
             <Badge
               variant="secondary"
-              className="bg-purple-900/50 text-purple-300 border-purple-700"
+              className="bg-slate-800/80 text-slate-300 border-slate-600"
             >
               <Calendar className="w-3 h-3 mr-1" />
               {createdDate}
@@ -302,7 +304,7 @@ export default function RivalryDetailPage() {
           <Button
             size="lg"
             variant="outline"
-            className="border-purple-700 text-purple-300 hover:bg-purple-900/50"
+            className="border-slate-600 text-slate-300 hover:bg-slate-800/50"
             onClick={() => router.push("/")}
           >
             <Users className="w-5 h-5 mr-2" />새 라이벌리 만들기

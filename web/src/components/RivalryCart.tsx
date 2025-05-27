@@ -34,7 +34,7 @@ function PlayerCard({
           variant="ghost"
           onClick={onMove}
           disabled={!canMove}
-          className="text-blue-400 hover:text-blue-300 hover:bg-blue-900/20 disabled:opacity-50"
+          className="text-indigo-400 hover:text-indigo-300 hover:bg-indigo-900/20 disabled:opacity-50"
         >
           <ArrowLeftRight className="w-4 h-4" />
         </Button>
@@ -71,7 +71,7 @@ function TeamSection({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-white">{title}</h3>
-        <Badge variant="secondary" className="bg-purple-900/50 text-purple-300">
+        <Badge variant="secondary" className="bg-slate-800/80 text-slate-300">
           {players.length}명
         </Badge>
       </div>
@@ -165,8 +165,8 @@ export default function RivalryCart() {
               {/* LEFT TEAM */}
               <Card className="bg-slate-800/50 border-slate-700">
                 <CardHeader className="pb-4">
-                  <CardTitle className="text-blue-400 flex items-center">
-                    <div className="w-3 h-3 bg-blue-500 rounded-full mr-2" />
+                  <CardTitle className="text-indigo-400 flex items-center">
+                    <div className="w-3 h-3 bg-indigo-500 rounded-full mr-2" />
                     LEFT TEAM
                   </CardTitle>
                 </CardHeader>
@@ -211,7 +211,7 @@ export default function RivalryCart() {
               <Button
                 onClick={handleCreateRivalry}
                 disabled={!canCreateRivalry()}
-                className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-gradient-to-r from-slate-600 to-indigo-600 hover:from-slate-700 hover:to-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 라이벌리 생성
               </Button>

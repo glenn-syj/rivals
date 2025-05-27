@@ -65,7 +65,7 @@ export default function TeamSelectionModal({
           </div>
           <div className="text-center">
             <p className="text-gray-300">
-              <span className="font-semibold text-purple-400">
+              <span className="font-semibold text-indigo-400">
                 {player.gameName}#{player.tagLine}
               </span>
               을 어느 팀에 추가하시겠습니까?
@@ -77,13 +77,13 @@ export default function TeamSelectionModal({
           <div className="grid grid-cols-2 gap-4">
             <Button
               onClick={() => handleAddToTeam("left")}
-              className="h-20 flex flex-col items-center justify-center bg-blue-600 hover:bg-blue-700 text-white"
+              className="h-20 flex flex-col items-center justify-center bg-indigo-600 hover:bg-indigo-700 text-white"
             >
-              <div className="w-3 h-3 bg-blue-400 rounded-full mb-2" />
+              <div className="w-3 h-3 bg-indigo-400 rounded-full mb-2" />
               <span className="font-semibold">LEFT TEAM</span>
               <Badge
                 variant="secondary"
-                className="mt-1 bg-blue-900/50 text-blue-300"
+                className="mt-1 bg-indigo-900/50 text-indigo-300"
               >
                 {rivalry.leftTeam.length}명
               </Badge>
