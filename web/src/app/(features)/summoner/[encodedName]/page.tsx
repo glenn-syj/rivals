@@ -2,14 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button } from "@/app/components/ui/button";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/app/components/ui/card";
-import { Badge } from "@/app/components/ui/badge";
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
   Crown,
@@ -22,11 +22,11 @@ import {
   Search,
 } from "lucide-react";
 import Link from "next/link";
-import { useRivalry } from "@/app/contexts/RivalryContext";
-import { mockTftData } from "@/app/lib/mockData";
-import { Input } from "@/app/components/ui/input";
-import TeamSelectionModal from "@/app/components/TeamSelectionModal";
-import type { Player } from "@/app/contexts/RivalryContext";
+import { useRivalry } from "@/contexts/RivalryContext";
+import { mockTftData } from "@/lib/mockData";
+import { Input } from "@/components/ui/input";
+import TeamSelectionModal from "@/components/TeamSelectionModal";
+import type { Player } from "@/contexts/RivalryContext";
 
 interface TftStatus {
   tier: string;
