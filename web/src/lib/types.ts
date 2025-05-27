@@ -17,7 +17,7 @@ export interface RiotAccountResponse {
   puuid: string;
   gameName: string;
   tagLine: string;
-  id: number;
+  id: string;
 }
 
 // TFT related types
@@ -43,24 +43,25 @@ export interface TftStatusDto {
 // Rivalry related types
 export interface RivalryCreationDto {
   participants: {
-    id: number;
+    // 정밀도 손실 문제로 인해 id를 string으로 설정
+    id: string;
     side: "LEFT" | "RIGHT";
   }[];
 }
 
 export interface RivalryResultDto {
-  rivalryId: number;
+  rivalryId: string;
 }
 
 export interface RivalryDetailDto {
-  rivalryId: number;
+  rivalryId: string;
   leftStats: ParticipantStatDto[];
   rightStats: ParticipantStatDto[];
   createdAt: string;
 }
 
 export interface ParticipantStatDto {
-  id: number;
+  id: string;
   fullName: string;
   statistics: TftStatusDto;
 }

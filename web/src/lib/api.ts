@@ -58,14 +58,14 @@ export const createRivalry = async (creationDto: RivalryCreationDto) => {
     `/api/v1/rivalries`,
     JSON.stringify(creationDto)
   );
-  return response.data.data;
+  return response.data as ApiResponse<RivalryResultDto>;
 };
 
-export const getRivalryById = async (rivalryId: number) => {
+export const getRivalryById = async (rivalryId: string) => {
   const response = await api.get<ApiResponse<RivalryDetailDto>>(
     `/api/v1/rivalries/${rivalryId}`
   );
-  return response.data.data;
+  return response.data as ApiResponse<RivalryDetailDto>;
 };
 
 // Error handling middleware
