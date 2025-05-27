@@ -8,18 +8,20 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
+  CardContent,
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   ArrowLeft,
-  Crown,
-  Trophy,
-  Target,
-  Star,
   Users,
   Sword,
   ShoppingCart,
   Search,
+  Crown,
+  Star,
+  BarChart3,
+  Clock,
+  Trophy,
 } from "lucide-react";
 import Link from "next/link";
 import { useRivalry } from "@/contexts/RivalryContext";
@@ -35,6 +37,16 @@ interface TftStatus {
   wins: number;
   losses: number;
   hotStreak: boolean;
+  averageRank: number;
+  top4Rate: number;
+  lpChange: number;
+  winStreak?: number;
+  loseStreak?: number;
+  serverRank: number;
+  totalGames: number;
+  recentGames: number[];
+  seasonHigh: { tier: string; lp: number };
+  preferredComps: string[];
 }
 
 interface RiotAccount {
@@ -123,7 +135,6 @@ export default function SummonerPage() {
           <Card className="bg-red-900/20 border-red-700/50">
             <CardHeader>
               <CardTitle className="text-red-400 flex items-center justify-center">
-                <Target className="w-5 h-5 mr-2" />
                 오류 발생
               </CardTitle>
               <CardDescription className="text-red-300">
@@ -208,93 +219,203 @@ export default function SummonerPage() {
         </nav>
       </header>
 
-      <main className="container mx-auto px-4 py-12">
+      <main className="container mx-auto px-4 py-8">
         {account && tftStatus && (
           <>
             {/* 소환사 정보 헤더 */}
-            <div className="text-center mb-12">
+            <div className="text-center mb-8">
               <h1 className="text-4xl font-bold text-white mb-2">
                 {account.gameName}#{account.tagLine}
               </h1>
               <p className="text-gray-400">TFT 전적 정보</p>
             </div>
 
-            {/* 메인 스탯 카드들 */}
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 mb-12">
-              <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Crown className="w-8 h-8 text-white" />
-                  </div>
-                  <CardTitle className="text-indigo-400">현재 랭크</CardTitle>
-                  <div className="text-3xl font-bold text-white">
-                    {tftStatus.tier} {tftStatus.rank}
-                  </div>
-                  <CardDescription className="text-gray-400 text-lg">
-                    {tftStatus.leaguePoints} LP
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+            {/* 메인 레이아웃: 왼쪽 고정, 오른쪽 스크롤 */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-[calc(100vh-300px)]">
+              {/* 왼쪽: TftStatus + Match 통계 (고정) */}
+              <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-8 lg:h-fit">
+                {/* 1. TftStatus 카드 */}
+                <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-xl text-white flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <Crown className="w-5 h-5 text-white" />
+                          </div>
+                          {tftStatus.tier} {tftStatus.rank}
+                        </CardTitle>
+                        <CardDescription className="text-gray-300 mt-1">
+                          {tftStatus.leaguePoints} LP • 서버 #
+                          {tftStatus.serverRank || "N/A"}
+                        </CardDescription>
+                      </div>
+                      {tftStatus.hotStreak && (
+                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+                          <Star className="w-3 h-3 mr-1" />
+                          연승
+                        </Badge>
+                      )}
+                    </div>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    {/* 기본 전적 */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                        <div className="text-xl font-bold text-green-400">
+                          {tftStatus.wins}
+                        </div>
+                        <div className="text-xs text-gray-400">승리</div>
+                      </div>
+                      <div className="text-center p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                        <div className="text-xl font-bold text-red-400">
+                          {tftStatus.losses}
+                        </div>
+                        <div className="text-xs text-gray-400">패배</div>
+                      </div>
+                    </div>
 
-              <Card className="bg-slate-800/50 border-green-700/50 hover:border-green-600 transition-colors">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-green-500 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Trophy className="w-8 h-8 text-white" />
-                  </div>
-                  <CardTitle className="text-green-400">승리</CardTitle>
-                  <div className="text-3xl font-bold text-white">
-                    {tftStatus.wins}
-                  </div>
-                  <CardDescription className="text-gray-400">
-                    1등 횟수
-                  </CardDescription>
-                </CardHeader>
-              </Card>
+                    {/* 추가 정보 */}
+                    <div className="space-y-2 pt-2 border-t border-slate-700">
+                      <div className="flex justify-between">
+                        <span className="text-sm text-gray-400">승률</span>
+                        <span className="text-sm text-white">
+                          {tftStatus.wins + tftStatus.losses > 0
+                            ? (
+                                (tftStatus.wins /
+                                  (tftStatus.wins + tftStatus.losses)) *
+                                100
+                              ).toFixed(1)
+                            : "0.0"}
+                          %
+                        </span>
+                      </div>
+                      {tftStatus.averageRank && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-400">
+                            평균 순위
+                          </span>
+                          <span className="text-sm text-white">
+                            {tftStatus.averageRank.toFixed(1)}등
+                          </span>
+                        </div>
+                      )}
+                      {tftStatus.top4Rate && (
+                        <div className="flex justify-between">
+                          <span className="text-sm text-gray-400">
+                            탑4 비율
+                          </span>
+                          <span className="text-sm text-white">
+                            {tftStatus.top4Rate.toFixed(1)}%
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <Card className="bg-slate-800/50 border-red-700/50 hover:border-red-600 transition-colors">
-                <CardHeader className="text-center">
-                  <div className="w-16 h-16 bg-gradient-to-br from-red-500 to-rose-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Target className="w-8 h-8 text-white" />
-                  </div>
-                  <CardTitle className="text-red-400">패배</CardTitle>
-                  <div className="text-3xl font-bold text-white">
-                    {tftStatus.losses}
-                  </div>
-                  <CardDescription className="text-gray-400">
-                    2-8등 횟수
-                  </CardDescription>
-                </CardHeader>
-              </Card>
-            </div>
+                {/* 2. Match 통계 카드 */}
+                <Card className="bg-slate-800/50 border-slate-700/50 hover:border-purple-500/50 transition-colors">
+                  <CardHeader>
+                    <CardTitle className="text-lg text-white flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                        <BarChart3 className="w-5 h-5 text-white" />
+                      </div>
+                      Match 통계
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      게임별 상세 분석
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-center py-8 text-gray-400">
+                      <BarChart3 className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                      <p className="text-sm">Match 데이터 수집 중...</p>
+                      <p className="text-xs mt-1">
+                        게임 기록 분석이 여기에 표시됩니다
+                      </p>
+                    </div>
+                  </CardContent>
+                </Card>
 
-            {/* 추가 정보 */}
-            <div className="text-center mb-12">
-              {tftStatus.hotStreak && (
-                <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white text-lg px-4 py-2">
-                  <Star className="w-4 h-4 mr-2" />
-                  연승 중!
-                </Badge>
-              )}
-            </div>
+                {/* 액션 버튼 */}
+                <div className="space-y-3">
+                  <Button
+                    onClick={handleAddToRivalry}
+                    className="w-full bg-gradient-to-r from-slate-600 to-indigo-600 hover:from-slate-700 hover:to-indigo-700"
+                  >
+                    <Users className="w-4 h-4 mr-2" />
+                    라이벌리에 추가하기
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50"
+                    onClick={() => window.location.reload()}
+                  >
+                    전적 새로고침
+                  </Button>
+                </div>
+              </div>
 
-            {/* 액션 버튼들 */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button
-                size="lg"
-                onClick={handleAddToRivalry}
-                className="bg-gradient-to-r from-slate-600 to-indigo-600 hover:from-slate-700 hover:to-indigo-700"
-              >
-                <Users className="w-5 h-5 mr-2" />
-                라이벌리에 추가하기
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                className="border-slate-600 text-slate-300 hover:bg-slate-800/50"
-                onClick={() => window.location.reload()}
-              >
-                전적 새로고침
-              </Button>
+              {/* 오른쪽: TFT 랭크 전적 (스크롤 가능) */}
+              <div className="lg:col-span-2 space-y-6">
+                <Card className="bg-slate-800/50 border-slate-700/50">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-white flex items-center gap-3">
+                      <div className="w-10 h-10 bg-gradient-to-br from-amber-500 to-orange-500 rounded-lg flex items-center justify-center">
+                        <Trophy className="w-5 h-5 text-white" />
+                      </div>
+                      TFT 랭크 전적
+                    </CardTitle>
+                    <CardDescription className="text-gray-400">
+                      최근 게임 기록 및 상세 분석
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    {/* 내부 전적 구분 */}
+                    <div className="space-y-4">
+                      {/* 최근 게임 섹션 */}
+                      <div className="p-4 rounded-lg bg-slate-700/30 border border-slate-600/50">
+                        <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                          <Clock className="w-4 h-4" />
+                          최근 게임
+                        </h3>
+                        <div className="text-center py-8 text-gray-400">
+                          <p>게임 기록이 여기에 표시됩니다</p>
+                          <p className="text-sm mt-2">
+                            (API 연동 후 구현 예정)
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* 상세 분석 섹션 */}
+                      <div className="p-4 rounded-lg bg-slate-700/30 border border-slate-600/50">
+                        <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
+                          <BarChart3 className="w-4 h-4" />
+                          상세 분석
+                        </h3>
+                        <div className="text-center py-8 text-gray-400">
+                          <p>덱 조합, 아이템 빌드 분석이 여기에 표시됩니다</p>
+                          <p className="text-sm mt-2">
+                            (API 연동 후 구현 예정)
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* 추가 섹션들... */}
+                      <div className="p-4 rounded-lg bg-slate-700/30 border border-slate-600/50">
+                        <h3 className="text-lg font-semibold text-white mb-3">
+                          기타 통계
+                        </h3>
+                        <div className="text-center py-8 text-gray-400">
+                          <p>추가 통계 정보가 여기에 표시됩니다</p>
+                          <p className="text-sm mt-2">(확장 예정)</p>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
           </>
         )}
