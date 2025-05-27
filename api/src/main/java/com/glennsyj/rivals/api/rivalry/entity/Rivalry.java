@@ -24,7 +24,8 @@ public class Rivalry {
 
     // 소환사의 협곡 랭크로 확장 시 고려
     // 각 Side 마다 특정 인원이 동시에 포함된 비교가 필요할 수 있으므로 Set 대신 List
-    @OneToMany(mappedBy = "rivalry")
+    @OneToMany(mappedBy = "rivalry",
+            cascade = CascadeType.PERSIST)
     private List<RivalryParticipant> participants = new ArrayList<>();
 
     public Rivalry() {
