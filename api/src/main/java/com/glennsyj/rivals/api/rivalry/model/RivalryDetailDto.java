@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 public record RivalryDetailDto(
-        Long rivalryId,
+        String rivalryId,
         List<ParticipantStatDto> leftStats,
         List<ParticipantStatDto> rightStats,
         LocalDateTime createdAt
