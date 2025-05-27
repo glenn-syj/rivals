@@ -4,6 +4,7 @@ import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -21,7 +22,10 @@ public interface TftLeagueEntryRepository extends JpaRepository<TftLeagueEntry, 
      */
     Optional<TftLeagueEntry> findByAccount_Id(Long account_id);
 
+    List<TftLeagueEntry> findAllByAccount_IdIn(List<Long> accountIds);
+
     Optional<TftLeagueEntry> findFirstByPuuidOrderByUpdatedAtDesc(String puuid);
 
     Optional<TftLeagueEntry> findFirstByAccount_IdOrderByUpdatedAtDesc(Long accountId);
+
 }
