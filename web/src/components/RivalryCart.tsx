@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeftRight, Users, Trash2 } from "lucide-react";
 import { useRivalry, type Player } from "@/contexts/RivalryContext";
-import { createMockRivalry } from "@/lib/mockData";
+import { createRivalry } from "@/lib/api";
+import type { RivalryCreationDto } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
 interface PlayerCardProps {
@@ -60,7 +61,12 @@ function TeamSection({
   team: "left" | "right";
   players: Player[];
 }) {
-  const { removePlayerFromTeam, movePlayerToOtherTeam, rivalry } = useRivalry();
+  const {
+    removePlayerFromTeam,
+    movePlayerToOtherTeam,
+    rivalry,
+    canCreateRivalry,
+  } = useRivalry();
 
   const canMovePlayer = (puuid: string): boolean => {
     const otherTeam = team === "left" ? rivalry.rightTeam : rivalry.leftTeam;
@@ -110,22 +116,34 @@ export default function RivalryCart() {
   } = useRivalry();
   const router = useRouter();
 
-  const handleCreateRivalry = () => {
-    if (!canCreateRivalry()) {
-      alert("각 팀에 최소 1명씩은 있어야 합니다");
-      return;
-    }
+  const handleCreateRivalry = async () => {
+    if (!canCreateRivalry()) return;
 
-    // 목업 라이벌리 생성
-    const rivalryId = createMockRivalry(rivalry.leftTeam, rivalry.rightTeam);
+    const rivalryCreationDto: RivalryCreationDto = {
+      participants: [
+        ...rivalry.leftTeam.map((p) => ({
+          id: String(p.id),
+          side: "LEFT" as const,
+        })),
+        ...rivalry.rightTeam.map((p) => ({
+          id: String(p.id),
+          side: "RIGHT" as const,
+        })),
+      ],
+    };
 
-    console.log("라이벌리 생성:", rivalry);
-    alert(`라이벌리가 생성되었습니다! ID: ${rivalryId}`);
-
-    // 라이벌리 상세 페이지로 이동
-    clearRivalry();
-    closeRivalryCart();
-    router.push(`/rivalry/${rivalryId}`);
+    createRivalry(rivalryCreationDto)
+      .then((result) => {
+        console.log("Rivalry created:", result);
+        const rivalryId = String(result.rivalryId);
+        clearRivalry();
+        closeRivalryCart();
+        router.push(`/rivalry/${rivalryId}`);
+      })
+      .catch((err) => {
+        console.error("Error creating rivalry:", err);
+        alert("라이벌리 생성에 실패했습니다");
+      });
   };
 
   if (!rivalry.isOpen) return null;

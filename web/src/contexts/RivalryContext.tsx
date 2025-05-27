@@ -6,6 +6,7 @@ export interface Player {
   puuid: string;
   gameName: string;
   tagLine: string;
+  id?: string;
 }
 
 export interface RivalryState {
