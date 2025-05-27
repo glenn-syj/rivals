@@ -27,7 +27,7 @@ spring:
 
   docker:
     compose:
-      file: compose.yaml
+      file: compose-dev.yaml
       enabled: true
 
 riot:
