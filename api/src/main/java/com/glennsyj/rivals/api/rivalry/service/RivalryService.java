@@ -39,16 +39,14 @@ public class RivalryService {
     @Transactional
     public Long createRivalryFrom(RivalryCreationDto creationDto) {
 
-        System.out.println("creationDto: " + creationDto);
         List<Long> accountIds = creationDto.participants().stream()
                 .map((dto) -> Long.valueOf(dto.id()))
                 .toList();
-        System.out.println(accountIds);
         List<RiotAccount> accounts = riotAccountRepository.findAllById(accountIds);
 
         // 중간 검증: account를 하나도 찾을 수 없을 시
         if (accounts.isEmpty()) {
-            throw new IllegalArgumentException("Some of accounts not found");
+            throw new IllegalStateException("Some of accounts not found");
         }
 
         HashMap<Long, RiotAccount> accountMap = new HashMap<>();
@@ -67,7 +65,6 @@ public class RivalryService {
         }
 
         rivalry = rivalryRepository.save(rivalry);
-        System.out.println("rv size: " + rivalry.getParticipants().size());
         // 최종 검증: dto 내 participant 수와 영속화된 participant 수 비교
         if (accountIds.size() != rivalry.getParticipants().size()) {
             throw new IllegalArgumentException("Some of accounts not found");
