@@ -60,23 +60,21 @@ export default function SummonerPage() {
       try {
         setIsLoading(true);
         const decodedName = decodeURIComponent(encodedName);
-        
-        console.log('Before cleaning:', decodedName);
-        
-        const [gameName, tagLine] = decodedName.split('#');
-        // &nbsp;(0xA0)와 일반 공백을 포함한 모든 종류의 공백 제거
-        const trimmedGameName = gameName.replace(/^[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+|[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+$/g, '');
-        const trimmedTagLine = tagLine.replace(/^[\s\u00A0]+|[\s\u00A0]+$/g, '');
 
-        console.log('After cleaning:', {
-          gameName: trimmedGameName,
-          tagLine: trimmedTagLine,
-          charCodes: Array.from(trimmedGameName).map(c => `0x${c.charCodeAt(0).toString(16)}`)
-        });
+        const [gameName, tagLine] = decodedName.split("#");
+        // &nbsp;(0xA0)와 일반 공백을 포함한 모든 종류의 공백 제거
+        const trimmedGameName = gameName.replace(
+          /^[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+|[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+$/g,
+          ""
+        );
+        const trimmedTagLine = tagLine.replace(
+          /^[\s\u00A0]+|[\s\u00A0]+$/g,
+          ""
+        );
 
         const [accountResponse, tftResponse] = await Promise.all([
           findRiotAccount(trimmedGameName, trimmedTagLine),
-          getTftStatus(trimmedGameName, trimmedTagLine)
+          getTftStatus(trimmedGameName, trimmedTagLine),
         ]);
 
         // 컴포넌트가 마운트된 상태일 때만 상태 업데이트
@@ -104,20 +102,20 @@ export default function SummonerPage() {
     };
   }, [encodedName]); // account와 tftStatus는 의존성 배열에서 제외
 
-  useEffect(() => {
-    console.log("Account state changed:", account);
-  }, [account]);
+  // useEffect(() => {
+  //   console.log("Account state changed:", account);
+  // }, [account]);
 
-  useEffect(() => {
-    console.log("TftStatus state changed:", tftStatus);
-  }, [tftStatus]);
+  // useEffect(() => {
+  //   console.log("TftStatus state changed:", tftStatus);
+  // }, [tftStatus]);
 
-  console.log("Render States:", {
-    isLoading,
-    error,
-    hasAccount: !!account,
-    hasTftStatus: !!tftStatus,
-  });
+  // console.log("Render States:", {
+  //   isLoading,
+  //   error,
+  //   hasAccount: !!account,
+  //   hasTftStatus: !!tftStatus,
+  // });
 
   const handleAddToRivalry = () => {
     if (account) {
