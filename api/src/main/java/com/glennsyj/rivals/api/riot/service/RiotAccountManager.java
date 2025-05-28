@@ -24,12 +24,8 @@ public class RiotAccountManager {
     public RiotAccount findOrRegisterAccount(String gameName, String tagLine) {
 
         Optional<RiotAccount> existingAccount = riotAccountRepository.findByGameNameAndTagLine(gameName.trim(), tagLine.trim());
-        if (existingAccount.isPresent()) {
-            System.out.println("exisiting: " + existingAccount.get());
-            return existingAccount.get();
-        }
+        return existingAccount.orElseGet(() -> registerNewAccount(gameName, tagLine));
 
-        return registerNewAccount(gameName, tagLine);
     }
 
     @Transactional
