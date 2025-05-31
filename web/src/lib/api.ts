@@ -8,7 +8,7 @@ import type {
   RivalryDetailDto,
 } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8080";
+const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8080";
 
 const api = axios.create({
   baseURL: API_URL,
@@ -17,55 +17,66 @@ const api = axios.create({
   },
 });
 
-// Riot Account APIs
 export const findRiotAccount = async (
   gameName: string,
   tagLine: string
-): Promise<ApiResponse<RiotAccountResponse>> => {
+): Promise<RiotAccountResponse> => {
   const trimmedGameName = gameName.trim();
   const trimmedTagLine = tagLine.trim();
 
-  const response = await api.get<ApiResponse<RiotAccountResponse>>(
+  const response = await api.get<RiotAccountResponse>(
     `/api/v1/riot/accounts/${trimmedGameName}/${trimmedTagLine}`
   );
-  return response.data as ApiResponse<RiotAccountResponse>;
+  return response.data;
 };
 
-export const renewRiotAccount = async (gameName: string, tagLine: string) => {
-  const response = await api.get<ApiResponse<RiotAccountResponse>>(
-    `/api/v1/riot/accounts/renew/${gameName}/${tagLine}`
+export const renewRiotAccount = async (
+  gameName: string,
+  tagLine: string
+): Promise<RiotAccountResponse> => {
+  const trimmedGameName = gameName.trim();
+  const trimmedTagLine = tagLine.trim();
+
+  const response = await api.get<RiotAccountResponse>(
+    `/api/v1/riot/accounts/renew/${trimmedGameName}/${trimmedTagLine}`
   );
-  return response.data.data;
+  return response.data;
 };
 
 // TFT League Entry APIs
 export const getTftStatus = async (
   gameName: string,
   tagLine: string
-): Promise<ApiResponse<TftStatusDto>> => {
+): Promise<TftStatusDto> => {
   const trimmedGameName = gameName.trim();
   const trimmedTagLine = tagLine.trim();
 
-  const response = await api.get<ApiResponse<TftStatusDto>>(
+  const response = await api.get<TftStatusDto>(
     `/api/v1/tft/entries/${trimmedGameName}/${trimmedTagLine}`
   );
-  return response.data as ApiResponse<TftStatusDto>;
+
+  return response.data;
 };
 
 // Rivalry APIs
-export const createRivalry = async (creationDto: RivalryCreationDto) => {
-  const response = await api.post<ApiResponse<RivalryResultDto>>(
+export const createRivalry = async (
+  creationDto: RivalryCreationDto
+): Promise<RivalryResultDto> => {
+  const response = await api.post<RivalryResultDto>(
     `/api/v1/rivalries`,
     JSON.stringify(creationDto)
   );
-  return response.data as ApiResponse<RivalryResultDto>;
+
+  return response.data;
 };
 
-export const getRivalryById = async (rivalryId: string) => {
-  const response = await api.get<ApiResponse<RivalryDetailDto>>(
+export const getRivalryById = async (
+  rivalryId: string
+): Promise<RivalryDetailDto> => {
+  const response = await api.get<RivalryDetailDto>(
     `/api/v1/rivalries/${rivalryId}`
   );
-  return response.data as ApiResponse<RivalryDetailDto>;
+  return response.data;
 };
 
 // Error handling middleware
