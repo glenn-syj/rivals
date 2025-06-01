@@ -1,6 +1,5 @@
 import axios from "axios";
 import type {
-  ApiResponse,
   RiotAccountResponse,
   TftStatusDto,
   RivalryCreationDto,
