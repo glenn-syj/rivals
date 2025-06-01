@@ -1,0 +1,11 @@
+# Gradle 캐시 및 빌드 결과 제외
+.gradle/
+out/
+
+# IDE 관련
+.idea/
+*.iml
+
+# OS/기타
+.DS_Store
+*.log
