@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeftRight, Users, Trash2 } from "lucide-react";
 import { useRivalry, type Player } from "@/contexts/RivalryContext";
 import { createRivalry } from "@/lib/api";
-import type { RivalryCreationDto, RivalryResultDto } from "@/lib/types";
+import type { RivalryCreationDto } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
 interface PlayerCardProps {
