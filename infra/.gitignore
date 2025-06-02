@@ -1,0 +1,3 @@
+/nginx/*
+compose-prod.yaml
+/env/.env.*
