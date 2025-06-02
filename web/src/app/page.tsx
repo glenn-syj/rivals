@@ -25,7 +25,6 @@ import {
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRivalry } from "@/contexts/RivalryContext";
-import { mockTftData } from "@/lib/mockData";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
 import { RiotAccountResponse } from "@/lib/types";
 import { findRiotAccount } from "@/lib/api";
