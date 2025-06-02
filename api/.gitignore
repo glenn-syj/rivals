@@ -38,3 +38,6 @@ out/
 
 ### Enviroments ###
 .env.*
+
+src/main/resources/application-prod.yml
+compose-prod.yaml
