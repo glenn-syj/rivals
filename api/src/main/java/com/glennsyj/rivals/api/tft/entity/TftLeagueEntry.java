@@ -133,7 +133,9 @@ public class TftLeagueEntry {
     }
 
     public enum QueueType {
-        RANKED_TFT
+        RANKED_TFT,
+        RANKED_TFT_TURBO,
+        RANKED_TFT_DOUBLE_UP
     }
 
     public enum Tier {
