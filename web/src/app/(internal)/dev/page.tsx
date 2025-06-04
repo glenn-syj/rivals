@@ -107,34 +107,44 @@ export default function DevPage() {
 
       {results && (
         <div className="space-y-4">
-          {results.map((result, index) => (
-            <div key={index} className="p-4 bg-gray-100 rounded">
-              <div className="flex justify-between items-center mb-2">
-                <h3 className="font-bold">
-                  {formatQueueType(result.queueType)}
-                </h3>
-                <span className="text-sm text-gray-500">
-                  {result.queueType}
-                </span>
-              </div>
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  티어: {result.tier} {result.rank}
+          {["RANKED_TFT", "RANKED_TFT_TURBO", "RANKED_TFT_DOUBLE_UP"].map(
+            (queueType) => {
+              const result = results.find((r) => r.queueType === queueType) || {
+                tier: "",
+                rank: "",
+                leaguePoints: 0,
+                wins: 0,
+                losses: 0,
+              };
+
+              return (
+                <div key={queueType} className="p-4 bg-gray-100 rounded">
+                  <div className="flex justify-between items-center mb-2">
+                    <h3 className="font-bold">{formatQueueType(queueType)}</h3>
+                    <span className="text-sm text-gray-500">{queueType}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                      티어: {result.tier} {result.rank}
+                    </div>
+                    <div>LP: {result.leaguePoints}</div>
+                    <div>승리: {result.wins}</div>
+                    <div>패배: {result.losses}</div>
+                    <div>
+                      승률:{" "}
+                      {result.wins + result.losses > 0
+                        ? (
+                            (result.wins / (result.wins + result.losses)) *
+                            100
+                          ).toFixed(1)
+                        : 0}
+                      %
+                    </div>
+                  </div>
                 </div>
-                <div>LP: {result.leaguePoints}</div>
-                <div>승리: {result.wins}</div>
-                <div>패배: {result.losses}</div>
-                <div>
-                  승률:{" "}
-                  {(
-                    (result.wins / (result.wins + result.losses)) *
-                    100
-                  ).toFixed(1)}
-                  %
-                </div>
-              </div>
-            </div>
-          ))}
+              );
+            }
+          )}
         </div>
       )}
     </div>
