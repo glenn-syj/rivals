@@ -54,7 +54,7 @@ class RiotAccountManagerTest {
         when(repository.findByGameNameAndTagLine("Hide", "KR1"))
                 .thenReturn(Optional.empty());
         when(apiClient.getAccountInfo("Hide", "KR1"))
-                .thenReturn(new RiotAccountResponse("Hide", "KR1", "puuid123"));
+                .thenReturn(new RiotAccountResponse("Hide", "KR1", "puuid123", "0"));
 
         // when
         manager.findOrRegisterAccount("Hide", "KR1");

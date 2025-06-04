@@ -42,7 +42,7 @@ class RiotAccountManagerIntegrationTest {
     void 정상_계정_등록_및_조회_흐름() {
         // given
         when(riotAccountClient.getAccountInfo("Hide", "KR1"))
-                .thenReturn(new RiotAccountResponse("puuid123","Hide", "KR1" ));
+                .thenReturn(new RiotAccountResponse("puuid123","Hide", "KR1", "0"));
 
         // when
         accountManager.findOrRegisterAccount("Hide", "KR1");
@@ -66,7 +66,7 @@ class RiotAccountManagerIntegrationTest {
     void DB_제약조건_검증() {
         // given
         when(riotAccountClient.getAccountInfo(any(), any()))
-                .thenReturn(new RiotAccountResponse("puuid123", "Hide", "KR1"));
+                .thenReturn(new RiotAccountResponse("puuid123", "Hide", "KR1", "0"));
 
         // when
         accountManager.findOrRegisterAccount("Hide", "KR1");

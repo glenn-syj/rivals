@@ -41,8 +41,8 @@ class RivalryControllerTest {
     void createRivalry_Success() throws Exception {
         // given
         List<RivalryParticipantDto> participants = List.of(
-                new RivalryParticipantDto(1L, RivalSide.LEFT),
-                new RivalryParticipantDto(2L, RivalSide.RIGHT)
+                new RivalryParticipantDto("1L", RivalSide.LEFT),
+                new RivalryParticipantDto("2L", RivalSide.RIGHT)
         );
         RivalryCreationDto creationDto = new RivalryCreationDto(participants);
         Long rivalryId = 1L;
@@ -85,7 +85,7 @@ class RivalryControllerTest {
         // given
         Long rivalryId = 1L;
         RivalryDetailDto detailDto = new RivalryDetailDto(
-                rivalryId,
+                rivalryId.toString(),
                 List.of(),
                 List.of(),
                 LocalDateTime.now()
