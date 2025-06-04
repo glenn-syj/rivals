@@ -13,6 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping(path="/api/v1/tft/entries")
@@ -58,6 +60,24 @@ public class TftLeagueEntryController {
             TftStatusDto dto = TftStatusDto.from(entry);
 
             return ResponseEntity.ok(dto);
+        } catch (IllegalStateException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping(path="/internal/{gameName}/{tagLine}")
+    public ResponseEntity<?> internalGetTftStatusFrom(@PathVariable String gameName, @PathVariable String tagLine) {
+        try {
+            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+            List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
+
+            List<TftStatusDto> dtos = new ArrayList<>(entries.size());
+            for (TftLeagueEntry entry : entries) {
+                TftStatusDto dto = TftStatusDto.from(entry);
+                dtos.add(dto);
+            }
+
+            return ResponseEntity.ok(dtos);
         } catch (IllegalStateException e) {
             return ResponseEntity.notFound().build();
         }
