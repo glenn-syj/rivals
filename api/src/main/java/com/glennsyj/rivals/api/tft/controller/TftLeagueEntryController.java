@@ -5,6 +5,8 @@ import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.model.TftStatusDto;
 import com.glennsyj.rivals.api.tft.service.TftLeagueEntryManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,6 +24,8 @@ public class TftLeagueEntryController {
 
     private TftLeagueEntryManager tftLeagueEntryManager;
     private RiotAccountManager riotAccountManager;
+
+    private final Logger log = LoggerFactory.getLogger(TftLeagueEntryController.class);
 
     public TftLeagueEntryController(TftLeagueEntryManager tftLeagueEntryManager, RiotAccountManager riotAccountManager) {
         this.tftLeagueEntryManager = tftLeagueEntryManager;
