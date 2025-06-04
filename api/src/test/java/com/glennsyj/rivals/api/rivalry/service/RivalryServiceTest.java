@@ -57,8 +57,8 @@ class RivalryServiceTest {
         EntityTestUtil.setId(account2, 2L);
 
         List<RivalryParticipantDto> participants = List.of(
-                new RivalryParticipantDto(account1.getId(), RivalSide.LEFT),
-                new RivalryParticipantDto(account2.getId(), RivalSide.RIGHT)
+                new RivalryParticipantDto(String.valueOf(account1.getId()), RivalSide.LEFT),
+                new RivalryParticipantDto(String.valueOf(account2.getId()), RivalSide.RIGHT)
         );
         RivalryCreationDto creationDto = new RivalryCreationDto(participants);
 
@@ -83,8 +83,8 @@ class RivalryServiceTest {
     void createRivalryWithNonExistentAccount() {
         // given
         List<RivalryParticipantDto> participants = List.of(
-                new RivalryParticipantDto(999L, RivalSide.LEFT),
-                new RivalryParticipantDto(888L, RivalSide.RIGHT)
+                new RivalryParticipantDto(String.valueOf(999L), RivalSide.LEFT),
+                new RivalryParticipantDto(String.valueOf(888L), RivalSide.RIGHT)
         );
         RivalryCreationDto creationDto = new RivalryCreationDto(participants);
 
@@ -106,9 +106,9 @@ class RivalryServiceTest {
         EntityTestUtil.setId(account, 1L);
 
         List<RivalryParticipantDto> participants = List.of(
-                new RivalryParticipantDto(account.getId(), RivalSide.LEFT),
-                new RivalryParticipantDto(account.getId(), RivalSide.LEFT),
-                new RivalryParticipantDto(account.getId(), RivalSide.RIGHT)
+                new RivalryParticipantDto(String.valueOf(account.getId()), RivalSide.LEFT),
+                new RivalryParticipantDto(String.valueOf(account.getId()), RivalSide.LEFT),
+                new RivalryParticipantDto(String.valueOf(account.getId()), RivalSide.RIGHT)
         );
         RivalryCreationDto creationDto = new RivalryCreationDto(participants);
 
