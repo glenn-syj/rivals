@@ -44,3 +44,6 @@ bin/
 node_modules
 
 /api/application-prod.yaml
+
+### Cursor ###
+*.mdc
