@@ -78,11 +78,17 @@ public class TftLeagueEntryManager {
 
         List<TftLeagueEntryResponse> responses = tftApiClient.getLeagueEntries(account.getPuuid());
 
-        if (responses.isEmpty()) {
-            throw new IllegalStateException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다");
-        }
+        // TODO: responses 가 비어있는 경우에도 처리 필요
+//        if (responses.isEmpty()) {
+//            throw new IllegalStateException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다");
+//        }
 
         List<TftLeagueEntry> newEntries = new ArrayList<>(responses.size());
+
+        if (responses.isEmpty()) {
+            return newEntries;
+        }
+
 
         for (TftLeagueEntryResponse response : responses) {
             newEntries.add(new TftLeagueEntry(account, response));
