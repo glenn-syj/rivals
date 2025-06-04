@@ -9,6 +9,7 @@ import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -30,16 +31,21 @@ public class TftLeagueEntryManager {
     /**
      * 처음 검색해서 Entry를 생성하거나 이미 DB에 존재하는 Entry를 검색하는 경우에 이용
      *
+     *
      * @param accountId
      * @return
+     *
+     * @deprecated QueueType 구분 없이 임의의 최근 엔트리 1개만 반환하므로, 명확한 비즈니스 처리가 어려움.
+     * findOrCreateLeagueEntries(accountId) 사용을 권장합니다
      */
+    @Deprecated
     @Transactional
     public TftLeagueEntry findOrCreateEntry(Long accountId) {
         return tftLeagueEntryRepository.findFirstByAccount_IdOrderByUpdatedAtDesc(accountId)
             .orElseGet(() -> {
                 RiotAccount account = riotAccountRepository.findById(accountId)
                     .orElseThrow(() -> new IllegalStateException("계정을 찾을 수 없습니다: " + accountId));
-                    
+
                 List<TftLeagueEntryResponse> responses = tftApiClient.getLeagueEntries(account.getPuuid());
 
                 if (responses.isEmpty()) {
@@ -50,6 +56,39 @@ public class TftLeagueEntryManager {
                 TftLeagueEntry newEntry = new TftLeagueEntry(account, response);
                 return tftLeagueEntryRepository.save(newEntry);
             });
+    }
+
+    /**
+     * 처음 검색해서 QueueType 별 Entry 다수를 생성하거나 이미 DB에 존재하는 Entry 다수를 검색하는 경우에 이용
+     *
+     * @param accountId
+     * @return
+     *
+     */
+    @Transactional
+    public List<TftLeagueEntry> findOrCreateLeagueEntries(Long accountId) {
+        List<TftLeagueEntry> entries = tftLeagueEntryRepository.findLatestEntriesForEachQueueTypeByAccountId(accountId);
+
+        if (!entries.isEmpty()) {
+            return entries;
+        }
+
+        RiotAccount account = riotAccountRepository.findById(accountId)
+                .orElseThrow(() -> new IllegalStateException("계정을 찾을 수 없습니다: " + accountId));
+
+        List<TftLeagueEntryResponse> responses = tftApiClient.getLeagueEntries(account.getPuuid());
+
+        if (responses.isEmpty()) {
+            throw new IllegalStateException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다");
+        }
+
+        List<TftLeagueEntry> newEntries = new ArrayList<>(responses.size());
+
+        for (TftLeagueEntryResponse response : responses) {
+            newEntries.add(new TftLeagueEntry(account, response));
+        }
+
+        return tftLeagueEntryRepository.saveAll(newEntries);
     }
 
     /**
