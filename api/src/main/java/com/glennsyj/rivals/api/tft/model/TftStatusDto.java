@@ -6,6 +6,7 @@ import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
  * TFT 상태 정보 DTO
  */
 public record TftStatusDto(
+        String queueType,         // 큐 타입 (Enum QueueType)
         String tier,              // 티어 (e.g. DIAMOND)
         String rank,              // 랭크 (e.g. I, II, III, IV)
         int leaguePoints,         // LP
@@ -17,6 +18,7 @@ public record TftStatusDto(
     // TftLeagueEntry로부터 TftStatusDto를 생성
     public static TftStatusDto from(TftLeagueEntry entry) {
         return new TftStatusDto(
+                entry.getQueueType().name(),
                 entry.getTier().name(),
                 entry.getRank().name(),
                 entry.getLeaguePoints(),
