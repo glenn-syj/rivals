@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.tft.repository;
 
+import com.glennsyj.rivals.api.config.EntityTestUtil;
 import com.glennsyj.rivals.api.config.TestContainerConfig;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
@@ -13,10 +14,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.testcontainers.containers.MariaDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -64,6 +68,32 @@ class TftLeagueEntryRepositoryTest {
         assertThat(found).isEmpty();
     }
 
+    @Test
+    @DisplayName("QueueType 별로 엔트리를 저장하면 가장 최근 엔트리를 불러온다.")
+    void findLatestEntriesForEachQueueTypeByAccountId_ShouldReturnLatestEntryForEachQueueType() {
+        // given
+        RiotAccount account = new RiotAccount("gameName", "tagLine", "puuid");
+        account = riotAccountRepository.save(account);
+        LocalDateTime now = LocalDateTime.now();
+        // 각 QueueType별로 2개의 엔트리 저장 (이전 데이터 + 최신 데이터)
+        TftLeagueEntry oldRankedEntry = createEntry(account, TftLeagueEntry.QueueType.RANKED_TFT, now.minusDays(1));
+        TftLeagueEntry latestRankedEntry = createEntry(account, TftLeagueEntry.QueueType.RANKED_TFT, now);
+
+        TftLeagueEntry oldTurboEntry = createEntry(account, TftLeagueEntry.QueueType.RANKED_TFT_TURBO, now.minusDays(1));
+        TftLeagueEntry latestTurboEntry = createEntry(account, TftLeagueEntry.QueueType.RANKED_TFT_TURBO, now);
+
+        tftLeagueEntryRepository.saveAll(List.of(oldRankedEntry, latestRankedEntry, oldTurboEntry, latestTurboEntry));
+
+        // when
+        List<TftLeagueEntry> result = tftLeagueEntryRepository.findLatestEntriesForEachQueueTypeByAccountId(account.getId());
+
+        // then
+        assertThat(result.size()).isEqualTo(2);
+        assertThat(result.containsAll(List.of(latestRankedEntry, latestTurboEntry)))
+                .isEqualTo(true);
+    }
+
+
     private TftLeagueEntryResponse createMockResponse() {
         return new TftLeagueEntryResponse(
                 "test-puuid",
@@ -81,5 +111,31 @@ class TftLeagueEntryRepositoryTest {
                 false,
                 null
         );
+    }
+
+    private TftLeagueEntry createEntry(RiotAccount account, TftLeagueEntry.QueueType queueType, LocalDateTime updatedAt) {
+        TftLeagueEntryResponse response = new TftLeagueEntryResponse(
+                account.getPuuid(),
+                "test-leagueId",
+                "test-summonerId",
+                queueType.name(),
+                TftLeagueEntry.Tier.GOLD.name(),
+                TftLeagueEntry.Rank.I.name(),
+                100,  // leaguePoints
+                10,   // wins
+                5,    // losses
+                false, // hotStreak
+                false, // veteran
+                false, // freshBlood
+                false, // inactive
+                null   // miniSeries
+        );
+
+        TftLeagueEntry entry = new TftLeagueEntry(account, response);
+
+        // updatedAt 설정을 위한 리플렉션 사용
+        ReflectionTestUtils.setField(entry, "updatedAt", updatedAt);
+
+        return entry;
     }
 }
