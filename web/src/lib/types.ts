@@ -22,6 +22,7 @@ export interface RiotAccountResponse {
 
 // TFT related types
 export interface TftStatusDto {
+  queueType: string; // 큐 타입 (RANKED_TFT, RANKED_TFT_TURBO, RANKED_TFT_DOUBLE_UP)
   tier: string;
   rank: string;
   leaguePoints: number;

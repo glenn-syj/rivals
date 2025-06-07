@@ -57,6 +57,20 @@ export const getTftStatus = async (
   return response.data;
 };
 
+export const getInternalTftStatus = async (
+  gameName: string,
+  tagLine: string
+): Promise<TftStatusDto[]> => {
+  const trimmedGameName = gameName.trim();
+  const trimmedTagLine = tagLine.trim();
+
+  const response = await api.get<TftStatusDto[]>(
+    `/api/v1/tft/entries/internal/${trimmedGameName}/${trimmedTagLine}`
+  );
+
+  return response.data;
+};
+
 // Rivalry APIs
 export const createRivalry = async (
   creationDto: RivalryCreationDto
