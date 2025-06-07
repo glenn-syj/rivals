@@ -45,11 +45,15 @@ public class TftLeagueEntryController {
 
         try {
             RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-            TftLeagueEntry entry = tftLeagueEntryManager.findOrCreateEntry(account.getId());
+            List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
 
-            TftStatusDto dto = TftStatusDto.from(entry);
+            List<TftStatusDto> dtos = new ArrayList<>(entries.size());
+            for (TftLeagueEntry entry : entries) {
+                TftStatusDto dto = TftStatusDto.from(entry);
+                dtos.add(dto);
+            }
 
-            return ResponseEntity.ok(dto);
+            return ResponseEntity.ok(dtos);
         } catch (IllegalStateException e) {
             return ResponseEntity.notFound().build();
         }
@@ -57,20 +61,6 @@ public class TftLeagueEntryController {
 
     @GetMapping(path="/{gameName}/{tagLine}")
     public ResponseEntity<?> getTftStatusFrom(@PathVariable String gameName, @PathVariable String tagLine) {
-        try {
-            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-            TftLeagueEntry entry = tftLeagueEntryManager.findOrCreateEntry(account.getId());
-
-            TftStatusDto dto = TftStatusDto.from(entry);
-
-            return ResponseEntity.ok(dto);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.notFound().build();
-        }
-    }
-
-    @GetMapping(path="/internal/{gameName}/{tagLine}")
-    public ResponseEntity<?> internalGetTftStatusFrom(@PathVariable String gameName, @PathVariable String tagLine) {
         try {
             RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
             List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
@@ -86,5 +76,4 @@ public class TftLeagueEntryController {
             return ResponseEntity.notFound().build();
         }
     }
-
 }
