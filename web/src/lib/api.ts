@@ -46,26 +46,12 @@ export const renewRiotAccount = async (
 export const getTftStatus = async (
   gameName: string,
   tagLine: string
-): Promise<TftStatusDto> => {
-  const trimmedGameName = gameName.trim();
-  const trimmedTagLine = tagLine.trim();
-
-  const response = await api.get<TftStatusDto>(
-    `/api/v1/tft/entries/${trimmedGameName}/${trimmedTagLine}`
-  );
-
-  return response.data;
-};
-
-export const getInternalTftStatus = async (
-  gameName: string,
-  tagLine: string
 ): Promise<TftStatusDto[]> => {
   const trimmedGameName = gameName.trim();
   const trimmedTagLine = tagLine.trim();
 
   const response = await api.get<TftStatusDto[]>(
-    `/api/v1/tft/entries/internal/${trimmedGameName}/${trimmedTagLine}`
+    `/api/v1/tft/entries/${trimmedGameName}/${trimmedTagLine}`
   );
 
   return response.data;

@@ -28,7 +28,7 @@ import { useRivalry } from "@/contexts/RivalryContext";
 import { Input } from "@/components/ui/input";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
 import type { Player } from "@/contexts/RivalryContext";
-import { findRiotAccount, getInternalTftStatus } from "@/lib/api";
+import { findRiotAccount, getTftStatus } from "@/lib/api";
 import type { RiotAccountResponse, TftStatusDto } from "@/lib/types";
 
 // 큐 타입 상수 정의
@@ -104,7 +104,7 @@ export default function SummonerPage() {
 
         const [accountResponse, tftStatusesResponse] = await Promise.all([
           findRiotAccount(trimmedGameName, trimmedTagLine),
-          getInternalTftStatus(trimmedGameName, trimmedTagLine),
+          getTftStatus(trimmedGameName, trimmedTagLine),
         ]);
 
         if (isMounted) {
