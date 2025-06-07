@@ -28,8 +28,21 @@ import { useRivalry } from "@/contexts/RivalryContext";
 import { Input } from "@/components/ui/input";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
 import type { Player } from "@/contexts/RivalryContext";
-import { findRiotAccount, getTftStatus } from "@/lib/api";
+import { findRiotAccount, getInternalTftStatus } from "@/lib/api";
 import type { RiotAccountResponse, TftStatusDto } from "@/lib/types";
+
+const formatQueueType = (queueType: string): string => {
+  switch (queueType) {
+    case "RANKED_TFT":
+      return "일반 랭크";
+    case "RANKED_TFT_TURBO":
+      return "하이퍼롤";
+    case "RANKED_TFT_DOUBLE_UP":
+      return "더블업";
+    default:
+      return queueType;
+  }
+};
 
 export default function SummonerPage() {
   const params = useParams();
@@ -41,16 +54,25 @@ export default function SummonerPage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const [account, setAccount] = useState<RiotAccountResponse | null>(null);
-  const [tftStatus, setTftStatus] = useState<TftStatusDto | null>(null);
+  const [tftStatuses, setTftStatuses] = useState<TftStatusDto[]>([]);
+  const [selectedQueueType, setSelectedQueueType] =
+    useState<string>("RANKED_TFT");
   const [searchInput, setSearchInput] = useState("");
   const [searchError, setSearchError] = useState("");
   const [selectedPlayer, setSelectedPlayer] =
     useState<RiotAccountResponse | null>(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
 
+  // 현재 선택된 큐 타입의 상태 정보를 가져오는 함수
+  const getCurrentTftStatus = () => {
+    return (
+      tftStatuses.find((status) => status.queueType === selectedQueueType) ||
+      null
+    );
+  };
+
   useEffect(() => {
-    // 이미 데이터를 가져왔다면 중복 요청하지 않음
-    if (account && tftStatus) return;
+    if (account && tftStatuses.length > 0) return;
 
     let isMounted = true;
 
@@ -72,15 +94,22 @@ export default function SummonerPage() {
           ""
         );
 
-        const [accountResponse, tftResponse] = await Promise.all([
+        const [accountResponse, tftStatusesResponse] = await Promise.all([
           findRiotAccount(trimmedGameName, trimmedTagLine),
-          getTftStatus(trimmedGameName, trimmedTagLine),
+          getInternalTftStatus(trimmedGameName, trimmedTagLine),
         ]);
 
-        // 컴포넌트가 마운트된 상태일 때만 상태 업데이트
         if (isMounted) {
           setAccount(accountResponse);
-          setTftStatus(tftResponse);
+          setTftStatuses(tftStatusesResponse);
+          // 일반 랭크 데이터가 있으면 그것을 기본 선택, 없으면 첫 번째 데이터 선택
+          const defaultQueueType =
+            tftStatusesResponse.find(
+              (status) => status.queueType === "RANKED_TFT"
+            )?.queueType ||
+            tftStatusesResponse[0]?.queueType ||
+            "RANKED_TFT";
+          setSelectedQueueType(defaultQueueType);
         }
       } catch (err) {
         if (isMounted) {
@@ -100,21 +129,21 @@ export default function SummonerPage() {
     return () => {
       isMounted = false;
     };
-  }, [encodedName]); // account와 tftStatus는 의존성 배열에서 제외
+  }, [encodedName]);
 
   // useEffect(() => {
   //   console.log("Account state changed:", account);
   // }, [account]);
 
   // useEffect(() => {
-  //   console.log("TftStatus state changed:", tftStatus);
-  // }, [tftStatus]);
+  //   console.log("TftStatus state changed:", tftStatuses);
+  // }, [tftStatuses]);
 
   // console.log("Render States:", {
   //   isLoading,
   //   error,
   //   hasAccount: !!account,
-  //   hasTftStatus: !!tftStatus,
+  //   hasTftStatuses: !!tftStatuses.length,
   // });
 
   const handleAddToRivalry = () => {
@@ -152,6 +181,92 @@ export default function SummonerPage() {
     };
 
     addPlayerToTeam(player, side);
+  };
+
+  // 큐 타입 선택 UI 추가
+  const renderQueueTypeSelector = () => (
+    <div className="flex gap-2 mb-4">
+      {tftStatuses.map((status) => (
+        <Button
+          key={status.queueType}
+          onClick={() => setSelectedQueueType(status.queueType)}
+          variant={
+            selectedQueueType === status.queueType ? "default" : "outline"
+          }
+          className={
+            selectedQueueType === status.queueType
+              ? "bg-indigo-600 hover:bg-indigo-700"
+              : "border-slate-600 text-slate-300 hover:bg-slate-800/50"
+          }
+        >
+          {formatQueueType(status.queueType)}
+        </Button>
+      ))}
+    </div>
+  );
+
+  // TftStatus 카드 내용 수정
+  const renderTftStatusCard = () => {
+    const currentStatus = getCurrentTftStatus();
+    if (!currentStatus) return null;
+
+    return (
+      <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-white flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
+                {currentStatus.tier} {currentStatus.rank}
+              </CardTitle>
+              <CardDescription className="text-gray-300 mt-1">
+                {currentStatus.leaguePoints} LP
+              </CardDescription>
+            </div>
+            {currentStatus.hotStreak && (
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+                <Star className="w-3 h-3 mr-1" />
+                연승
+              </Badge>
+            )}
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+              <div className="text-xl font-bold text-green-400">
+                {currentStatus.wins}
+              </div>
+              <div className="text-xs text-gray-400">승리</div>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div className="text-xl font-bold text-red-400">
+                {currentStatus.losses}
+              </div>
+              <div className="text-xs text-gray-400">패배</div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-slate-700">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-400">승률</span>
+              <span className="text-sm text-white">
+                {currentStatus.wins + currentStatus.losses > 0
+                  ? (
+                      (currentStatus.wins /
+                        (currentStatus.wins + currentStatus.losses)) *
+                      100
+                    ).toFixed(1)
+                  : "0.0"}
+                %
+              </span>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
   };
 
   if (isLoading) {
@@ -192,7 +307,7 @@ export default function SummonerPage() {
     );
   }
 
-  if (!account || !tftStatus) {
+  if (!account || tftStatuses.length === 0) {
     return <div>데이터를 불러오는 중...</div>;
   }
 
@@ -261,7 +376,7 @@ export default function SummonerPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {account && tftStatus && (
+        {account && tftStatuses.length > 0 && (
           <>
             {/* 소환사 정보 헤더 */}
             <div className="text-center mb-8">
@@ -271,89 +386,14 @@ export default function SummonerPage() {
               <p className="text-gray-400">TFT 전적 정보</p>
             </div>
 
+            {/* 큐 타입 선택기 */}
+            {renderQueueTypeSelector()}
+
             {/* 메인 레이아웃: 왼쪽 고정, 오른쪽 스크롤 */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-[calc(100vh-300px)]">
               {/* 왼쪽: TftStatus + Match 통계 (고정) */}
               <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-8 lg:h-fit">
-                {/* 1. TftStatus 카드 */}
-                <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <CardTitle className="text-xl text-white flex items-center gap-3">
-                          <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                            <Crown className="w-5 h-5 text-white" />
-                          </div>
-                          {tftStatus.tier} {tftStatus.rank}
-                        </CardTitle>
-                        <CardDescription className="text-gray-300 mt-1">
-                          {tftStatus.leaguePoints} LP • 서버 #
-                          {tftStatus.serverRank || "KR"}
-                        </CardDescription>
-                      </div>
-                      {tftStatus.hotStreak && (
-                        <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
-                          <Star className="w-3 h-3 mr-1" />
-                          연승
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    {/* 기본 전적 */}
-                    <div className="grid grid-cols-2 gap-3">
-                      <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-                        <div className="text-xl font-bold text-green-400">
-                          {tftStatus.wins}
-                        </div>
-                        <div className="text-xs text-gray-400">승리</div>
-                      </div>
-                      <div className="text-center p-3 rounded-lg bg-red-500/10 border border-red-500/30">
-                        <div className="text-xl font-bold text-red-400">
-                          {tftStatus.losses}
-                        </div>
-                        <div className="text-xs text-gray-400">패배</div>
-                      </div>
-                    </div>
-
-                    {/* 추가 정보 */}
-                    <div className="space-y-2 pt-2 border-t border-slate-700">
-                      <div className="flex justify-between">
-                        <span className="text-sm text-gray-400">승률</span>
-                        <span className="text-sm text-white">
-                          {tftStatus.wins + tftStatus.losses > 0
-                            ? (
-                                (tftStatus.wins /
-                                  (tftStatus.wins + tftStatus.losses)) *
-                                100
-                              ).toFixed(1)
-                            : "0.0"}
-                          %
-                        </span>
-                      </div>
-                      {tftStatus.averageRank && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-400">
-                            평균 순위
-                          </span>
-                          <span className="text-sm text-white">
-                            {tftStatus.averageRank.toFixed(1)}등
-                          </span>
-                        </div>
-                      )}
-                      {tftStatus.top4Rate && (
-                        <div className="flex justify-between">
-                          <span className="text-sm text-gray-400">
-                            탑4 비율
-                          </span>
-                          <span className="text-sm text-white">
-                            {tftStatus.top4Rate.toFixed(1)}%
-                          </span>
-                        </div>
-                      )}
-                    </div>
-                  </CardContent>
-                </Card>
+                {renderTftStatusCard()}
 
                 {/* 2. Match 통계 카드 */}
                 <Card className="bg-slate-800/50 border-slate-700/50 hover:border-purple-500/50 transition-colors">
