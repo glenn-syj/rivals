@@ -1,6 +1,6 @@
 package com.glennsyj.rivals.api.tft.repository;
 
-import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
+import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

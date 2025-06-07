@@ -1,6 +1,6 @@
 package com.glennsyj.rivals.api.tft.model.entry;
 
-import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
+import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 
 /**
  * TFT 상태 정보 DTO
