@@ -166,6 +166,9 @@ export default function RivalryCart() {
               <p className="text-gray-400 mt-1">
                 총 {getTotalPlayerCount()}/10명 • 각 팀 최소 1명 필요
               </p>
+              <p className="text-amber-400/80 text-sm mt-1">
+                * 현재 일반 랭크 모드만 지원됩니다
+              </p>
             </div>
             <Button
               variant="ghost"
