@@ -31,6 +31,13 @@ import type { Player } from "@/contexts/RivalryContext";
 import { findRiotAccount, getInternalTftStatus } from "@/lib/api";
 import type { RiotAccountResponse, TftStatusDto } from "@/lib/types";
 
+// 큐 타입 상수 정의
+const QUEUE_TYPES = [
+  "RANKED_TFT",
+  "RANKED_TFT_DOUBLE_UP",
+  "RANKED_TFT_TURBO",
+] as const;
+
 const formatQueueType = (queueType: string): string => {
   switch (queueType) {
     case "RANKED_TFT":
@@ -65,10 +72,7 @@ export default function SummonerPage() {
 
   // 현재 선택된 큐 타입의 상태 정보를 가져오는 함수
   const getCurrentTftStatus = () => {
-    return (
-      tftStatuses.find((status) => status.queueType === selectedQueueType) ||
-      null
-    );
+    return tftStatuses.find((status) => status.queueType === selectedQueueType);
   };
 
   useEffect(() => {
@@ -183,32 +187,29 @@ export default function SummonerPage() {
     addPlayerToTeam(player, side);
   };
 
-  // 큐 타입 선택 UI 추가
+  // 큐 타입 선택 UI 수정
   const renderQueueTypeSelector = () => (
     <div className="flex gap-2 mb-4">
-      {tftStatuses.map((status) => (
+      {QUEUE_TYPES.map((queueType) => (
         <Button
-          key={status.queueType}
-          onClick={() => setSelectedQueueType(status.queueType)}
-          variant={
-            selectedQueueType === status.queueType ? "default" : "outline"
-          }
+          key={queueType}
+          onClick={() => setSelectedQueueType(queueType)}
+          variant={selectedQueueType === queueType ? "default" : "outline"}
           className={
-            selectedQueueType === status.queueType
+            selectedQueueType === queueType
               ? "bg-indigo-600 hover:bg-indigo-700"
               : "border-slate-600 text-slate-300 hover:bg-slate-800/50"
           }
         >
-          {formatQueueType(status.queueType)}
+          {formatQueueType(queueType)}
         </Button>
       ))}
     </div>
   );
 
-  // TftStatus 카드 내용 수정
+  // TftStatus 카드 내용 수정 - 빈 상태 처리 추가
   const renderTftStatusCard = () => {
     const currentStatus = getCurrentTftStatus();
-    if (!currentStatus) return null;
 
     return (
       <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
@@ -219,51 +220,75 @@ export default function SummonerPage() {
                 <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
                   <Crown className="w-5 h-5 text-white" />
                 </div>
-                {currentStatus.tier} {currentStatus.rank}
+                {formatQueueType(selectedQueueType)}
               </CardTitle>
-              <CardDescription className="text-gray-300 mt-1">
-                {currentStatus.leaguePoints} LP
-              </CardDescription>
             </div>
-            {currentStatus.hotStreak && (
-              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
-                <Star className="w-3 h-3 mr-1" />
-                연승
-              </Badge>
-            )}
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-3">
-            <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/30">
-              <div className="text-xl font-bold text-green-400">
-                {currentStatus.wins}
+        <CardContent>
+          {currentStatus ? (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <span className="text-xl font-bold text-white">
+                  {currentStatus.tier} {currentStatus.rank}
+                </span>
+                <span className="text-gray-300">
+                  {currentStatus.leaguePoints} LP
+                </span>
+                {currentStatus.hotStreak && (
+                  <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+                    <Star className="w-3 h-3 mr-1" />
+                    연승
+                  </Badge>
+                )}
               </div>
-              <div className="text-xs text-gray-400">승리</div>
-            </div>
-            <div className="text-center p-3 rounded-lg bg-red-500/10 border border-red-500/30">
-              <div className="text-xl font-bold text-red-400">
-                {currentStatus.losses}
-              </div>
-              <div className="text-xs text-gray-400">패배</div>
-            </div>
-          </div>
 
-          <div className="space-y-2 pt-2 border-t border-slate-700">
-            <div className="flex justify-between">
-              <span className="text-sm text-gray-400">승률</span>
-              <span className="text-sm text-white">
-                {currentStatus.wins + currentStatus.losses > 0
-                  ? (
-                      (currentStatus.wins /
-                        (currentStatus.wins + currentStatus.losses)) *
-                      100
-                    ).toFixed(1)
-                  : "0.0"}
-                %
-              </span>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+                  <div className="text-xl font-bold text-green-400">
+                    {currentStatus.wins}
+                  </div>
+                  <div className="text-xs text-gray-400">승리</div>
+                </div>
+                <div className="text-center p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+                  <div className="text-xl font-bold text-red-400">
+                    {currentStatus.losses}
+                  </div>
+                  <div className="text-xs text-gray-400">패배</div>
+                </div>
+              </div>
+
+              <div className="space-y-2 pt-2 border-t border-slate-700">
+                <div className="flex justify-between">
+                  <span className="text-sm text-gray-400">승률</span>
+                  <span className="text-sm text-white">
+                    {currentStatus.wins + currentStatus.losses > 0
+                      ? (
+                          (currentStatus.wins /
+                            (currentStatus.wins + currentStatus.losses)) *
+                          100
+                        ).toFixed(1)
+                      : "0.0"}
+                    %
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="py-8 text-center">
+              <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Trophy className="w-8 h-8 text-slate-500" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-300 mb-2">
+                아직 기록이 없어요!
+              </h3>
+              <p className="text-sm text-slate-400">
+                {formatQueueType(selectedQueueType)}에서 게임을 플레이하고
+                <br />
+                새로운 기록을 만들어보세요.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
     );
@@ -376,7 +401,7 @@ export default function SummonerPage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {account && tftStatuses.length > 0 && (
+        {account && (
           <>
             {/* 소환사 정보 헤더 */}
             <div className="text-center mb-8">
@@ -389,9 +414,8 @@ export default function SummonerPage() {
             {/* 큐 타입 선택기 */}
             {renderQueueTypeSelector()}
 
-            {/* 메인 레이아웃: 왼쪽 고정, 오른쪽 스크롤 */}
+            {/* 메인 레이아웃 */}
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-[calc(100vh-300px)]">
-              {/* 왼쪽: TftStatus + Match 통계 (고정) */}
               <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-8 lg:h-fit">
                 {renderTftStatusCard()}
 
