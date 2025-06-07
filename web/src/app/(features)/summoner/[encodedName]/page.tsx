@@ -105,15 +105,21 @@ export default function SummonerPage() {
 
         if (isMounted) {
           setAccount(accountResponse);
-          setTftStatuses(tftStatusesResponse);
-          // 일반 랭크 데이터가 있으면 그것을 기본 선택, 없으면 첫 번째 데이터 선택
-          const defaultQueueType =
-            tftStatusesResponse.find(
-              (status) => status.queueType === "RANKED_TFT"
-            )?.queueType ||
-            tftStatusesResponse[0]?.queueType ||
-            "RANKED_TFT";
-          setSelectedQueueType(defaultQueueType);
+          // 빈 응답을 받았을 때 모든 큐 타입에 대해 빈 상태 생성
+          const statuses =
+            tftStatusesResponse.length > 0
+              ? tftStatusesResponse
+              : QUEUE_TYPES.map((queueType) => ({
+                  queueType,
+                  tier: "",
+                  rank: "",
+                  leaguePoints: 0,
+                  wins: 0,
+                  losses: 0,
+                  hotStreak: false,
+                }));
+          setTftStatuses(statuses);
+          setSelectedQueueType("RANKED_TFT");
         }
       } catch (err) {
         if (isMounted) {
@@ -197,8 +203,8 @@ export default function SummonerPage() {
           variant={selectedQueueType === queueType ? "default" : "outline"}
           className={
             selectedQueueType === queueType
-              ? "bg-indigo-600 hover:bg-indigo-700"
-              : "border-slate-600 text-slate-300 hover:bg-slate-800/50"
+              ? "bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-white shadow-lg shadow-indigo-500/20"
+              : "border-slate-600 text-slate-300 hover:bg-slate-800/50 hover:border-indigo-500/50 transition-all"
           }
         >
           {formatQueueType(queueType)}
@@ -283,7 +289,7 @@ export default function SummonerPage() {
                 아직 기록이 없어요!
               </h3>
               <p className="text-sm text-slate-400">
-                {formatQueueType(selectedQueueType)}에서 게임을 플레이하고
+                TFT에서 {formatQueueType(selectedQueueType)} 모드를 플레이하고
                 <br />
                 새로운 기록을 만들어보세요.
               </p>
