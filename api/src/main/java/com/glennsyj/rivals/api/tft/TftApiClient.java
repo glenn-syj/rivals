@@ -2,6 +2,7 @@ package com.glennsyj.rivals.api.tft;
 
 import com.glennsyj.rivals.api.common.client.BaseRiotClient;
 import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
+import com.glennsyj.rivals.api.tft.model.match.TftMatchResponse;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -26,4 +27,18 @@ public class TftApiClient extends BaseRiotClient {
                 "소환사의 TFT 리그 정보를 찾을 수 없습니다: " + puuid
         );
     }
+
+    // 현재는 따로 Query Param 이용 없이 기본 값으로 이용 (20개)
+    public List<String> getMatchIdsFromPuuid(String puuid) {
+        return handleApiCall(
+                riotAsiaWebClient.get()
+                        .uri("/tft/match/v1/matches/by-puuid/{puuid}/ids", puuid)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .bodyToMono(new ParameterizedTypeReference<List<String>>() {
+                        }),
+                "소환사의 TFT 매치 ID 정보를 찾을 수 없습니다: " + puuid
+        );
+    }
+
 }
