@@ -204,7 +204,7 @@ export default function SummonerPage() {
           className={
             selectedQueueType === queueType
               ? "bg-gradient-to-r from-indigo-600 to-indigo-800 hover:from-indigo-700 hover:to-indigo-900 text-white shadow-lg shadow-indigo-500/20"
-              : "border-slate-600 text-slate-300 hover:bg-slate-800/50 hover:border-indigo-500/50 transition-all"
+              : "border-slate-600 bg-slate-800 text-white hover:bg-indigo-200 hover:border-indigo-500/50 transition-all"
           }
         >
           {formatQueueType(queueType)}
