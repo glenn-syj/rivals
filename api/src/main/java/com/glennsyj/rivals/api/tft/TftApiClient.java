@@ -41,4 +41,15 @@ public class TftApiClient extends BaseRiotClient {
         );
     }
 
+    public TftMatchResponse getMatchResponseFromMatchId(String matchId) {
+        return handleApiCall(
+                riotAsiaWebClient.get()
+                        .uri("/tft/match/v1/matches/{matchId}", matchId)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .retrieve()
+                        .bodyToMono(TftMatchResponse.class),
+                "매치 ID 기반 매치 정보를 찾을 수 없습니다: " + matchId
+        );
+    }
+
 }
