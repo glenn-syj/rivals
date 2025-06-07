@@ -1,7 +1,7 @@
 package com.glennsyj.rivals.api.tft;
 
 import com.glennsyj.rivals.api.common.client.BaseRiotClient;
-import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
+import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;

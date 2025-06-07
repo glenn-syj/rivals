@@ -3,22 +3,15 @@ package com.glennsyj.rivals.api.tft.controller;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
-import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
 import com.glennsyj.rivals.api.tft.service.TftLeagueEntryManager;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.mock;

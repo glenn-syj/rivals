@@ -1,6 +1,6 @@
 package com.glennsyj.rivals.api.tft.entity;
 
-import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
+import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import jakarta.persistence.Embeddable;
 import jakarta.persistence.Column;
 

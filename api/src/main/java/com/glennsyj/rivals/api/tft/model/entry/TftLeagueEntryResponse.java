@@ -1,4 +1,4 @@
-package com.glennsyj.rivals.api.tft.model;
+package com.glennsyj.rivals.api.tft.model.entry;
 
 /**
  * TFT 랭크 정보 응답 DTO

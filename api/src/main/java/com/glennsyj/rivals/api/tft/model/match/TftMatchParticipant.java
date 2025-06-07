@@ -1,4 +1,4 @@
-package com.glennsyj.rivals.api.tft.model;
+package com.glennsyj.rivals.api.tft.model.match;
 
 import java.util.List;
 import java.util.Map;

@@ -3,7 +3,7 @@ package com.glennsyj.rivals.api.tft.controller;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
-import com.glennsyj.rivals.api.tft.model.TftStatusDto;
+import com.glennsyj.rivals.api.tft.model.entry.TftStatusDto;
 import com.glennsyj.rivals.api.tft.service.TftLeagueEntryManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +13,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 

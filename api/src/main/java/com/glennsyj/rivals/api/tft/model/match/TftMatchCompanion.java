@@ -1,4 +1,4 @@
-package com.glennsyj.rivals.api.tft.model;
+package com.glennsyj.rivals.api.tft.model.match;
 
 public record TftMatchCompanion(
         String content_ID,

@@ -4,7 +4,7 @@ import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import com.glennsyj.rivals.api.tft.TftApiClient;
 import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
-import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
+import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
