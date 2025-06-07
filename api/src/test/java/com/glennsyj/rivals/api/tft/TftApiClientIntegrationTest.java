@@ -46,4 +46,24 @@ public class TftApiClientIntegrationTest {
         assertNotNull(response);
         assertThat(Objects.equals(entry0.puuid(), puuid));
     }
+
+    @Test
+    void TFT_매치_ID_실제API호출_테스트() throws InterruptedException {
+        // given
+        String gameName = "승상싱";
+        String tagLine = "KR1";
+
+        String puuid = riotAccountClient.getAccountInfo(gameName, tagLine).puuid();
+
+        // when
+        List<String> matchIds = tftApiClient.getMatchIdsFromPuuid(puuid);
+
+        log.debug("puuid returned: {}", puuid);
+        log.debug("Match IDs: {}", matchIds);
+
+        // then
+        assertNotNull(matchIds);
+        // 매치 ID 리스트가 비어있지 않음을 확인 -> 그러나 실제 로직에서는 비어있는 경우도 고려
+        assertThat(matchIds).isNotEmpty();
+    }
 }
