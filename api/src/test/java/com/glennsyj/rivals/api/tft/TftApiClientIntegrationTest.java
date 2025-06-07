@@ -1,7 +1,7 @@
 package com.glennsyj.rivals.api.tft;
 
 import com.glennsyj.rivals.api.riot.RiotAccountClient;
-import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
+import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

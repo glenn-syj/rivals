@@ -1,11 +1,10 @@
 package com.glennsyj.rivals.api.tft.entity;
 
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
-import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
+import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UpdateTimestamp;
-import com.glennsyj.rivals.api.tft.entity.MiniSeries;
 
 import java.time.LocalDateTime;
 

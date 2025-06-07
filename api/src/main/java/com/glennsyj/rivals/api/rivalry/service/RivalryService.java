@@ -11,11 +11,9 @@ import com.glennsyj.rivals.api.rivalry.model.RivalryDetailDto;
 import com.glennsyj.rivals.api.rivalry.model.RivalryParticipantDto;
 import com.glennsyj.rivals.api.rivalry.repository.RivalryRepository;
 import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
-import com.glennsyj.rivals.api.tft.model.TftLeagueEntryResponse;
-import com.glennsyj.rivals.api.tft.model.TftStatusDto;
+import com.glennsyj.rivals.api.tft.model.entry.TftStatusDto;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
 import jakarta.persistence.EntityNotFoundException;
-import org.hibernate.annotations.NotFound;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
