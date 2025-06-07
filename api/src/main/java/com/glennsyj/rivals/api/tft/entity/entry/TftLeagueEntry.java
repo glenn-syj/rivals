@@ -1,4 +1,4 @@
-package com.glennsyj.rivals.api.tft.entity;
+package com.glennsyj.rivals.api.tft.entity.entry;
 
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;

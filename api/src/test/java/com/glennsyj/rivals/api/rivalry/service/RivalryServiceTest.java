@@ -11,7 +11,7 @@ import com.glennsyj.rivals.api.rivalry.model.RivalryCreationDto;
 import com.glennsyj.rivals.api.rivalry.model.RivalryDetailDto;
 import com.glennsyj.rivals.api.rivalry.model.RivalryParticipantDto;
 import com.glennsyj.rivals.api.rivalry.repository.RivalryRepository;
-import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
+import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
 import jakarta.persistence.EntityNotFoundException;

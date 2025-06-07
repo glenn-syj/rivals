@@ -3,7 +3,7 @@ package com.glennsyj.rivals.api.tft.service;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import com.glennsyj.rivals.api.tft.TftApiClient;
-import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
+import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
 import org.junit.jupiter.api.Disabled;

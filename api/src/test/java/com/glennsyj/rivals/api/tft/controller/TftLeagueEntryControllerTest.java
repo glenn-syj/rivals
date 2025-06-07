@@ -2,7 +2,7 @@ package com.glennsyj.rivals.api.tft.controller;
 
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
-import com.glennsyj.rivals.api.tft.entity.TftLeagueEntry;
+import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.service.TftLeagueEntryManager;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
