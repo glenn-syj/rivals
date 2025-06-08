@@ -119,4 +119,24 @@ public class TftMatchParticipant {
 
     // Setter for relationship
     void setMatch(TftMatch match) { this.match = match; }
+
+    public static TftMatchParticipant from(com.glennsyj.rivals.api.tft.model.match.TftMatchParticipant participantResponse) {
+        return new TftMatchParticipant(
+            participantResponse.puuid(),
+            participantResponse.gold_left(),
+            participantResponse.last_round(),
+            participantResponse.missions().get("PlayerScore2"),
+            participantResponse.level(),
+            participantResponse.placement(),
+            participantResponse.players_eliminated(),
+            participantResponse.riotIdGameName(),
+            participantResponse.riotIdTagline(),
+            participantResponse.time_eliminated(),
+            participantResponse.total_damage_to_players(),
+            participantResponse.win(),
+            participantResponse.companion(), // companion은 JSON으로 저장되므로 변환 필요 없음
+            participantResponse.traits(), // traits는 JSON으로 저장되므로 변환 필요 없음
+            participantResponse.units() // units는 JSON으로 저장되므로 변환 필요 없음
+        );
+    }
 } 

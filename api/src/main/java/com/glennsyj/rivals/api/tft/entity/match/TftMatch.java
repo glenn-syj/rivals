@@ -1,7 +1,14 @@
 package com.glennsyj.rivals.api.tft.entity.match;
 
+import com.glennsyj.rivals.api.tft.model.match.TftMatchInfo;
+import com.glennsyj.rivals.api.tft.model.match.TftMatchMetadata;
+import com.glennsyj.rivals.api.tft.model.match.TftMatchResponse;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +64,9 @@ public class TftMatch {
     @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TftMatchParticipant> participants = new ArrayList<>();
 
+    @CreationTimestamp
+    private LocalDateTime createdAt;
+
     protected TftMatch() {}
 
     public TftMatch(String matchId, String dataVersion, Long gameCreation, Long gameId,
@@ -101,5 +111,34 @@ public class TftMatch {
     public void addParticipant(TftMatchParticipant participant) {
         participants.add(participant);
         participant.setMatch(this);
+    }
+
+    public static TftMatch from(TftMatchResponse response) {
+        TftMatchMetadata metadata = response.metadata();
+        TftMatchInfo info = response.info();
+
+        TftMatch match = new TftMatch(
+            metadata.match_id(),
+            metadata.data_version(),
+            info.gameCreation(),
+            info.gameId(),
+            info.game_datetime(),
+            info.game_length(),
+            info.game_version(),
+            info.game_variation(),
+            info.mapId(),
+            info.queueId(),
+            info.tft_game_type(),
+            info.tft_set_core_name(),
+            info.tft_set_number(),
+            info.endOfGameResult()
+        );
+
+        // 참가자 추가
+        for (com.glennsyj.rivals.api.tft.model.match.TftMatchParticipant participant : info.participants()) {
+            match.addParticipant(TftMatchParticipant.from(participant));
+        }
+
+        return match;
     }
 }
