@@ -6,6 +6,7 @@ public record TftMatchInfo(
         String endOfGameResult,
         Long gameCreation,
         Long gameId,
+        String game_variation,
         Long game_datetime,
         Double game_length,
         String game_version,
