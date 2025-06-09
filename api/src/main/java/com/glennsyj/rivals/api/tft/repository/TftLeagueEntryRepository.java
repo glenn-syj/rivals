@@ -25,9 +25,7 @@ public interface TftLeagueEntryRepository extends JpaRepository<TftLeagueEntry, 
     Optional<TftLeagueEntry> findByAccount_Id(Long account_id);
 
     List<TftLeagueEntry> findAllByAccount_IdIn(List<Long> accountIds);
-
-    Optional<TftLeagueEntry> findFirstByPuuidOrderByUpdatedAtDesc(String puuid);
-
+    
     Optional<TftLeagueEntry> findFirstByAccount_IdOrderByUpdatedAtDesc(Long accountId);
 
     @Query("""
