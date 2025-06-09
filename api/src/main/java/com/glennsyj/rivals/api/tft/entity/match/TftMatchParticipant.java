@@ -3,14 +3,11 @@ package com.glennsyj.rivals.api.tft.entity.match;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchCompanion;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchTrait;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchUnit;
-import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import io.hypersistence.utils.hibernate.id.Tsid;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import org.hibernate.annotations.Type;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,10 +20,6 @@ public class TftMatchParticipant {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "match_id", nullable = false)
     private TftMatch match;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "account_id", nullable = false)
-    private RiotAccount account;
 
     @Column(nullable = false)
     private String puuid;
@@ -79,14 +72,13 @@ public class TftMatchParticipant {
 
     protected TftMatchParticipant() {}
 
-    public TftMatchParticipant(String puuid, RiotAccount account, Integer goldLeft, Integer lastRound,
+    public TftMatchParticipant(String puuid, Integer goldLeft, Integer lastRound,
                                Integer missionsPlayerScore2, Integer level,
                                Integer placement, Integer playersEliminated, String riotIdGameName,
                                String riotIdTagline, Double timeEliminated, Integer totalDamageToPlayers,
                                Boolean win, TftMatchCompanion companion,
                                List<TftMatchTrait> traits, List<TftMatchUnit> units) {
         this.puuid = puuid;
-        this.account = account;
         this.goldLeft = goldLeft;
         this.lastRound = lastRound;
         this.missionsPlayerScore2 = missionsPlayerScore2;
@@ -106,7 +98,6 @@ public class TftMatchParticipant {
     // Getters
     public Long getId() { return id; }
     public TftMatch getMatch() { return match; }
-    public RiotAccount getAccount() { return account; }
     public String getPuuid() { return puuid; }
     public Integer getGoldLeft() { return goldLeft; }
     public Integer getLastRound() { return lastRound; }
@@ -126,10 +117,9 @@ public class TftMatchParticipant {
     // Setter for relationship
     void setMatch(TftMatch match) { this.match = match; }
 
-    public static TftMatchParticipant from(com.glennsyj.rivals.api.tft.model.match.TftMatchParticipant participantResponse, RiotAccount account) {
+    public static TftMatchParticipant from(com.glennsyj.rivals.api.tft.model.match.TftMatchParticipant participantResponse) {
         return new TftMatchParticipant(
             participantResponse.puuid(),
-            account,
             participantResponse.gold_left(),
             participantResponse.last_round(),
             participantResponse.missions().get("PlayerScore2"),
