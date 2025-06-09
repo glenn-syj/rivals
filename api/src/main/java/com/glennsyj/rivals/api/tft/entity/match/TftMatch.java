@@ -110,6 +110,16 @@ public class TftMatch {
     public String getEndOfGameResult() { return endOfGameResult; }
     public List<TftMatchParticipant> getParticipants() { return participants; }
 
+    public TftMatchParticipant getParticipantByPuuid(String puuid) {
+        for (TftMatchParticipant participant : participants) {
+            if (participant.getPuuid().equals(puuid)) {
+                return participant;
+            }
+        }
+
+        return null;
+    }
+
     // Participant management
     public void addParticipant(TftMatchParticipant participant) {
         participants.add(participant);
