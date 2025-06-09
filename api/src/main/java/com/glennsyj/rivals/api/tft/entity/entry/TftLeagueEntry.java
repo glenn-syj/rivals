@@ -11,7 +11,9 @@ import java.time.LocalDateTime;
 @Entity
 @Table(
         name = "tft_league_entries",
-        indexes = @Index(name = "idx_tft_league_puuid", columnList = "puuid")
+        indexes = {
+                @Index(name = "idx_tft_league_puuid_queue", columnList = "puuid, queue_type", unique = true)
+        }
 )
 public class TftLeagueEntry {
     @Id
