@@ -1,5 +1,8 @@
 package com.glennsyj.rivals.api.tft.model.match;
 
+import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
+import com.glennsyj.rivals.api.tft.entity.match.TftMatchParticipant;
+
 import java.util.List;
 
 /*
@@ -9,10 +12,24 @@ public record TftRecentMatchDto(
     String id,
     String matchId,
     Long gameCreation,
-    Long gameLength,
+    Double gameLength,
     Integer level,
     String queueType,
     List<TftMatchTrait> traits,
     List<TftMatchUnit> units
 ) {
+    public static TftRecentMatchDto from(String puuid, TftMatch match) {
+        TftMatchParticipant matchParticipant = match.getParticipantByPuuid(puuid);
+
+        return new TftRecentMatchDto(
+            match.getId().toString(),
+            match.getMatchId(),
+            match.getGameCreation(),
+            match.getGameLength(),
+            matchParticipant.getLevel(),
+            match.getTftGameType(),
+            matchParticipant.getTraits(),
+            matchParticipant.getUnits()
+        );
+    }
 }
