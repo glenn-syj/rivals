@@ -10,10 +10,7 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(
-        name = "tft_league_entries",
-        indexes = {
-                @Index(name = "idx_tft_league_puuid_queue", columnList = "puuid, queue_type", unique = true)
-        }
+        name = "tft_league_entries"
 )
 public class TftLeagueEntry {
     @Id
