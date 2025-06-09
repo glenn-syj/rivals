@@ -13,13 +13,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "tft_matches")
+@Table(name = "tft_matches",
+        indexes = {
+                @Index(name = "idx_match_id", columnList = "matchId", unique = true)
+        })
 public class TftMatch {
     @Id
     @Tsid
     private Long id;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String matchId;  // from metadata
 
     @Column(nullable = false)
@@ -61,7 +64,7 @@ public class TftMatch {
     @Column(nullable = false)
     private Integer tftSetNumber;
 
-    @OneToMany(mappedBy = "match", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "match", cascade = CascadeType.PERSIST)
     private List<TftMatchParticipant> participants = new ArrayList<>();
 
     @CreationTimestamp
