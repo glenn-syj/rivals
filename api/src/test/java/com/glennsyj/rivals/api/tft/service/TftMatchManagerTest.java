@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.tft.service;
 
+import com.glennsyj.rivals.api.config.EntityTestUtil;
 import com.glennsyj.rivals.api.tft.TftApiClient;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
@@ -136,6 +137,76 @@ class TftMatchManagerTest {
                 .hasMessage("계정 갱신을 먼저 진행해주세요.");
     }
 
+    @Test
+    @DisplayName("갱신 시 새로운 매치가 있는 경우 새 매치를 저장하고 최근 20개 매치를 반환한다")
+    void whenRenewingWithNewMatches_thenSaveAndReturnMatches() {
+        // given
+        String puuid = "test-puuid";
+        List<String> recentMatchIds = List.of("match-1", "match-2", "match-3");
+        List<TftMatch> existingMatches = List.of(
+            createTftMatch("match-1"),
+            createTftMatch("match-2")
+        );
+        TftMatchResponse mockResponse = createMockMatchResponse();
+
+        given(tftApiClient.getMatchIdsFromPuuid(puuid)).willReturn(recentMatchIds);
+        given(tftMatchRepository.findByMatchIdIn(recentMatchIds)).willReturn(existingMatches);
+        given(tftApiClient.getMatchResponseFromMatchId("match-3")).willReturn(mockResponse);
+        given(tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid))
+            .willReturn(List.of(createTftMatch("match-1"), createTftMatch("match-2"), createTftMatch("match-3")));
+
+        // when
+        List<TftMatch> result = tftMatchManager.renewRecentTftMatches(puuid);
+
+        // then
+        verify(tftMatchRepository).saveAll(any());
+        assertThat(result).hasSize(3);
+    }
+
+    @Test
+    @DisplayName("갱신 시 모든 매치가 이미 존재하는 경우 API를 호출하지 않고 기존 매치를 반환한다")
+    void whenRenewingWithAllExistingMatches_thenReturnExistingMatches() {
+        // given
+        String puuid = "test-puuid";
+        List<String> recentMatchIds = List.of("match-1", "match-2");
+        List<TftMatch> existingMatches = List.of(
+            createTftMatch("match-1"),
+            createTftMatch("match-2")
+        );
+
+        given(tftApiClient.getMatchIdsFromPuuid(puuid)).willReturn(recentMatchIds);
+        given(tftMatchRepository.findByMatchIdIn(recentMatchIds)).willReturn(existingMatches);
+        given(tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid))
+            .willReturn(existingMatches);
+
+        // when
+        List<TftMatch> result = tftMatchManager.renewRecentTftMatches(puuid);
+
+        // then
+        verify(tftApiClient, never()).getMatchResponseFromMatchId(any());
+        verify(tftMatchRepository, never()).saveAll(any());
+        assertThat(result).hasSize(2);
+    }
+
+    @Test
+    @DisplayName("갱신 시 API 호출에 실패하면 예외가 발생한다")
+    void whenRenewingWithApiFailure_thenThrowException() {
+        // given
+        String puuid = "test-puuid";
+        List<String> recentMatchIds = List.of("match-1", "match-2", "match-3");
+        List<TftMatch> existingMatches = List.of(createTftMatch("match-1"));
+
+        given(tftApiClient.getMatchIdsFromPuuid(puuid)).willReturn(recentMatchIds);
+        given(tftMatchRepository.findByMatchIdIn(recentMatchIds)).willReturn(existingMatches);
+        given(tftApiClient.getMatchResponseFromMatchId("match-2"))
+            .willThrow(new RuntimeException("API 호출 실패"));
+
+        // when & then
+        assertThatThrownBy(() -> tftMatchManager.renewRecentTftMatches(puuid))
+            .isInstanceOf(RuntimeException.class)
+            .hasMessage("API 호출 실패");
+    }
+
     private TftMatchResponse createMockMatchResponse() {
         return new TftMatchResponse(
             createMockMatchMetadata(),
@@ -189,5 +260,12 @@ class TftMatchManagerTest {
                 Collections.emptyList(),   // units
                 false             // win
         ));
+    }
+
+    private TftMatch createTftMatch(String matchId) {
+        TftMatchResponse response = createMockMatchResponse();
+        TftMatch match = TftMatch.from(response);
+        EntityTestUtil.setFieldWithValue(match, "matchId", matchId);
+        return match;
     }
 }
