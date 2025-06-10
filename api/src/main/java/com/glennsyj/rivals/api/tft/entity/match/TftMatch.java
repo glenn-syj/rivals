@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.tft.entity.match;
 
+import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchInfo;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchMetadata;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchResponse;
@@ -7,10 +8,12 @@ import io.hypersistence.utils.hibernate.id.Tsid;
 import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tft_matches",
@@ -153,5 +156,21 @@ public class TftMatch {
         }
 
         return match;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TftMatch that)) return false;
+        TftMatch actual = that instanceof HibernateProxy proxy
+                ? (TftMatch) proxy.getHibernateLazyInitializer().getImplementation()
+                : that;
+
+        return matchId.equals(actual.matchId);
+    }
+
+    @Override
+    public int hashCode() {
+        return getMatchId() != null ? getMatchId().hashCode() : 0;
     }
 }
