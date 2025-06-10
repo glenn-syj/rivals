@@ -69,4 +69,33 @@ public class TftMatchManager {
         return tftMatchRepository.saveAll(matches);
     }
 
+    @Transactional
+    public List<TftMatch> renewRecentTftMatches(String puuid) {
+
+        List<String> recentMatchIds = tftApiClient.getMatchIdsFromPuuid(puuid);
+        
+        List<String> existingMatchIds = tftMatchRepository
+                .findByMatchIdIn(recentMatchIds)
+                .stream()
+                .map(TftMatch::getMatchId)
+                .toList();
+        
+        List<String> newMatchIds = recentMatchIds.stream()
+                .filter(matchId -> !existingMatchIds.contains(matchId))
+                .toList();
+                
+        List<TftMatch> newMatches = newMatchIds.stream()
+                .map(matchId -> {
+                    TftMatchResponse response = tftApiClient.getMatchResponseFromMatchId(matchId);
+                    return TftMatch.from(response);
+                })
+                .toList();
+                
+        if (!newMatches.isEmpty()) {
+            tftMatchRepository.saveAll(newMatches);
+        }
+        
+        return tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid);
+    }
+
 }
