@@ -7,6 +7,7 @@ import io.hypersistence.utils.hibernate.id.Tsid;
 import io.hypersistence.utils.hibernate.type.json.JsonType;
 import jakarta.persistence.*;
 import org.hibernate.annotations.Type;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.List;
 
@@ -135,5 +136,23 @@ public class TftMatchParticipant {
             participantResponse.traits(),
             participantResponse.units()
         );
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof TftMatchParticipant that)) return false;
+        TftMatchParticipant actual = that instanceof HibernateProxy proxy
+                ? (TftMatchParticipant) proxy.getHibernateLazyInitializer().getImplementation()
+                : that;
+
+        return puuid.equals(actual.puuid) && match.getMatchId().equals(actual.match.getMatchId());
+    }
+
+    @Override
+    public int hashCode() {
+        int result = puuid != null ? puuid.hashCode() : 0;
+        result = 31 * result + (match != null ? match.getMatchId().hashCode() : 0);
+        return result;
     }
 } 
