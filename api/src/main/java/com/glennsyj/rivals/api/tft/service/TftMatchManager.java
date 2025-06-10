@@ -71,19 +71,23 @@ public class TftMatchManager {
 
     @Transactional
     public List<TftMatch> renewRecentTftMatches(String puuid) {
-
+        
+        // 최신 Match Id부터 받아옴
         List<String> recentMatchIds = tftApiClient.getMatchIdsFromPuuid(puuid);
         
+        // 최신 Match Id 리스트에서 DB에 존재하는 TftMatch 엔티티를 제외하기 위한 리스트 생성
         List<String> existingMatchIds = tftMatchRepository
                 .findByMatchIdIn(recentMatchIds)
                 .stream()
                 .map(TftMatch::getMatchId)
                 .toList();
         
+        // 최신 MatchId에서 이미 존재하는 MatchId는 제외
         List<String> newMatchIds = recentMatchIds.stream()
                 .filter(matchId -> !existingMatchIds.contains(matchId))
                 .toList();
                 
+        // 새로운 MatchId에 대해서 MatchResponse 받아옴
         List<TftMatch> newMatches = newMatchIds.stream()
                 .map(matchId -> {
                     TftMatchResponse response = tftApiClient.getMatchResponseFromMatchId(matchId);
