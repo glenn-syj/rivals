@@ -8,5 +8,7 @@ import java.util.List;
 public interface TftMatchRepository extends JpaRepository<TftMatch, Long> {
 
     List<TftMatch> findTop20ByParticipantsPuuidOrderByGameCreationDesc(String puuid);
+    
+    List<TftMatch> findByMatchIdIn(List<String> matchIds);
 
 }
