@@ -109,12 +109,12 @@ export interface TftMatchTrait {
   name: string;
   numUnits: number;
   style: number;
-  tierCurrent: number;
-  tierTotal: number;
+  tier_current: number;
+  tier_total: number;
 }
 
 export interface TftMatchUnit {
-  characterId: string;
+  character_id: string;
   itemNames: string[];
   name: string;
   rarity: number;

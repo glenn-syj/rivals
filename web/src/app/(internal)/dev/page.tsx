@@ -102,8 +102,8 @@ export default function DevPage() {
                   <div className="text-sm">
                     {match.traits.map((trait, index) => (
                       <p key={index}>
-                        {trait.name} (Level {trait.tierCurrent}/
-                        {trait.tierTotal})
+                        {trait.name} (Level {trait.tier_current}/
+                        {trait.tier_total})
                       </p>
                     ))}
                   </div>
@@ -114,6 +114,10 @@ export default function DevPage() {
                 <div className="grid grid-cols-4 gap-2">
                   {match.units.map((unit, index) => (
                     <div key={index} className="text-sm">
+                      <p>
+                        <span className="font-medium">Character ID:</span>{" "}
+                        {unit.character_id}
+                      </p>
                       <p>
                         {unit.name} (★{unit.tier})
                       </p>
