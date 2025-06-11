@@ -5,6 +5,7 @@ import type {
   RivalryCreationDto,
   RivalryResultDto,
   RivalryDetailDto,
+  TftRecentMatchDto,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8080";
@@ -74,6 +75,20 @@ export const getRivalryById = async (
 ): Promise<RivalryDetailDto> => {
   const response = await api.get<RivalryDetailDto>(
     `/api/v1/rivalries/${rivalryId}`
+  );
+  return response.data;
+};
+
+// TFT Matches APIs
+export const getTftMatches = async (
+  gameName: string,
+  tagLine: string
+): Promise<TftRecentMatchDto[]> => {
+  const trimmedGameName = gameName.trim();
+  const trimmedTagLine = tagLine.trim();
+
+  const response = await api.get<TftRecentMatchDto[]>(
+    `/api/v1/tft/matches/${trimmedGameName}/${trimmedTagLine}`
   );
   return response.data;
 };
