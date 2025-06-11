@@ -93,3 +93,30 @@ export interface LeagueEntryDTO {
   freshBlood: boolean;
   inactive: boolean;
 }
+
+export interface TftRecentMatchDto {
+  id: string;
+  matchId: string;
+  gameCreation: number;
+  gameLength: number;
+  level: number;
+  queueType: string;
+  traits: TftMatchTrait[];
+  units: TftMatchUnit[];
+}
+
+export interface TftMatchTrait {
+  name: string;
+  numUnits: number;
+  style: number;
+  tierCurrent: number;
+  tierTotal: number;
+}
+
+export interface TftMatchUnit {
+  characterId: string;
+  itemNames: string[];
+  name: string;
+  rarity: number;
+  tier: number;
+}
