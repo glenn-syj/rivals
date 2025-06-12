@@ -14,6 +14,7 @@ public record TftRecentMatchDto(
     Long gameCreation,
     Double gameLength,
     Integer level,
+    Integer placement,
     String queueType,
     List<TftMatchTrait> traits,
     List<TftMatchUnit> units
@@ -27,6 +28,7 @@ public record TftRecentMatchDto(
             match.getGameCreation(),
             match.getGameLength(),
             matchParticipant.getLevel(),
+            matchParticipant.getPlacement(),
             match.getTftGameType(),
             matchParticipant.getTraits(),
             matchParticipant.getUnits()
