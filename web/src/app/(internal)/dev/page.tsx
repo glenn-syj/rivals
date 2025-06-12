@@ -226,6 +226,10 @@ export default function DevPage() {
                       <span className="font-medium">Level:</span> {match.level}
                     </p>
                     <p>
+                      <span className="font-medium">Placement:</span>{" "}
+                      {match.placement}
+                    </p>
+                    <p>
                       <span className="font-medium">Queue Type:</span>{" "}
                       {match.queueType}
                     </p>
