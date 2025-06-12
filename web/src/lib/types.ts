@@ -100,6 +100,7 @@ export interface TftRecentMatchDto {
   gameCreation: number;
   gameLength: number;
   level: number;
+  placement: number;
   queueType: string;
   traits: TftMatchTrait[];
   units: TftMatchUnit[];
