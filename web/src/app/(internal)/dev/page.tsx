@@ -1,9 +1,134 @@
 // app/(internal)/dev/page.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getTftMatches } from "@/lib/api";
 import { TftRecentMatchDto } from "@/lib/types";
+import { dataDragonService } from "@/lib/dataDragon";
+import { TftChampion, TftItem } from "@/lib/dataDragonTypes";
+import Image from "next/image";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
+interface UnitProps {
+  unit: TftRecentMatchDto["units"][0];
+}
+
+const Unit = ({ unit }: UnitProps) => {
+  useEffect(() => {
+    const initializeData = async () => {
+      await dataDragonService.initialize();
+    };
+    initializeData();
+  }, []);
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div className="border rounded-md p-2">
+          <div className="relative w-12 h-12 mx-auto mb-2">
+            <Image
+              src={dataDragonService.getChampionImage(unit.character_id)}
+              alt={unit.name}
+              fill
+              className="object-cover rounded-md"
+            />
+            <div
+              className={`absolute -bottom-1 -right-1 bg-yellow-500 rounded-full w-5 h-5 flex items-center justify-center text-xs font-bold`}
+            >
+              {unit.tier}
+            </div>
+          </div>
+          <p className="text-center text-sm font-medium">
+            {dataDragonService.getChampionName(unit.character_id) || unit.name}
+          </p>
+          {unit.itemNames.length > 0 && (
+            <div className="flex flex-wrap gap-1 justify-center mt-1">
+              {unit.itemNames.map((itemId, idx) => (
+                <Tooltip key={idx}>
+                  <TooltipTrigger asChild>
+                    <div className="relative w-6 h-6">
+                      <Image
+                        src={dataDragonService.getItemImage(itemId)}
+                        alt={dataDragonService.getItemName(itemId) || itemId}
+                        fill
+                        className="object-cover rounded-md"
+                      />
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <div className="p-2 max-w-xs">
+                      <p className="font-bold">
+                        {dataDragonService.getItemName(itemId)}
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </div>
+          )}
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="p-2 max-w-xs">
+          <p className="font-bold">
+            {dataDragonService.getChampionName(unit.character_id)}
+          </p>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
+
+interface TraitDisplayProps {
+  trait: TftRecentMatchDto["traits"][0];
+}
+
+const TraitDisplay = ({ trait }: TraitDisplayProps) => {
+  if (!trait.tier_current) return null;
+
+  // trait.name을 ID로 사용하여 "TFTTutorial_" 접두사 추가
+  const traitId = `${trait.name}`;
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <div
+          className={`flex items-center gap-2 px-2 py-1 rounded-md text-sm ${
+            trait.style === 3
+              ? "bg-yellow-100"
+              : trait.style === 2
+              ? "bg-gray-100"
+              : "bg-amber-50"
+          }`}
+        >
+          <Image
+            src={dataDragonService.getTraitImage(traitId)}
+            alt={trait.name}
+            width={20}
+            height={20}
+            className="object-contain"
+          />
+          <span>
+            {dataDragonService.getTraitName(traitId) || trait.name} (
+            {trait.tier_current}/{trait.tier_total})
+          </span>
+        </div>
+      </TooltipTrigger>
+      <TooltipContent>
+        <div className="p-2 max-w-xs">
+          <p className="font-bold">
+            {dataDragonService.getTraitName(traitId) || trait.name}
+          </p>
+        </div>
+      </TooltipContent>
+    </Tooltip>
+  );
+};
 
 export default function DevPage() {
   const [gameName, setGameName] = useState("");
@@ -11,6 +136,13 @@ export default function DevPage() {
   const [matches, setMatches] = useState<TftRecentMatchDto[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      await dataDragonService.initialize();
+    };
+    initializeData();
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,110 +162,100 @@ export default function DevPage() {
   };
 
   return (
-    <div className="p-8">
-      <h1 className="text-2xl font-bold mb-6">TFT Match API Test</h1>
+    <TooltipProvider>
+      <div className="p-8">
+        <h1 className="text-2xl font-bold mb-6">TFT Match API Test</h1>
 
-      <form onSubmit={handleSubmit} className="mb-8 space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Game Name</label>
-          <input
-            type="text"
-            value={gameName}
-            onChange={(e) => setGameName(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            placeholder="Enter game name"
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium mb-1">Tag Line</label>
-          <input
-            type="text"
-            value={tagLine}
-            onChange={(e) => setTagLine(e.target.value)}
-            className="w-full px-3 py-2 border rounded-md"
-            placeholder="Enter tag line"
-          />
-        </div>
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 disabled:bg-blue-300"
-        >
-          {loading ? "Loading..." : "Get Matches"}
-        </button>
-      </form>
+        <form onSubmit={handleSubmit} className="mb-8 space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-1">Game Name</label>
+            <input
+              type="text"
+              value={gameName}
+              onChange={(e) => setGameName(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+              placeholder="Enter game name"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium mb-1">Tag Line</label>
+            <input
+              type="text"
+              value={tagLine}
+              onChange={(e) => setTagLine(e.target.value)}
+              className="w-full px-3 py-2 border rounded-md"
+              placeholder="Enter tag line"
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600 disabled:bg-blue-300"
+          >
+            {loading ? "Loading..." : "Get Matches"}
+          </button>
+        </form>
 
-      {error && (
-        <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-md">
-          {error}
-        </div>
-      )}
+        {error && (
+          <div className="mb-6 p-4 bg-red-100 text-red-700 rounded-md">
+            {error}
+          </div>
+        )}
 
-      {matches.length > 0 && (
-        <div className="space-y-4">
-          <h2 className="text-xl font-semibold">Recent Matches</h2>
-          {matches.map((match) => (
-            <div key={match.id} className="border rounded-md p-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p>
-                    <span className="font-medium">Match ID:</span>{" "}
-                    {match.matchId}
-                  </p>
-                  <p>
-                    <span className="font-medium">Game Creation:</span>{" "}
-                    {new Date(match.gameCreation).toLocaleString()}
-                  </p>
-                  <p>
-                    <span className="font-medium">Game Length:</span>{" "}
-                    {Math.floor(match.gameLength / 60)}분{" "}
-                    {Math.floor(match.gameLength % 60)}초
-                  </p>
-                  <p>
-                    <span className="font-medium">Level:</span> {match.level}
-                  </p>
-                  <p>
-                    <span className="font-medium">Queue Type:</span>{" "}
-                    {match.queueType}
-                  </p>
+        {matches.length > 0 && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold">Recent Matches</h2>
+            {matches.map((match) => (
+              <div key={match.id} className="border rounded-md p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p>
+                      <span className="font-medium">Match ID:</span>{" "}
+                      {match.matchId}
+                    </p>
+                    <p>
+                      <span className="font-medium">Game Creation:</span>{" "}
+                      {new Date(match.gameCreation).toLocaleString()}
+                    </p>
+                    <p>
+                      <span className="font-medium">Game Length:</span>{" "}
+                      {Math.floor(match.gameLength / 60)}분{" "}
+                      {match.gameLength % 60}초
+                    </p>
+                    <p>
+                      <span className="font-medium">Level:</span> {match.level}
+                    </p>
+                    <p>
+                      <span className="font-medium">Queue Type:</span>{" "}
+                      {match.queueType}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium mb-2">Traits:</p>
-                  <div className="text-sm">
-                    {match.traits.map((trait, index) => (
-                      <p key={index}>
-                        {trait.name} (Level {trait.tier_current}/
-                        {trait.tier_total})
-                      </p>
+
+                <div className="mt-4">
+                  <p className="font-medium mb-2">Units:</p>
+                  <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-2">
+                    {match.units.map((unit, index) => (
+                      <Unit key={index} unit={unit} />
                     ))}
                   </div>
                 </div>
-              </div>
-              <div className="mt-4">
-                <p className="font-medium mb-2">Units:</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {match.units.map((unit, index) => (
-                    <div key={index} className="text-sm">
-                      <p>
-                        <span className="font-medium">Character ID:</span>{" "}
-                        {unit.character_id}
-                      </p>
-                      <p>
-                        {unit.name} (★{unit.tier})
-                      </p>
-                      {unit.itemNames.length > 0 && (
-                        <p className="text-gray-600">
-                          Items: {unit.itemNames.join(", ")}
-                        </p>
-                      )}
-                    </div>
-                  ))}
+
+                <div className="mt-4">
+                  <p className="font-medium mb-2">Traits:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {match.traits
+                      .filter((trait) => trait.tier_current > 0)
+                      .map((trait, index) => (
+                        <TraitDisplay key={index} trait={trait} />
+                      ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </TooltipProvider>
   );
 }
