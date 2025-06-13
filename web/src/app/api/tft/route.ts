@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server";
+import { promises as fs } from "fs";
+import path from "path";
 
 let tftDataCache: any = null;
 let lastFetchTime: number = 0;
@@ -14,19 +16,24 @@ async function fetchTftData() {
   }
 
   try {
-    const response = await fetch(
-      "https://raw.communitydragon.org/latest/cdragon/tft/ko_kr.json"
+    // Read the local JSON file from public directory
+    const filePath = path.join(
+      process.cwd(),
+      "public",
+      "data",
+      "sets-modified.json"
     );
-    const data = await response.json();
+    const fileContent = await fs.readFile(filePath, "utf-8");
+    const data = JSON.parse(fileContent);
 
     // Update cache
     tftDataCache = data;
     lastFetchTime = currentTime;
 
-    return data;
+    return tftDataCache;
   } catch (error) {
-    console.error("Error fetching TFT data:", error);
-    // If fetch fails and we have cached data, return it even if expired
+    console.error("Error reading TFT data:", error);
+    // If reading fails and we have cached data, return it even if expired
     if (tftDataCache) return tftDataCache;
     throw error;
   }
@@ -34,7 +41,7 @@ async function fetchTftData() {
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
-  const type = searchParams.get("type"); // 'champions' or 'traits'
+  const type = searchParams.get("type"); // 'champions', 'traits', or 'items'
   const id = searchParams.get("id"); // specific item id
   const set = searchParams.get("set") || CURRENT_SET; // TFT set version
 
@@ -45,7 +52,13 @@ export async function GET(request: Request) {
       throw new Error("Type and id parameters are required");
     }
 
-    // Get set data
+    // Handle items separately as they're not set-specific
+    if (type === "items") {
+      const item = data.items?.find((item: any) => item.apiName === id);
+      return NextResponse.json(item || null);
+    }
+
+    // Get set data for champions and traits
     const setData = data.sets[set];
     if (!setData) {
       throw new Error(`TFT Set ${set} not found`);
