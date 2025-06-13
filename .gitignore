@@ -47,3 +47,7 @@ node_modules
 
 ### Cursor ###
 *.mdc
+
+# Generated TFT Data
+web/public/data/sets-modified.json
+web/tft-ko_kr.json
