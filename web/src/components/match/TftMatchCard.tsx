@@ -6,7 +6,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const RARITY_COLORS = {
   0: "border-gray-400 text-gray-400", // 1비용
@@ -110,6 +110,24 @@ interface TraitDisplayProps {
 }
 
 const TraitDisplay = ({ trait }: TraitDisplayProps) => {
+  const [traitDescription, setTraitDescription] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTraitDescription = async () => {
+      try {
+        const response = await fetch(`/api/tft?type=traits&id=${trait.name}`);
+        const data = await response.json();
+        setTraitDescription(data?.desc || null);
+      } catch (error) {
+        console.error("Error fetching trait description:", error);
+      }
+    };
+
+    if (trait.tier_current && trait.style !== 0) {
+      fetchTraitDescription();
+    }
+  }, [trait.name, trait.tier_current, trait.style]);
+
   if (!trait.tier_current || trait.style === 0) return null;
 
   const traitId = `${trait.name}`;
@@ -137,9 +155,14 @@ const TraitDisplay = ({ trait }: TraitDisplayProps) => {
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <p className="font-medium text-sm">
-          {dataDragonService.getTraitName(traitId) || trait.name}
-        </p>
+        <div className="max-w-md">
+          <p className="font-medium text-sm mb-1">
+            {dataDragonService.getTraitName(traitId) || trait.name}
+          </p>
+          {traitDescription && (
+            <p className="text-sm text-gray-600">{traitDescription}</p>
+          )}
+        </div>
       </TooltipContent>
     </Tooltip>
   );
