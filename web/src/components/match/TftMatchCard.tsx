@@ -117,7 +117,7 @@ const TraitDisplay = ({ trait }: TraitDisplayProps) => {
       try {
         const response = await fetch(`/api/tft?type=traits&id=${trait.name}`);
         const data = await response.json();
-        setTraitDescription(data?.desc || null);
+        setTraitDescription(data?.modifiedDesc || null);
       } catch (error) {
         console.error("Error fetching trait description:", error);
       }
