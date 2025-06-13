@@ -1,11 +1,12 @@
 import { TftSet, TftChampion, TftItem, TftTrait } from "./dataDragonTypes";
 
 const DD_VERSION = "15.12.1";
+const LANG_SET = "ko_KR";
 const BASE_CDN = "https://ddragon.leagueoflegends.com/cdn";
-const GAME_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/en_US`;
-const CHAMPION_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/en_US/tft-champion.json`;
-const ITEM_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/en_US/tft-item.json`;
-const TRAIT_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/en_US/tft-trait.json`;
+const GAME_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/${LANG_SET}`;
+const CHAMPION_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/${LANG_SET}/tft-champion.json`;
+const ITEM_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/${LANG_SET}/tft-item.json`;
+const TRAIT_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/${LANG_SET}/tft-trait.json`;
 const GAME_IMAGE_URL = `${BASE_CDN}/${DD_VERSION}/img`;
 
 export class DataDragonService {
