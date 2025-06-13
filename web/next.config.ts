@@ -4,7 +4,18 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   output: "standalone",
   images: {
-    domains: ["ddragon.leagueoflegends.com"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "raw.communitydragon.org",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "ddragon.leagueoflegends.com",
+        pathname: "/**",
+      },
+    ],
   },
 };
 
