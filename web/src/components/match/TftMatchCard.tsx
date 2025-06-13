@@ -68,7 +68,7 @@ const Unit = ({ unit, isSelected, onUnitClick }: UnitProps) => {
               fill
               className={`object-cover rounded-sm ${borderColor} border-3 ${
                 isSelected ? "ring-2 ring-blue-400" : ""
-              }`}
+              } object-[80%_30%]`}
             />
           </div>
           {unit.itemNames.length > 0 && (
