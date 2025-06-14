@@ -46,6 +46,48 @@ const Unit = ({ unit, isSelected, onUnitClick }: UnitProps) => {
     RARITY_COLORS[unit.rarity as keyof typeof RARITY_COLORS] ||
     RARITY_COLORS[0];
   const [borderColor] = rarityColor.split(" ");
+  const [championDesc, setChampionDesc] = useState<string | null>(null);
+  const [itemDescs, setItemDescs] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    const fetchChampionDescription = async () => {
+      try {
+        const setMatch = unit.character_id.match(/TFT(\d+)/);
+        const set = setMatch ? setMatch[1] : "14";
+        const response = await fetch(
+          `/api/tft?type=champions&id=${unit.character_id}&set=${set}`
+        );
+        const data = await response.json();
+        setChampionDesc(data?.ability?.modifiedDesc || null);
+      } catch (error) {
+        console.error("Error fetching champion description:", error);
+      }
+    };
+
+    fetchChampionDescription();
+  }, [unit.character_id]);
+
+  useEffect(() => {
+    const fetchItemDescriptions = async () => {
+      try {
+        const descriptions: Record<string, string> = {};
+        for (const itemId of unit.itemNames) {
+          const response = await fetch(`/api/tft?type=items&id=${itemId}`);
+          const data = await response.json();
+          if (data?.modifiedDesc) {
+            descriptions[itemId] = data.modifiedDesc;
+          }
+        }
+        setItemDescs(descriptions);
+      } catch (error) {
+        console.error("Error fetching item descriptions:", error);
+      }
+    };
+
+    if (unit.itemNames.length > 0) {
+      fetchItemDescriptions();
+    }
+  }, [unit.itemNames]);
 
   return (
     <Tooltip>
@@ -89,6 +131,11 @@ const Unit = ({ unit, isSelected, onUnitClick }: UnitProps) => {
                     <p className="font-medium text-sm">
                       {dataDragonService.getItemName(itemId)}
                     </p>
+                    {itemDescs[itemId] && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        {itemDescs[itemId]}
+                      </p>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               ))}
@@ -100,6 +147,9 @@ const Unit = ({ unit, isSelected, onUnitClick }: UnitProps) => {
         <p className="font-medium text-sm">
           {dataDragonService.getChampionName(unit.character_id)}
         </p>
+        {championDesc && (
+          <p className="text-sm text-gray-600 mt-1">{championDesc}</p>
+        )}
       </TooltipContent>
     </Tooltip>
   );
@@ -115,7 +165,11 @@ const TraitDisplay = ({ trait }: TraitDisplayProps) => {
   useEffect(() => {
     const fetchTraitDescription = async () => {
       try {
-        const response = await fetch(`/api/tft?type=traits&id=${trait.name}`);
+        const setMatch = trait.name.match(/TFT(\d+)/);
+        const set = setMatch ? setMatch[1] : "14"; // Default to set 14 if not found
+        const response = await fetch(
+          `/api/tft?type=traits&id=${trait.name}&set=${set}`
+        );
         const data = await response.json();
         setTraitDescription(data?.modifiedDesc || null);
       } catch (error) {
