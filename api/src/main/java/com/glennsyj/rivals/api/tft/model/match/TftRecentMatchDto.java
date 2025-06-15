@@ -17,10 +17,14 @@ public record TftRecentMatchDto(
     Integer placement,
     String queueType,
     List<TftMatchTrait> traits,
-    List<TftMatchUnit> units
+    List<TftMatchUnit> units,
+    List<TftMatchParticipantDto> participants
 ) {
     public static TftRecentMatchDto from(String puuid, TftMatch match) {
         TftMatchParticipant matchParticipant = match.getParticipantByPuuid(puuid);
+        List<TftMatchParticipantDto> participants = match.getParticipants().stream()
+            .map(TftMatchParticipantDto::from)
+            .toList();
 
         return new TftRecentMatchDto(
             match.getId().toString(),
@@ -31,7 +35,8 @@ public record TftRecentMatchDto(
             matchParticipant.getPlacement(),
             match.getTftGameType(),
             matchParticipant.getTraits(),
-            matchParticipant.getUnits()
+            matchParticipant.getUnits(),
+            participants
         );
     }
 }
