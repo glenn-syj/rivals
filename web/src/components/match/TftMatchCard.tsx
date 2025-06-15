@@ -53,19 +53,19 @@ const Unit = ({ unit, isSelected, onUnitClick }: UnitProps) => {
   const itemsData = unit.itemNames.map((itemId) => getItemData(itemId));
 
   return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div
-          className="flex flex-col items-center p-1 cursor-pointer transition-all w-[48px]"
-          onClick={() => onUnitClick(unit.character_id)}
-        >
-          <div
-            className={`text-center text-xs leading-none ${
-              rarityColor.split(" ")[1]
-            }`}
-          >
-            {stars}
-          </div>
+    <div
+      className="flex flex-col items-center p-1 cursor-pointer transition-all w-[48px]"
+      onClick={() => onUnitClick(unit.character_id)}
+    >
+      <div
+        className={`text-center text-xs leading-none ${
+          rarityColor.split(" ")[1]
+        }`}
+      >
+        {stars}
+      </div>
+      <Tooltip>
+        <TooltipTrigger asChild>
           <div className="relative w-[48px] h-[48px] my-0.5">
             <Image
               src={dataDragonService.getChampionImage(unit.character_id)}
@@ -76,48 +76,50 @@ const Unit = ({ unit, isSelected, onUnitClick }: UnitProps) => {
               } object-[80%_30%]`}
             />
           </div>
-          {unit.itemNames.length > 0 && (
-            <div className="flex justify-center items-center gap-[2px] w-full">
-              {unit.itemNames.slice(0, 3).map((itemId, idx) => (
-                <Tooltip key={idx}>
-                  <TooltipTrigger asChild>
-                    <div className="relative w-[15px] h-[15px] flex-shrink-0">
-                      <Image
-                        src={dataDragonService.getItemImage(itemId)}
-                        alt={dataDragonService.getItemName(itemId) || itemId}
-                        fill
-                        className="object-cover rounded-sm"
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="font-medium text-sm">
-                      {dataDragonService.getItemName(itemId)}
-                    </p>
-                    {itemsData[idx]?.modifiedDesc && (
-                      <p className="text-sm text-gray-600 mt-1">
-                        {itemsData[idx]?.modifiedDesc}
-                      </p>
-                    )}
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          )}
-        </div>
-      </TooltipTrigger>
-      <TooltipContent>
-        <p className="font-medium text-sm">
-          {championData?.name ||
-            dataDragonService.getChampionName(unit.character_id)}
-        </p>
-        {championData?.ability?.modifiedDesc && (
-          <p className="text-sm text-gray-600 mt-1">
-            {championData.ability.modifiedDesc}
+        </TooltipTrigger>
+        <TooltipContent>
+          <p className="font-medium text-sm">
+            {championData?.name ||
+              dataDragonService.getChampionName(unit.character_id)}
           </p>
-        )}
-      </TooltipContent>
-    </Tooltip>
+          {championData?.ability?.modifiedDesc && (
+            <p className="text-sm text-gray-600 mt-1 max-w-[300px] max-h-[200px] overflow-y-auto">
+              {championData.ability.modifiedDesc}
+            </p>
+          )}
+        </TooltipContent>
+      </Tooltip>
+      {unit.itemNames.length > 0 && (
+        <div className="flex justify-center items-center gap-[2px] w-full">
+          {unit.itemNames.slice(0, 3).map((itemId, idx) => (
+            <Tooltip key={idx}>
+              <TooltipTrigger asChild>
+                <div className="relative w-[15px] h-[15px] flex-shrink-0">
+                  <Image
+                    src={dataDragonService.getItemImage(itemId)}
+                    alt={dataDragonService.getItemName(itemId) || itemId}
+                    fill
+                    className="object-cover rounded-sm"
+                  />
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <div className="max-w-[300px]">
+                  <p className="font-medium text-sm">
+                    {dataDragonService.getItemName(itemId)}
+                  </p>
+                  {itemsData[idx]?.modifiedDesc && (
+                    <p className="text-sm text-gray-600 mt-1 max-h-[200px] overflow-y-auto">
+                      {itemsData[idx].modifiedDesc}
+                    </p>
+                  )}
+                </div>
+              </TooltipContent>
+            </Tooltip>
+          ))}
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -156,12 +158,14 @@ const TraitDisplay = ({ trait }: TraitDisplayProps) => {
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <div className="max-w-md">
+        <div className="max-w-[300px]">
           <p className="font-medium text-sm mb-1">
             {dataDragonService.getTraitName(traitId) || trait.name}
           </p>
           {traitData?.modifiedDesc && (
-            <p className="text-sm text-gray-600">{traitData.modifiedDesc}</p>
+            <p className="text-sm text-gray-600 max-h-[200px] overflow-y-auto">
+              {traitData.modifiedDesc}
+            </p>
           )}
         </div>
       </TooltipContent>
