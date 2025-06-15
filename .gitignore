@@ -52,3 +52,4 @@ node_modules
 web/src/data/sets-modified.json
 web/tft-ko_kr.json
 characters/*
+web/src/data/*
