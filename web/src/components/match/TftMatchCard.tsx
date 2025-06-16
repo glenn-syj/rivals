@@ -279,6 +279,9 @@ const ParticipantRow = ({
       );
     });
 
+  // Calculate height based on scale
+  const traitRowHeight = Math.floor(32 * scale); // Base height for trait row
+
   return (
     <div className="border rounded-lg overflow-hidden bg-white">
       <div className="flex items-center justify-between p-2">
@@ -301,14 +304,17 @@ const ParticipantRow = ({
       </div>
 
       <div className="px-2 pb-2">
-        {/* Traits */}
-        <div className="flex flex-wrap gap-1 mb-2">
+        {/* Traits - Fixed height container for 2 rows */}
+        <div
+          className="flex flex-wrap content-start gap-1 mb-2 overflow-hidden"
+          style={{ height: `${traitRowHeight * 2}px` }}
+        >
           {sortedTraits.map((trait, index) => (
             <TraitDisplay key={index} trait={trait} scale={scale} />
           ))}
         </div>
 
-        {/* Units */}
+        {/* Units - Single row */}
         <div className="flex flex-wrap gap-1">
           {participant.units.map((unit, index) => (
             <Unit
