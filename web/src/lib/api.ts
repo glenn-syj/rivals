@@ -108,6 +108,26 @@ export const getTftBadges = async (
   return response.data;
 };
 
+export async function initializeOrGetTftBadges(
+  gameName: string,
+  tagLine: string
+): Promise<TftBadgeDto[]> {
+  const response = await fetch(
+    `/api/v1/tft/badges/${encodeURIComponent(gameName)}/${encodeURIComponent(
+      tagLine
+    )}/initialize`,
+    {
+      method: "GET",
+    }
+  );
+
+  if (!response.ok) {
+    throw new Error("Failed to initialize or get badges");
+  }
+
+  return response.json();
+}
+
 // Error handling middleware
 api.interceptors.response.use(
   (response) => response,
