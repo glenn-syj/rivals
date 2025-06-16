@@ -22,10 +22,13 @@ public class RiotAccountManager {
 
     @Transactional(isolation = Isolation.REPEATABLE_READ)
     public RiotAccount findOrRegisterAccount(String gameName, String tagLine) {
-
         Optional<RiotAccount> existingAccount = riotAccountRepository.findByGameNameAndTagLine(gameName.trim(), tagLine.trim());
         return existingAccount.orElseGet(() -> registerNewAccount(gameName, tagLine));
+    }
 
+    @Transactional(readOnly = true)
+    public Optional<RiotAccount> findByGameNameAndTagLine(String gameName, String tagLine) {
+        return riotAccountRepository.findByGameNameAndTagLine(gameName.trim(), tagLine.trim());
     }
 
     @Transactional
