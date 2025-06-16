@@ -31,25 +31,61 @@ interface TraitsModifiedData {
 
 // Initialize cache on module load
 function initializeCache() {
-  const data = tftData as TftData;
+  // 타입 단언을 수정하여 안전하게 처리
+  const rawData = tftData as unknown as {
+    sets: {
+      [key: string]: {
+        champions: Array<{
+          apiName: string;
+          name: string;
+          ability?: {
+            desc: string;
+            icon: string;
+            name: string;
+            modifiedDesc?: string;
+          };
+        }>;
+      };
+    };
+  };
 
-  // Cache all items from items-modified.json
-  itemsData.forEach((item) => {
-    itemCache.set(item.apiName, item);
-  });
-
-  // Cache all traits from traits-modified.json
-  const typedTraitsData = traitsData as TraitsModifiedData;
-  Object.values(typedTraitsData.sets).forEach((setData) => {
-    setData.traits.forEach((trait) => {
-      traitCache.set(trait.apiName, trait as unknown as TftTrait);
+  // Cache champions
+  Object.values(rawData.sets).forEach((setData) => {
+    setData.champions.forEach((champion) => {
+      const tftChampion: TftChampion = {
+        apiName: champion.apiName,
+        name: champion.name,
+        ability: champion.ability
+          ? {
+              modifiedDesc:
+                champion.ability.modifiedDesc || champion.ability.desc,
+            }
+          : undefined,
+      };
+      championCache.set(champion.apiName, tftChampion);
     });
   });
 
-  // Cache champions from all sets
-  Object.values(data.sets).forEach((setData) => {
-    setData.champions.forEach((champion) => {
-      championCache.set(champion.apiName, champion);
+  // Cache items
+  itemsData.forEach((item: any) => {
+    const tftItem: TftItem = {
+      apiName: item.apiName,
+      name: item.name,
+      modifiedDesc: item.modifiedDesc || item.desc,
+    };
+    itemCache.set(item.apiName, tftItem);
+  });
+
+  // Cache traits
+  const typedTraitsData = traitsData as TraitsModifiedData;
+  Object.values(typedTraitsData.sets).forEach((setData) => {
+    setData.traits.forEach((trait) => {
+      const tftTrait: TftTrait = {
+        apiName: trait.apiName,
+        name: trait.apiName,
+        modifiedDesc: trait.modifiedDesc || trait.desc,
+      };
+      traitCache.set(trait.apiName, tftTrait);
     });
   });
 }
