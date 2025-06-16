@@ -54,7 +54,7 @@ const Unit = ({ unit }: UnitProps) => {
                   <TooltipTrigger asChild>
                     <div className="relative w-6 h-6">
                       <Image
-                        src={dataDragonService.getItemImage(itemId)}
+                        src={dataDragonService.getItemImage(itemId) || ""}
                         alt={dataDragonService.getItemName(itemId) || itemId}
                         fill
                         className="object-cover rounded-md"
