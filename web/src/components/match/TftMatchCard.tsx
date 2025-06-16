@@ -306,7 +306,7 @@ const ParticipantRow = ({
       <div className="px-2 pb-2">
         {/* Traits - Fixed height container for 2 rows */}
         <div
-          className="flex flex-wrap content-start gap-1 mb-2 overflow-hidden"
+          className="flex flex-wrap content-end gap-1 mb-2 overflow-hidden"
           style={{ height: `${traitRowHeight * 2}px` }}
         >
           {sortedTraits.map((trait, index) => (
