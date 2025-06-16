@@ -22,14 +22,18 @@ public class TftMatchManager {
     private final TftMatchRepository tftMatchRepository;
     private final TftApiClient tftApiClient;
 
+    private final TftBadgeService tftBadgeService;
+
     public TftMatchManager(TftMatchParticipantRepository tftMatchParticipantRepository,
                            TftLeagueEntryRepository tftLeagueEntryRepository,
                            TftMatchRepository tftMatchRepository,
-                           TftApiClient tftApiClient) {
+                           TftApiClient tftApiClient,
+                           TftBadgeService tftBadgeService) {
         this.tftMatchParticipantRepository = tftMatchParticipantRepository;
         this.tftLeagueEntryRepository = tftLeagueEntryRepository;
         this.tftMatchRepository = tftMatchRepository;
         this.tftApiClient = tftApiClient;
+        this.tftBadgeService = tftBadgeService;
     }
 
     @Transactional
@@ -66,7 +70,13 @@ public class TftMatchManager {
             throw new IllegalStateException("계정 갱신을 먼저 진행해주세요.");
         }
 
-        return tftMatchRepository.saveAll(matches);
+        List<TftMatch> result = tftMatchRepository.saveAll(matches);
+
+        for (TftMatch match : result) {
+            tftBadgeService.processMatchAchievements(match);
+        }
+
+        return result;
     }
 
     @Transactional
