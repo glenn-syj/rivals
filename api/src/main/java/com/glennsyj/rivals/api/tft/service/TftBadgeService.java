@@ -9,6 +9,7 @@ import com.glennsyj.rivals.api.tft.entity.match.TftMatchParticipant;
 import com.glennsyj.rivals.api.tft.model.badge.TftBadgeDto;
 import com.glennsyj.rivals.api.tft.repository.TftBadgeProgressRepository;
 import com.glennsyj.rivals.api.tft.repository.TftMatchAchievementRepository;
+import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,12 +23,15 @@ public class TftBadgeService {
 
     private final TftMatchAchievementRepository achievementRepository;
     private final TftBadgeProgressRepository badgeProgressRepository;
+    private final RiotAccountManager riotAccountManager;
 
     public TftBadgeService(
             TftMatchAchievementRepository achievementRepository,
-            TftBadgeProgressRepository badgeProgressRepository) {
+            TftBadgeProgressRepository badgeProgressRepository,
+            RiotAccountManager riotAccountManager) {
         this.achievementRepository = achievementRepository;
         this.badgeProgressRepository = badgeProgressRepository;
+        this.riotAccountManager = riotAccountManager;
     }
 
     @Transactional
@@ -135,21 +139,79 @@ public class TftBadgeService {
     }
 
     /**
-     * 계정의 모든 뱃지 진행도를 조회합니다.
+     * 등록된 소환사의 뱃지를 조회하거나 초기화합니다.
+     * 등록되지 않은 소환사의 경우 빈 리스트를 반환합니다.
      */
-    @Transactional(readOnly = true)
-    public List<TftBadgeDto> findAllBadges(RiotAccount account) {
-        return badgeProgressRepository.findByRiotAccountAndIsActiveTrue(account).stream()
-            .map(TftBadgeDto::from)
-            .collect(Collectors.toList());
+    @Transactional
+    public List<TftBadgeDto> findAllBadges(String gameName, String tagLine) {
+        return riotAccountManager.findByGameNameAndTagLine(gameName, tagLine)
+            .map(this::initializeOrGetBadges)
+            .orElse(Collections.emptyList());
     }
 
     /**
-     * 계정의 특정 뱃지 진행도를 조회합니다.
+     * 등록된 소환사의 뱃지를 조회하거나 초기화합니다.
+     */
+    @Transactional
+    public List<TftBadgeDto> findAllBadges(RiotAccount account) {
+        return initializeOrGetBadges(account);
+    }
+
+    /**
+     * 등록된 소환사의 특정 뱃지를 조회합니다.
      */
     @Transactional(readOnly = true)
     public Optional<TftBadgeDto> findBadge(RiotAccount account, TftBadgeProgress.BadgeType badgeType) {
         return badgeProgressRepository.findByRiotAccountAndBadgeType(account, badgeType)
             .map(TftBadgeDto::from);
+    }
+
+    /**
+     * 계정의 뱃지를 초기화하거나 가져옵니다.
+     * 뱃지가 없는 경우 새로 생성하고, 있는 경우 기존 뱃지를 업데이트합니다.
+     */
+    private List<TftBadgeDto> initializeOrGetBadges(RiotAccount account) {
+        List<TftBadgeProgress> existingBadges = badgeProgressRepository.findByRiotAccount(account);
+        
+        if (existingBadges.isEmpty()) {
+            // 뱃지가 없는 경우, 모든 뱃지 타입에 대해 새로운 진행도 생성
+            List<TftBadgeProgress> newBadges = Arrays.stream(TftBadgeProgress.BadgeType.values())
+                .map(badgeType -> {
+                    TftBadgeProgress progress = new TftBadgeProgress(account, badgeType);
+                    // 최근 N경기의 업적 달성 횟수 조회 및 설정
+                    int recentCount = achievementRepository.countRecentAchievements(
+                        account.getPuuid(),
+                        badgeType.getAchievementType().toString(),
+                        RECENT_MATCHES_COUNT
+                    );
+                    progress.updateProgress(recentCount);
+                    return progress;
+                })
+                .collect(Collectors.toList());
+            
+            // 새로운 뱃지들 저장
+            badgeProgressRepository.saveAll(newBadges);
+            return newBadges.stream()
+                .map(TftBadgeDto::from)
+                .collect(Collectors.toList());
+        } else {
+            // 기존 뱃지가 있는 경우, 모든 뱃지 업데이트
+            renewAccountBadges(account);
+            return existingBadges.stream()
+                .map(TftBadgeDto::from)
+                .collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * 계정의 뱃지를 가져옵니다.
+     */
+    private List<TftBadgeDto> getBadges(RiotAccount account) {
+        List<TftBadgeProgress> existingBadges = badgeProgressRepository.findByRiotAccount(account);
+
+        return existingBadges.stream()
+                .map(TftBadgeDto::from)
+                .collect(Collectors.toList());
+
     }
 } 

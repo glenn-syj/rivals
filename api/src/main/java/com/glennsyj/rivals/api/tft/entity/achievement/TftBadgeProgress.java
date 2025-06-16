@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "tft_badge_progress",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"puuid", "badge_type"})
+                @UniqueConstraint(columnNames = {"riot_account_id", "badge_type"})
         })
 public class TftBadgeProgress {
 
@@ -19,7 +19,7 @@ public class TftBadgeProgress {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "riot_account_id", nullable = false)
-    private RiotAccount riotAccount;  // puuid 대신 RiotAccount 참조
+    private RiotAccount riotAccount;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -62,7 +62,7 @@ public class TftBadgeProgress {
         LUXURY(AchievementType.MOST_EXPENSIVE_SQUAD, 5),
         DAMAGE_DEALER(AchievementType.MOST_DAMAGE_DEALT, 5),
         EXECUTOR(AchievementType.MOST_ELIMINATIONS, 5),
-        MVP(AchievementType.FIRST_PLACE, 6),
+        MVP(AchievementType.FIRST_PLACE, 5),
         STEADY(AchievementType.TOP_FOUR, 10);
 
         private final AchievementType achievementType;

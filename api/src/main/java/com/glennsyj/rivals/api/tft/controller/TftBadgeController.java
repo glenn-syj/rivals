@@ -26,6 +26,14 @@ public class TftBadgeController {
     public ResponseEntity<List<TftBadgeDto>> findAllBadges(
             @PathVariable String gameName,
             @PathVariable String tagLine) {
+        List<TftBadgeDto> badges = tftBadgeService.findAllBadges(gameName, tagLine);
+        return ResponseEntity.ok(badges);
+    }
+
+    @GetMapping("/{gameName}/{tagLine}/initialize")
+    public ResponseEntity<List<TftBadgeDto>> initializeOrGetBadgesForSummoner(
+            @PathVariable String gameName,
+            @PathVariable String tagLine) {
         try {
             RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
             List<TftBadgeDto> badges = tftBadgeService.findAllBadges(account);
