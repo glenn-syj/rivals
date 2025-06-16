@@ -6,6 +6,7 @@ import com.glennsyj.rivals.api.tft.entity.achievement.TftBadgeProgress;
 import com.glennsyj.rivals.api.tft.entity.achievement.TftMatchAchievement;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatchParticipant;
+import com.glennsyj.rivals.api.tft.model.badge.TftBadgeDto;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchUnit;
 import com.glennsyj.rivals.api.tft.repository.TftBadgeProgressRepository;
 import com.glennsyj.rivals.api.tft.repository.TftMatchAchievementRepository;
@@ -151,6 +152,71 @@ class TftBadgeServiceTest {
         
         // MVP 뱃지의 진행도가 정확히 업데이트되었는지 확인
         assertThat(existingMvpProgress.getAchievementCount()).isEqualTo(5);
+    }
+
+    @Test
+    void findAllBadges_ShouldReturnActiveBadges() {
+        // Given
+        RiotAccount account = mock(RiotAccount.class);
+        
+        TftBadgeProgress mvpBadge = new TftBadgeProgress(account, TftBadgeProgress.BadgeType.MVP);
+        mvpBadge.updateProgress(6); // Required count is 6, so this will be active
+        
+        TftBadgeProgress luxuryBadge = new TftBadgeProgress(account, TftBadgeProgress.BadgeType.LUXURY);
+        luxuryBadge.updateProgress(5); // Required count is 5, so this will be active
+
+        when(badgeProgressRepository.findByRiotAccountAndIsActiveTrue(account))
+            .thenReturn(List.of(mvpBadge, luxuryBadge));
+
+        // When
+        List<TftBadgeDto> badges = tftBadgeService.findAllBadges(account);
+
+        // Then
+        assertThat(badges).hasSize(2);
+        assertThat(badges)
+            .extracting(TftBadgeDto::badgeType)
+            .containsExactlyInAnyOrder("MVP", "LUXURY");
+        assertThat(badges)
+            .extracting(TftBadgeDto::isActive)
+            .containsOnly(true);
+    }
+
+    @Test
+    void findBadge_ShouldReturnSpecificBadge() {
+        // Given
+        RiotAccount account = mock(RiotAccount.class);
+        TftBadgeProgress.BadgeType badgeType = TftBadgeProgress.BadgeType.MVP;
+        
+        TftBadgeProgress mvpBadge = new TftBadgeProgress(account, badgeType);
+        mvpBadge.updateProgress(6); // Required count is 6
+
+        when(badgeProgressRepository.findByRiotAccountAndBadgeType(account, badgeType))
+            .thenReturn(Optional.of(mvpBadge));
+
+        // When
+        Optional<TftBadgeDto> badge = tftBadgeService.findBadge(account, badgeType);
+
+        // Then
+        assertThat(badge).isPresent();
+        assertThat(badge.get().badgeType()).isEqualTo("MVP");
+        assertThat(badge.get().currentCount()).isEqualTo(6);
+        assertThat(badge.get().isActive()).isTrue();
+    }
+
+    @Test
+    void findBadge_ShouldReturnEmptyWhenBadgeNotFound() {
+        // Given
+        RiotAccount account = mock(RiotAccount.class);
+        TftBadgeProgress.BadgeType badgeType = TftBadgeProgress.BadgeType.MVP;
+
+        when(badgeProgressRepository.findByRiotAccountAndBadgeType(account, badgeType))
+            .thenReturn(Optional.empty());
+
+        // When
+        Optional<TftBadgeDto> badge = tftBadgeService.findBadge(account, badgeType);
+
+        // Then
+        assertThat(badge).isEmpty();
     }
 
     private TftMatchParticipant createParticipant(int placement, int eliminations, int damage, List<TftMatchUnit> units) {

@@ -6,12 +6,14 @@ import com.glennsyj.rivals.api.tft.entity.achievement.TftBadgeProgress;
 import com.glennsyj.rivals.api.tft.entity.achievement.TftMatchAchievement;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatchParticipant;
+import com.glennsyj.rivals.api.tft.model.badge.TftBadgeDto;
 import com.glennsyj.rivals.api.tft.repository.TftBadgeProgressRepository;
 import com.glennsyj.rivals.api.tft.repository.TftMatchAchievementRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -28,6 +30,7 @@ public class TftBadgeService {
         this.badgeProgressRepository = badgeProgressRepository;
     }
 
+    @Transactional
     public void processMatchAchievements(TftMatch match) {
         // 1. 매치 내 업적 계산 및 저장
         calculateAndSaveAchievements(match);
@@ -129,5 +132,24 @@ public class TftBadgeService {
     private TftMatchParticipant findMostEliminations(List<TftMatchParticipant> participants) {
         return Collections.max(participants, 
             Comparator.comparing(TftMatchParticipant::getPlayersEliminated));
+    }
+
+    /**
+     * 계정의 모든 뱃지 진행도를 조회합니다.
+     */
+    @Transactional(readOnly = true)
+    public List<TftBadgeDto> findAllBadges(RiotAccount account) {
+        return badgeProgressRepository.findByRiotAccountAndIsActiveTrue(account).stream()
+            .map(TftBadgeDto::from)
+            .collect(Collectors.toList());
+    }
+
+    /**
+     * 계정의 특정 뱃지 진행도를 조회합니다.
+     */
+    @Transactional(readOnly = true)
+    public Optional<TftBadgeDto> findBadge(RiotAccount account, TftBadgeProgress.BadgeType badgeType) {
+        return badgeProgressRepository.findByRiotAccountAndBadgeType(account, badgeType)
+            .map(TftBadgeDto::from);
     }
 } 
