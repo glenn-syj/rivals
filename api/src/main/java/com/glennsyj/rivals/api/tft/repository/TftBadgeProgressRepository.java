@@ -17,4 +17,6 @@ public interface TftBadgeProgressRepository extends JpaRepository<TftBadgeProgre
     );
 
     List<TftBadgeProgress> findByRiotAccountAndIsActiveTrue(RiotAccount riotAccount);
-} 
+
+    List<TftBadgeProgress> findByRiotAccount(RiotAccount riotAccount);
+}
