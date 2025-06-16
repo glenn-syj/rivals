@@ -173,7 +173,7 @@ function TeamStats({
 export default function RivalryDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const rivalryId = params.rivalryId as string;
+  const rivalryId = params!.rivalryId as string;
 
   const [rivalry, setRivalry] = useState<RivalryDetailDto | null>(null);
   const [isLoading, setIsLoading] = useState(true);

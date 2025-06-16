@@ -48,6 +48,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { BADGE_EMOJIS, BADGE_DESCRIPTIONS } from "@/lib/constants";
+import { dataDragonService } from "@/lib/dataDragon";
 
 // 큐 타입 상수 정의
 const QUEUE_TYPES = [
@@ -91,6 +92,13 @@ export default function SummonerPage() {
     useState<RiotAccountResponse | null>(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [isBadgesLoading, setIsBadgesLoading] = useState(false);
+
+  useEffect(() => {
+    const initializeData = async () => {
+      await dataDragonService.initialize();
+    };
+    initializeData();
+  }, []);
 
   // 현재 선택된 큐 타입의 상태 정보를 가져오는 함수
   const getCurrentTftStatus = () => {
