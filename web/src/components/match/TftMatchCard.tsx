@@ -9,6 +9,9 @@ import {
 } from "@/components/ui/tooltip";
 import { useState, useEffect, useCallback } from "react";
 import { getTftBadges } from "@/lib/api";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 const BADGE_EMOJIS = {
   LUXURY: "💎",
@@ -283,30 +286,41 @@ const ParticipantRow = ({
   const traitRowHeight = Math.floor(32 * scale); // Base height for trait row
 
   return (
-    <div className="border rounded-lg overflow-hidden bg-white">
-      <div className="flex items-center justify-between p-2">
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden hover:border-indigo-500/50 transition-all">
+      <div className="flex items-center justify-between p-3">
         <div
-          className={`flex items-center gap-2 ${
-            participant.placement <= 4 ? "text-blue-600" : "text-gray-600"
-          }`}
+          className={cn(
+            "flex items-center gap-2",
+            participant.placement <= 4 ? "text-indigo-400" : "text-gray-400"
+          )}
         >
           {showBadgesOnLeft && badgeDisplay}
-          <span className="font-medium">
-            {participant.riotIdGameName}#{participant.riotIdTagline}
+          <span className="font-medium text-white">
+            {participant.riotIdGameName}
+            <span className="text-gray-400">#{participant.riotIdTagline}</span>
           </span>
           {!showBadgesOnLeft && badgeDisplay}
         </div>
-        <div className="text-sm text-gray-600">
-          <span className="font-medium">{participant.placement}등</span>
-          <span className="mx-1">•</span>
-          <span>Lv.{participant.level}</span>
+        <div className="flex items-center gap-2 text-sm">
+          <Badge
+            variant={participant.placement <= 4 ? "default" : "secondary"}
+            className={cn(
+              "font-medium",
+              participant.placement <= 4
+                ? "bg-indigo-500/80 hover:bg-indigo-500"
+                : "bg-slate-700/50 hover:bg-slate-700"
+            )}
+          >
+            {participant.placement}등
+          </Badge>
+          <span className="text-gray-400">Lv.{participant.level}</span>
         </div>
       </div>
 
-      <div className="px-2 pb-2">
+      <div className="px-3 pb-3">
         {/* Traits - Fixed height container for 2 rows */}
         <div
-          className="flex flex-wrap content-end gap-1 mb-2 overflow-hidden"
+          className="flex flex-wrap content-end gap-1.5 mb-3 overflow-hidden"
           style={{ height: `${traitRowHeight * 2}px` }}
         >
           {sortedTraits.map((trait, index) => (
@@ -315,7 +329,7 @@ const ParticipantRow = ({
         </div>
 
         {/* Units - Single row */}
-        <div className="flex flex-wrap gap-1">
+        <div className="flex flex-wrap gap-1.5">
           {participant.units.map((unit, index) => (
             <Unit
               key={index}
@@ -404,49 +418,66 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
   const rightParticipants = sortedParticipants.slice(4, 8);
 
   return (
-    <div className="border rounded-lg overflow-hidden">
+    <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden hover:border-indigo-500/50 transition-all">
       {isLoading ? (
-        <div className="p-4 text-center">데이터 로딩중...</div>
+        <div className="flex items-center justify-center p-8">
+          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+          <span className="ml-3 text-gray-400">데이터 로딩중...</span>
+        </div>
       ) : (
         <>
           <div className="flex">
             {/* Match Info - Left Side */}
             <div
-              className={`flex flex-col justify-between px-4 py-3 min-w-[140px] ${
-                PLACEMENT_COLORS[
-                  match.placement as keyof typeof PLACEMENT_COLORS
-                ]
-              }`}
+              className={cn(
+                "flex flex-col justify-between px-4 py-3 min-w-[140px] border-r border-slate-700/50",
+                match.placement <= 4 ? "bg-indigo-500/10" : "bg-slate-700/10"
+              )}
             >
               <div>
                 <div className="flex items-baseline gap-2">
-                  <div className="text-lg font-medium">{match.placement}등</div>
-                  <div className="text-sm text-gray-600">
+                  <Badge
+                    variant={match.placement <= 4 ? "default" : "secondary"}
+                    className={cn(
+                      "text-lg font-medium px-3 py-1",
+                      match.placement <= 4
+                        ? "bg-indigo-500/80 hover:bg-indigo-500"
+                        : "bg-slate-700/50 hover:bg-slate-700"
+                    )}
+                  >
+                    {match.placement}등
+                  </Badge>
+                  <div className="text-sm text-gray-400">
                     {formatTimeAgo(match.gameCreation)}
                   </div>
                 </div>
-                <div className="text-sm mt-1">
+                <div className="text-sm text-gray-300 mt-2">
                   {formatGameLength(match.gameLength)} • Lv.{match.level}
                 </div>
-                <div className="text-sm text-gray-600 mt-1">
+                <Badge
+                  variant="outline"
+                  className="mt-2 text-xs border-slate-600 text-gray-400"
+                >
                   {match.queueType === "standard"
                     ? "일반 랭크"
                     : match.queueType}
-                </div>
+                </Badge>
               </div>
 
-              <button
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowParticipants(!showParticipants)}
-                className="text-sm text-blue-600 hover:text-blue-800 mt-2"
+                className="mt-2 text-gray-400 hover:text-white hover:bg-slate-700/50"
               >
                 {showParticipants ? "정보 숨기기" : "정보 보기"}
-              </button>
+              </Button>
             </div>
 
             {/* Units and Traits - Right Side */}
             <div className="flex-1">
               {/* Traits */}
-              <div className="px-3 pt-3">
+              <div className="px-4 pt-3">
                 <div className="flex flex-wrap gap-1.5">
                   {sortedTraits.map((trait, index) => (
                     <TraitDisplay key={index} trait={trait} />
@@ -455,8 +486,8 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
               </div>
 
               {/* Units */}
-              <div className="px-3 pt-2 pb-3">
-                <div className="flex flex-wrap gap-1">
+              <div className="px-4 pt-2 pb-3">
+                <div className="flex flex-wrap gap-1.5">
                   {match.units.map((unit, index) => (
                     <Unit
                       key={index}
@@ -471,8 +502,8 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
           </div>
 
           {showParticipants && (
-            <div className="border-t">
-              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50">
+            <div className="border-t border-slate-700/50">
+              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-900/30">
                 <div className="space-y-4">
                   {leftParticipants.map((participant) => (
                     <ParticipantRow
