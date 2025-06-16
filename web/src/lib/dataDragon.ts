@@ -92,12 +92,12 @@ export class DataDragonService {
     return item?.name || "";
   }
 
-  getItemImage(shortId: string): string {
+  getItemImage(shortId: string): string | null {
     const item = this.findItemByShortId(shortId);
     if (item) {
       return `${GAME_IMAGE_URL}/tft-item/${item.image.full}`;
     }
-    return "";
+    return null;
   }
 
   getTraitName(shortId: string): string {
