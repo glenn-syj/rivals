@@ -27,14 +27,6 @@ public class TftMatchAchievement {
     @Column(nullable = false)
     private Integer value;  // 해당 업적의 수치 (데미지량, 등수, 가격 등)
 
-    public enum AchievementType {
-        MOST_EXPENSIVE_SQUAD,
-        MOST_DAMAGE_DEALT,
-        MOST_ELIMINATIONS,
-        FIRST_PLACE,
-        TOP_FOUR
-    }
-
     protected TftMatchAchievement() {}
 
     public TftMatchAchievement(TftMatch match, AchievementType type, TftMatchParticipant achiever, Integer value) {
