@@ -124,10 +124,17 @@ export default function SummonerPage() {
           ""
         );
 
-        const [accountResponse, tftStatusesResponse] = await Promise.all([
-          findRiotAccount(trimmedGameName, trimmedTagLine),
-          getTftStatus(trimmedGameName, trimmedTagLine),
-        ]);
+        // 먼저 계정 정보를 가져옴
+        const accountResponse = await findRiotAccount(
+          trimmedGameName,
+          trimmedTagLine
+        );
+
+        // 계정 정보를 받은 후 TFT 상태 정보를 가져옴
+        const tftStatusesResponse = await getTftStatus(
+          trimmedGameName,
+          trimmedTagLine
+        );
 
         if (isMounted) {
           setAccount(accountResponse);
