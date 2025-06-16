@@ -28,13 +28,26 @@ import { useRivalry } from "@/contexts/RivalryContext";
 import { Input } from "@/components/ui/input";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
 import type { Player } from "@/contexts/RivalryContext";
-import { findRiotAccount, getTftStatus, getTftMatches } from "@/lib/api";
+import {
+  findRiotAccount,
+  getTftStatus,
+  getTftMatches,
+  getTftBadges,
+} from "@/lib/api";
 import type {
   RiotAccountResponse,
   TftStatusDto,
   TftRecentMatchDto,
+  TftBadgeDto,
 } from "@/lib/types";
 import TftMatchCard from "@/components/match/TftMatchCard";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { BADGE_EMOJIS, BADGE_DESCRIPTIONS } from "@/lib/constants";
 
 // 큐 타입 상수 정의
 const QUEUE_TYPES = [
@@ -68,6 +81,7 @@ export default function SummonerPage() {
   const [account, setAccount] = useState<RiotAccountResponse | null>(null);
   const [tftStatuses, setTftStatuses] = useState<TftStatusDto[]>([]);
   const [matches, setMatches] = useState<TftRecentMatchDto[]>([]);
+  const [badges, setBadges] = useState<TftBadgeDto[]>([]);
   const [isMatchesLoading, setIsMatchesLoading] = useState(false);
   const [selectedQueueType, setSelectedQueueType] =
     useState<string>("RANKED_TFT");
@@ -76,6 +90,7 @@ export default function SummonerPage() {
   const [selectedPlayer, setSelectedPlayer] =
     useState<RiotAccountResponse | null>(null);
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
+  const [isBadgesLoading, setIsBadgesLoading] = useState(false);
 
   // 현재 선택된 큐 타입의 상태 정보를 가져오는 함수
   const getCurrentTftStatus = () => {
@@ -155,22 +170,29 @@ export default function SummonerPage() {
   useEffect(() => {
     if (!account) return;
 
-    const loadMatches = async () => {
+    const loadMatchesAndBadges = async () => {
       setIsMatchesLoading(true);
       try {
+        // 먼저 매치 데이터를 로드
         const matchData = await getTftMatches(
           account.gameName,
           account.tagLine
         );
         setMatches(matchData);
+
+        // 매치 데이터 로드가 완료된 후 배지 데이터 로드
+        setIsBadgesLoading(true);
+        const badgeData = await getTftBadges(account.gameName, account.tagLine);
+        setBadges(badgeData);
       } catch (error) {
-        console.error("Failed to load matches:", error);
+        console.error("Failed to load matches and badges:", error);
       } finally {
         setIsMatchesLoading(false);
+        setIsBadgesLoading(false);
       }
     };
 
-    loadMatches();
+    loadMatchesAndBadges();
   }, [account]);
 
   // useEffect(() => {
@@ -311,6 +333,49 @@ export default function SummonerPage() {
                   <Star className="w-3 h-3 mr-1" />
                   연승
                 </Badge>
+              )}
+            </div>
+
+            {/* 뱃지 표시 영역 */}
+            <div className="flex flex-wrap gap-2 mt-2">
+              {isBadgesLoading ? (
+                <div className="w-full flex items-center justify-center py-2">
+                  <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                </div>
+              ) : (
+                Object.entries(BADGE_EMOJIS).map(([badgeType, emoji]) => {
+                  const badge = badges.find((b) => b.badgeType === badgeType);
+                  return (
+                    <TooltipProvider key={badgeType}>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div
+                            className={`text-2xl transition-opacity duration-200 cursor-help
+                              ${
+                                !badge?.isActive ? "opacity-30" : "opacity-100"
+                              }`}
+                          >
+                            {emoji}
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="font-medium">
+                            {
+                              BADGE_DESCRIPTIONS[
+                                badgeType as keyof typeof BADGE_DESCRIPTIONS
+                              ]
+                            }
+                          </p>
+                          {badge && (
+                            <p className="text-sm text-gray-400">
+                              진행도: {badge.currentCount}/{badge.requiredCount}
+                            </p>
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  );
+                })
               )}
             </div>
 
