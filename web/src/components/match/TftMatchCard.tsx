@@ -30,10 +30,10 @@ const RARITY_COLORS = {
 } as const;
 
 const TRAIT_STYLE_COLORS = {
-  1: "bg-amber-700/80", // Bronze
-  2: "bg-gray-400/80", // Silver
-  3: "bg-yellow-500/80", // Gold
-  4: "bg-purple-600/80", // Chromatic
+  1: "bg-amber-700", // Bronze
+  2: "bg-gray-600", // Silver
+  3: "bg-yellow-600", // Gold
+  4: "bg-purple-700", // Chromatic
 } as const;
 
 const PLACEMENT_COLORS = {
@@ -181,7 +181,12 @@ const TraitDisplay = ({ trait, scale = 1 }: TraitDisplayProps) => {
     <Tooltip>
       <TooltipTrigger asChild>
         <div
-          className={`flex items-center gap-1.5 rounded-md ${fontSize} ${padding} ${styleColor}`}
+          className={cn(
+            "flex items-center gap-1.5 rounded-md text-white font-medium",
+            fontSize,
+            padding,
+            styleColor
+          )}
         >
           <div
             className="relative"
@@ -282,8 +287,10 @@ const ParticipantRow = ({
       );
     });
 
-  // Calculate height based on scale
-  const traitRowHeight = Math.floor(32 * scale); // Base height for trait row
+  // Calculate scale based on unit count but maintain consistent card size
+  const unitScale = participant.units.length >= 11 ? 0.75 : scale;
+  // Base height for trait row stays constant regardless of unit scale
+  const traitRowHeight = Math.floor(32 * scale); // Use original scale for consistent card height
 
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden hover:border-indigo-500/50 transition-all">
@@ -305,7 +312,7 @@ const ParticipantRow = ({
           <Badge
             variant={participant.placement <= 4 ? "default" : "secondary"}
             className={cn(
-              "font-medium",
+              "font-medium text-white",
               participant.placement <= 4
                 ? "bg-indigo-500/80 hover:bg-indigo-500"
                 : "bg-slate-700/50 hover:bg-slate-700"
@@ -318,25 +325,30 @@ const ParticipantRow = ({
       </div>
 
       <div className="px-3 pb-3">
-        {/* Traits - Fixed height container for 2 rows */}
+        {/* Traits container with fixed height */}
         <div
           className="flex flex-wrap content-end gap-1.5 mb-3 overflow-hidden"
           style={{ height: `${traitRowHeight * 2}px` }}
         >
           {sortedTraits.map((trait, index) => (
-            <TraitDisplay key={index} trait={trait} scale={scale} />
+            <TraitDisplay key={index} trait={trait} scale={unitScale} />
           ))}
         </div>
 
-        {/* Units - Single row */}
-        <div className="flex flex-wrap gap-1.5">
+        {/* Units container with dynamic scale but fixed container size */}
+        <div
+          className={cn(
+            "flex flex-wrap gap-1.5",
+            participant.units.length >= 11 ? "justify-start" : ""
+          )}
+        >
           {participant.units.map((unit, index) => (
             <Unit
               key={index}
               unit={unit}
               isSelected={selectedUnit === unit.character_id}
               onUnitClick={handleUnitClick}
-              scale={scale}
+              scale={unitScale}
             />
           ))}
         </div>
