@@ -104,11 +104,23 @@ export interface TftRecentMatchDto {
   queueType: string;
   traits: TftMatchTrait[];
   units: TftMatchUnit[];
+  participants: TftMatchParticipant[];
+}
+
+export interface TftMatchParticipant {
+  puuid: string;
+  level: number;
+  placement: number;
+  totalDamageToPlayers: number;
+  riotIdGameName: string;
+  riotIdTagline: string;
+  traits: TftMatchTrait[];
+  units: TftMatchUnit[];
 }
 
 export interface TftMatchTrait {
   name: string;
-  numUnits: number;
+  num_units: number;
   style: number;
   tier_current: number;
   tier_total: number;
@@ -120,4 +132,12 @@ export interface TftMatchUnit {
   name: string;
   rarity: number;
   tier: number;
+}
+
+export interface TftBadgeDto {
+  badgeType: string;
+  achievementType: string;
+  currentCount: number;
+  requiredCount: number;
+  isActive: boolean;
 }

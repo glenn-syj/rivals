@@ -6,6 +6,7 @@ import type {
   RivalryResultDto,
   RivalryDetailDto,
   TftRecentMatchDto,
+  TftBadgeDto,
 } from "./types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8080";
@@ -89,6 +90,20 @@ export const getTftMatches = async (
 
   const response = await api.get<TftRecentMatchDto[]>(
     `/api/v1/tft/matches/${trimmedGameName}/${trimmedTagLine}`
+  );
+  return response.data;
+};
+
+// TFT Badge APIs
+export const getTftBadges = async (
+  gameName: string,
+  tagLine: string
+): Promise<TftBadgeDto[]> => {
+  const trimmedGameName = gameName.trim();
+  const trimmedTagLine = tagLine.trim();
+
+  const response = await api.get<TftBadgeDto[]>(
+    `/api/v1/tft/badges/${trimmedGameName}/${trimmedTagLine}`
   );
   return response.data;
 };
