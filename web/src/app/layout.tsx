@@ -4,8 +4,12 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { RivalryProvider } from "@/contexts/RivalryContext";
 import RivalryCart from "@/components/RivalryCart";
+import { dataDragonService } from "@/lib/dataDragon";
 
 const inter = Inter({ subsets: ["latin"] });
+
+// Initialize DataDragonService at app level
+dataDragonService.initialize().catch(console.error);
 
 export const metadata: Metadata = {
   title: "Rivals - TFT 라이벌 관리 서비스",

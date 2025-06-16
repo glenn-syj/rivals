@@ -385,15 +385,6 @@ const globalCache = {
 export default function TftMatchCard({ match }: TftMatchCardProps) {
   const [showParticipants, setShowParticipants] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    const initializeData = async () => {
-      await dataDragonService.initialize();
-      setIsLoading(false);
-    };
-    initializeData();
-  }, []);
 
   const formatGameLength = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -446,115 +437,104 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
 
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden hover:border-indigo-500/50 transition-all">
-      {isLoading ? (
-        <div className="flex items-center justify-center p-8">
-          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
-          <span className="ml-3 text-gray-400">데이터 로딩중...</span>
-        </div>
-      ) : (
-        <>
-          <div className="flex">
-            {/* Match Info - Left Side */}
-            <div
-              className={cn(
-                "flex flex-col justify-between px-4 py-3 min-w-[140px] border-r border-slate-700/50",
-                match.placement <= 4 ? "bg-indigo-500/10" : "bg-slate-700/10"
-              )}
-            >
-              <div>
-                <div className="flex items-baseline gap-2">
-                  <Badge
-                    variant={match.placement <= 4 ? "default" : "secondary"}
-                    className={cn(
-                      "text-lg font-medium px-3 py-1",
-                      match.placement <= 4
-                        ? "bg-indigo-500/80 hover:bg-indigo-500"
-                        : "bg-slate-700/50 hover:bg-slate-700"
-                    )}
-                  >
-                    {match.placement}등
-                  </Badge>
-                  <div className="text-sm text-gray-400">
-                    {formatTimeAgo(match.gameCreation)}
-                  </div>
-                </div>
-                <div className="text-sm text-gray-300 mt-2">
-                  {formatGameLength(match.gameLength)} • Lv.{match.level}
-                </div>
-                <Badge
-                  variant="outline"
-                  className="mt-2 text-xs border-slate-600 text-gray-400"
-                >
-                  {match.queueType === "standard"
-                    ? "일반 랭크"
-                    : match.queueType}
-                </Badge>
-              </div>
-
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowParticipants(!showParticipants)}
-                className="mt-2 text-gray-400 hover:text-white hover:bg-slate-700/50"
+      <div className="flex">
+        {/* Match Info - Left Side */}
+        <div
+          className={cn(
+            "flex flex-col justify-between px-4 py-3 min-w-[140px] border-r border-slate-700/50",
+            match.placement <= 4 ? "bg-indigo-500/10" : "bg-slate-700/10"
+          )}
+        >
+          <div>
+            <div className="flex items-baseline gap-2">
+              <Badge
+                variant={match.placement <= 4 ? "default" : "secondary"}
+                className={cn(
+                  "text-lg font-medium px-3 py-1",
+                  match.placement <= 4
+                    ? "bg-indigo-500/80 hover:bg-indigo-500"
+                    : "bg-slate-700/50 hover:bg-slate-700"
+                )}
               >
-                {showParticipants ? "정보 숨기기" : "정보 보기"}
-              </Button>
+                {match.placement}등
+              </Badge>
+              <div className="text-sm text-gray-400">
+                {formatTimeAgo(match.gameCreation)}
+              </div>
             </div>
+            <div className="text-sm text-gray-300 mt-2">
+              {formatGameLength(match.gameLength)} • Lv.{match.level}
+            </div>
+            <Badge
+              variant="outline"
+              className="mt-2 text-xs border-slate-600 text-gray-400"
+            >
+              {match.queueType === "standard" ? "일반 랭크" : match.queueType}
+            </Badge>
+          </div>
 
-            {/* Units and Traits - Right Side */}
-            <div className="flex-1">
-              {/* Traits */}
-              <div className="px-4 pt-3">
-                <div className="flex flex-wrap gap-1.5">
-                  {sortedTraits.map((trait, index) => (
-                    <TraitDisplay key={index} trait={trait} />
-                  ))}
-                </div>
-              </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowParticipants(!showParticipants)}
+            className="mt-2 text-gray-400 hover:text-white hover:bg-slate-700/50"
+          >
+            {showParticipants ? "정보 숨기기" : "정보 보기"}
+          </Button>
+        </div>
 
-              {/* Units */}
-              <div className="px-4 pt-2 pb-3">
-                <div className="flex flex-wrap gap-1.5">
-                  {match.units.map((unit, index) => (
-                    <Unit
-                      key={index}
-                      unit={unit}
-                      isSelected={selectedUnit === unit.character_id}
-                      onUnitClick={handleUnitClick}
-                    />
-                  ))}
-                </div>
-              </div>
+        {/* Units and Traits - Right Side */}
+        <div className="flex-1">
+          {/* Traits */}
+          <div className="px-4 pt-3">
+            <div className="flex flex-wrap gap-1.5">
+              {sortedTraits.map((trait, index) => (
+                <TraitDisplay key={index} trait={trait} />
+              ))}
             </div>
           </div>
 
-          {showParticipants && (
-            <div className="border-t border-slate-700/50">
-              <div className="grid grid-cols-2 gap-4 p-4 bg-slate-900/30">
-                <div className="space-y-4">
-                  {leftParticipants.map((participant) => (
-                    <ParticipantRow
-                      key={participant.puuid}
-                      participant={participant}
-                      showBadgesOnLeft={true}
-                      scale={0.8}
-                    />
-                  ))}
-                </div>
-                <div className="space-y-4">
-                  {rightParticipants.map((participant) => (
-                    <ParticipantRow
-                      key={participant.puuid}
-                      participant={participant}
-                      showBadgesOnLeft={false}
-                      scale={0.8}
-                    />
-                  ))}
-                </div>
-              </div>
+          {/* Units */}
+          <div className="px-4 pt-2 pb-3">
+            <div className="flex flex-wrap gap-1.5">
+              {match.units.map((unit, index) => (
+                <Unit
+                  key={index}
+                  unit={unit}
+                  isSelected={selectedUnit === unit.character_id}
+                  onUnitClick={handleUnitClick}
+                />
+              ))}
             </div>
-          )}
-        </>
+          </div>
+        </div>
+      </div>
+
+      {showParticipants && (
+        <div className="border-t border-slate-700/50">
+          <div className="grid grid-cols-2 gap-4 p-4 bg-slate-900/30">
+            <div className="space-y-4">
+              {leftParticipants.map((participant) => (
+                <ParticipantRow
+                  key={participant.puuid}
+                  participant={participant}
+                  showBadgesOnLeft={true}
+                  scale={0.8}
+                />
+              ))}
+            </div>
+            <div className="space-y-4">
+              {rightParticipants.map((participant) => (
+                <ParticipantRow
+                  key={participant.puuid}
+                  participant={participant}
+                  showBadgesOnLeft={false}
+                  scale={0.8}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

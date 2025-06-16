@@ -20,13 +20,6 @@ interface UnitProps {
 }
 
 const Unit = ({ unit }: UnitProps) => {
-  useEffect(() => {
-    const initializeData = async () => {
-      await dataDragonService.initialize();
-    };
-    initializeData();
-  }, []);
-
   return (
     <Tooltip>
       <TooltipTrigger asChild>
@@ -47,39 +40,10 @@ const Unit = ({ unit }: UnitProps) => {
           <p className="text-center text-sm font-medium">
             {dataDragonService.getChampionName(unit.character_id) || unit.name}
           </p>
-          {unit.itemNames.length > 0 && (
-            <div className="flex flex-wrap gap-1 justify-center mt-1">
-              {unit.itemNames.map((itemId, idx) => (
-                <Tooltip key={idx}>
-                  <TooltipTrigger asChild>
-                    <div className="relative w-6 h-6">
-                      <Image
-                        src={dataDragonService.getItemImage(itemId) || ""}
-                        alt={dataDragonService.getItemName(itemId) || itemId}
-                        fill
-                        className="object-cover rounded-md"
-                      />
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <div className="p-2 max-w-xs">
-                      <p className="font-bold">
-                        {dataDragonService.getItemName(itemId)}
-                      </p>
-                    </div>
-                  </TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          )}
         </div>
       </TooltipTrigger>
       <TooltipContent>
-        <div className="p-2 max-w-xs">
-          <p className="font-bold">
-            {dataDragonService.getChampionName(unit.character_id)}
-          </p>
-        </div>
+        <p>{unit.name}</p>
       </TooltipContent>
     </Tooltip>
   );
