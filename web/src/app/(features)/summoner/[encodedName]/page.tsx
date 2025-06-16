@@ -28,8 +28,13 @@ import { useRivalry } from "@/contexts/RivalryContext";
 import { Input } from "@/components/ui/input";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
 import type { Player } from "@/contexts/RivalryContext";
-import { findRiotAccount, getTftStatus } from "@/lib/api";
-import type { RiotAccountResponse, TftStatusDto } from "@/lib/types";
+import { findRiotAccount, getTftStatus, getTftMatches } from "@/lib/api";
+import type {
+  RiotAccountResponse,
+  TftStatusDto,
+  TftRecentMatchDto,
+} from "@/lib/types";
+import TftMatchCard from "@/components/match/TftMatchCard";
 
 // 큐 타입 상수 정의
 const QUEUE_TYPES = [
@@ -54,7 +59,7 @@ const formatQueueType = (queueType: string): string => {
 export default function SummonerPage() {
   const params = useParams();
   const router = useRouter();
-  const encodedName = params.encodedName as string;
+  const encodedName = params!.encodedName as string;
   const { openRivalryCart, getTotalPlayerCount, addPlayerToTeam } =
     useRivalry();
 
@@ -62,6 +67,8 @@ export default function SummonerPage() {
   const [error, setError] = useState<string | null>(null);
   const [account, setAccount] = useState<RiotAccountResponse | null>(null);
   const [tftStatuses, setTftStatuses] = useState<TftStatusDto[]>([]);
+  const [matches, setMatches] = useState<TftRecentMatchDto[]>([]);
+  const [isMatchesLoading, setIsMatchesLoading] = useState(false);
   const [selectedQueueType, setSelectedQueueType] =
     useState<string>("RANKED_TFT");
   const [searchInput, setSearchInput] = useState("");
@@ -144,6 +151,27 @@ export default function SummonerPage() {
       isMounted = false;
     };
   }, [encodedName]);
+
+  useEffect(() => {
+    if (!account) return;
+
+    const loadMatches = async () => {
+      setIsMatchesLoading(true);
+      try {
+        const matchData = await getTftMatches(
+          account.gameName,
+          account.tagLine
+        );
+        setMatches(matchData);
+      } catch (error) {
+        console.error("Failed to load matches:", error);
+      } finally {
+        setIsMatchesLoading(false);
+      }
+    };
+
+    loadMatches();
+  }, [account]);
 
   // useEffect(() => {
   //   console.log("Account state changed:", account);
@@ -443,7 +471,7 @@ export default function SummonerPage() {
             {renderQueueTypeSelector()}
 
             {/* 메인 레이아웃 */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-[calc(100vh-300px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-[calc(100vh-300px)]">
               <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-8 lg:h-fit">
                 {renderTftStatusCard()}
 
@@ -491,7 +519,7 @@ export default function SummonerPage() {
               </div>
 
               {/* 오른쪽: TFT 랭크 전적 (스크롤 가능) */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-3 space-y-6">
                 <Card className="bg-slate-800/50 border-slate-700/50">
                   <CardHeader>
                     <CardTitle className="text-xl text-white flex items-center gap-3">
@@ -513,12 +541,22 @@ export default function SummonerPage() {
                           <Clock className="w-4 h-4" />
                           최근 게임
                         </h3>
-                        <div className="text-center py-8 text-gray-400">
-                          <p>게임 기록이 여기에 표시됩니다</p>
-                          <p className="text-sm mt-2">
-                            (API 연동 후 구현 예정)
-                          </p>
-                        </div>
+                        {isMatchesLoading ? (
+                          <div className="text-center py-8 text-gray-400">
+                            <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
+                            <p>매치 기록을 불러오는 중...</p>
+                          </div>
+                        ) : matches.length > 0 ? (
+                          <div className="space-y-4">
+                            {matches.map((match) => (
+                              <TftMatchCard key={match.matchId} match={match} />
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-gray-400">
+                            <p>최근 게임 기록이 없습니다</p>
+                          </div>
+                        )}
                       </div>
 
                       {/* 상세 분석 섹션 */}
@@ -535,7 +573,7 @@ export default function SummonerPage() {
                         </div>
                       </div>
 
-                      {/* 추가 섹션들... */}
+                      {/* 기타 통계 섹션 */}
                       <div className="p-4 rounded-lg bg-slate-700/30 border border-slate-600/50">
                         <h3 className="text-lg font-semibold text-white mb-3">
                           기타 통계
