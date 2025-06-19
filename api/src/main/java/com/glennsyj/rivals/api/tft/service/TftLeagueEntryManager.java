@@ -6,11 +6,14 @@ import com.glennsyj.rivals.api.tft.TftApiClient;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 public class TftLeagueEntryManager {
@@ -100,29 +103,45 @@ public class TftLeagueEntryManager {
     /**
      * 존재하는 계정 갱신 시 Entry 정보 갱신
      *
-     * @param puuid
+     * @param accountId, puuid
      * @return
      */
     @Transactional
-    public TftLeagueEntry renewEntry(String puuid) {
+    public List<TftLeagueEntry> renewEntry(Long accountId, String puuid) {
 
         List<TftLeagueEntryResponse> responses = tftApiClient.getLeagueEntries(puuid);
         if (responses.isEmpty()) {
             throw new IllegalStateException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다");
         }
 
-        TftLeagueEntryResponse response = responses.get(0);
+        RiotAccount account = riotAccountRepository.findById(accountId).orElseThrow(
+                EntityNotFoundException::new
+        );
 
-        return tftLeagueEntryRepository.findByPuuid(puuid)
-            .map(entry -> {
-                entry.updateFrom(response);
-                return entry;
-            })
-            .orElseGet(() -> {
-                RiotAccount account = riotAccountRepository.findByPuuid(puuid)
-                    .orElseThrow(() -> new IllegalStateException("계정을 찾을 수 없습니다: " + puuid));
-                TftLeagueEntry newEntry = new TftLeagueEntry(account, response);
-                return tftLeagueEntryRepository.save(newEntry);
-            });
+        List<TftLeagueEntry> entries = tftLeagueEntryRepository
+                .findLatestEntriesForEachQueueTypeByAccountId(accountId);
+
+        Map<String, TftLeagueEntry> entriesByQueueType = entries.stream()
+                .collect(Collectors.toMap(
+                        entry -> entry.getQueueType().toString(),
+                        entry -> entry
+                ));
+
+        // 응답을 처리하여 업데이트된 엔트리 리스트 생성
+        List<TftLeagueEntry> updatedEntries = responses.stream()
+                .map(response -> {
+                    TftLeagueEntry entry = entriesByQueueType.get(response.queueType());
+                    if (entry != null) {
+                        // 기존 엔트리 업데이트
+                        entry.updateFrom(response);
+                        return entry;
+                    } else {
+                        // 새로운 엔트리 생성
+                        return new TftLeagueEntry(account, response);
+                    }
+                })
+                .collect(Collectors.toList());
+
+        return tftLeagueEntryRepository.saveAll(updatedEntries);
     }
 }

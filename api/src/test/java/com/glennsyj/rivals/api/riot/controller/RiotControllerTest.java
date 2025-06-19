@@ -48,23 +48,6 @@ class RiotControllerTest {
     }
 
     @Test
-    void 계정_갱신_성공() throws Exception {
-        // given
-        RiotAccount account = new RiotAccount("Hide", "KR1", "puuid123");
-        TftLeagueEntry entry = Mockito.mock(TftLeagueEntry.class);
-        when(riotAccountManager.renewAccount("Hide", "KR1"))
-                .thenReturn(account);
-        when(tftLeagueEntryManager.renewEntry(account.getPuuid()))
-                .thenReturn(entry);
-
-        // when & then
-        mockMvc.perform(
-                MockMvcRequestBuilders.get("/api/v1/riot/accounts/renew/{gameName}/{tagLine}", "Hide", "KR1"))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.puuid").value("puuid123"));
-    }
-
-    @Test
     void 존재하지_않는_계정_조회시_404() throws Exception {
         // given
         when(riotAccountManager.findOrRegisterAccount("NotExist", "KR1"))

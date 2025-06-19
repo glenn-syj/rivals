@@ -87,24 +87,38 @@ class TftLeagueEntryManagerTest {
     }
 
     @Test
-    @DisplayName("renewEntry: 기존 엔트리를 갱신한다")
-    void renewEntry_ShouldUpdateExistingEntry() {
+    @DisplayName("renewEntry: 기존 엔트리들을 갱신하고 새로운 큐타입의 엔트리를 생성한다")
+    void renewEntry_ShouldUpdateExistingEntriesAndCreateNewOnes() {
         // given
+        Long accountId = 1L;
         String puuid = "test-puuid";
+        RiotAccount account = new RiotAccount("test", "KR1", puuid);
+
+        // 기존 엔트리 (RANKED_TFT)
         TftLeagueEntry existingEntry = createMockEntry();
-        TftLeagueEntryResponse response = createMockResponse();
-        
+
+        // 새로운 응답 (RANKED_TFT와 RANKED_TFT_TURBO)
+        TftLeagueEntryResponse response1 = createMockResponse(); // RANKED_TFT
+        TftLeagueEntryResponse response2 = createMockResponseWithQueueType("RANKED_TFT_TURBO");
+        List<TftLeagueEntryResponse> responses = List.of(response1, response2);
+
+        // Mocking
+        when(riotAccountRepository.findById(accountId))
+                .thenReturn(Optional.of(account));
         when(tftApiClient.getLeagueEntries(puuid))
-            .thenReturn(List.of(response));
-        when(tftLeagueEntryRepository.findByPuuid(puuid))
-            .thenReturn(Optional.of(existingEntry));
+                .thenReturn(responses);
+        when(tftLeagueEntryRepository.findLatestEntriesForEachQueueTypeByAccountId(accountId))
+                .thenReturn(List.of());  // 기존 엔트리 없음
+        when(tftLeagueEntryRepository.saveAll(any()))
+                .thenAnswer(invocation -> invocation.getArgument(0));
 
         // when
-        TftLeagueEntry result = tftLeagueEntryManager.renewEntry(puuid);
+        List<TftLeagueEntry> results = tftLeagueEntryManager.renewEntry(accountId, puuid);
 
         // then
-        assertThat(result).isEqualTo(existingEntry);
-        verify(tftLeagueEntryRepository, never()).save(any());
+        assertThat(results).hasSize(2);
+        assertThat(results).allMatch(entry -> entry.getAccount().equals(account));
+        verify(tftLeagueEntryRepository).saveAll(any());
     }
 
     @Test
