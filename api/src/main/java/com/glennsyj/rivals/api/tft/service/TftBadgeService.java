@@ -82,11 +82,13 @@ public class TftBadgeService {
     }
 
     @Transactional
-    public void renewAccountBadges(RiotAccount account) {
+    public List<TftBadgeDto> renewAccountBadges(RiotAccount account) {
         // 각 뱃지 타입별로 진행도 업데이트
         for (TftBadgeProgress.BadgeType badgeType : TftBadgeProgress.BadgeType.values()) {
             updateBadgeProgress(account, badgeType);
         }
+
+        return initializeOrGetBadges(account);
     }
 
     private void updateBadgeProgress(RiotAccount account, TftBadgeProgress.BadgeType badgeType) {
