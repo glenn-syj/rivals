@@ -18,7 +18,7 @@ public class SecurityConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/api/**") // CORS 허용할 경로
                         .allowedOrigins("http://localhost:3000", "http://frontend:3000", "https://rivals.r-e.kr") // 허용할 출처(origin)
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedMethods("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS")
                         .allowedHeaders("*")
                         .allowCredentials(true);
             }
