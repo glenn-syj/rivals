@@ -13,11 +13,12 @@ export interface BaseResponseDto<T> {
 }
 
 // Riot Account related types
-export interface RiotAccountResponse {
+export interface RiotAccountDto {
   puuid: string;
   gameName: string;
   tagLine: string;
   id: string;
+  updatedAt: string | null;
 }
 
 // TFT related types

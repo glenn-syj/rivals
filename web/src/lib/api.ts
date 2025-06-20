@@ -1,6 +1,6 @@
 import axios from "axios";
 import type {
-  RiotAccountResponse,
+  RiotAccountDto,
   TftStatusDto,
   RivalryCreationDto,
   RivalryResultDto,
@@ -21,11 +21,11 @@ const api = axios.create({
 export const findRiotAccount = async (
   gameName: string,
   tagLine: string
-): Promise<RiotAccountResponse> => {
+): Promise<RiotAccountDto> => {
   const trimmedGameName = gameName.trim();
   const trimmedTagLine = tagLine.trim();
 
-  const response = await api.get<RiotAccountResponse>(
+  const response = await api.get<RiotAccountDto>(
     `/api/v1/riot/accounts/${trimmedGameName}/${trimmedTagLine}`
   );
   return response.data;
@@ -34,11 +34,11 @@ export const findRiotAccount = async (
 export const renewRiotAccount = async (
   gameName: string,
   tagLine: string
-): Promise<RiotAccountResponse> => {
+): Promise<RiotAccountDto> => {
   const trimmedGameName = gameName.trim();
   const trimmedTagLine = tagLine.trim();
 
-  const response = await api.get<RiotAccountResponse>(
+  const response = await api.patch<RiotAccountDto>(
     `/api/v1/riot/accounts/renew/${trimmedGameName}/${trimmedTagLine}`
   );
   return response.data;
