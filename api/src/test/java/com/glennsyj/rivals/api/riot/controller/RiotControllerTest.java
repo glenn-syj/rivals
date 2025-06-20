@@ -1,13 +1,14 @@
 package com.glennsyj.rivals.api.riot.controller;
 
+import com.glennsyj.rivals.api.common.config.SecurityConfig;
+import com.glennsyj.rivals.api.config.EntityTestUtil;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
+import com.glennsyj.rivals.api.riot.model.RiotAccountDto;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
-import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
-import com.glennsyj.rivals.api.tft.service.TftLeagueEntryManager;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -19,6 +20,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(RiotController.class)
+@Import(SecurityConfig.class)
 @WithMockUser
 class RiotControllerTest {
     @Autowired
@@ -27,15 +29,13 @@ class RiotControllerTest {
     @MockitoBean
     private RiotAccountManager riotAccountManager;
 
-    @MockitoBean
-    private TftLeagueEntryManager tftLeagueEntryManager;
-
     @Test
     void 계정_조회_성공() throws Exception {
         // given
         RiotAccount account = new RiotAccount("Hide", "KR1", "puuid123");
         when(riotAccountManager.findOrRegisterAccount("Hide", "KR1"))
                 .thenReturn(account);
+        EntityTestUtil.setId(account, 1L);
 
         // when & then
         mockMvc.perform(
@@ -44,7 +44,7 @@ class RiotControllerTest {
                 .andExpect(jsonPath("$.puuid").value("puuid123"))
                 .andExpect(jsonPath("$.gameName").value("Hide"))
                 .andExpect(jsonPath("$.tagLine").value("KR1"))
-                .andDo(print());  // 응답 내용 출력
+                .andDo(print());
     }
 
     @Test
@@ -56,6 +56,37 @@ class RiotControllerTest {
         // when & then
         mockMvc.perform(
                 MockMvcRequestBuilders.get("/api/v1/riot/accounts/{gameName}/{tagLine}", "NotExist", "KR1"))
+                .andExpect(status().isNotFound())
+                .andDo(print());
+    }
+
+    @Test
+    void 계정_갱신_성공() throws Exception {
+        // given
+        RiotAccount account = new RiotAccount("Hide", "KR1", "puuid123");
+        when(riotAccountManager.renewAccount("Hide", "KR1"))
+                .thenReturn(account);
+        EntityTestUtil.setId(account, 1L);
+
+        // when & then
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/api/v1/riot/accounts/renew/{gameName}/{tagLine}", "Hide", "KR1"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.puuid").value("puuid123"))
+                .andExpect(jsonPath("$.gameName").value("Hide"))
+                .andExpect(jsonPath("$.tagLine").value("KR1"))
+                .andDo(print());
+    }
+
+    @Test
+    void 존재하지_않는_계정_갱신시_404() throws Exception {
+        // given
+        when(riotAccountManager.renewAccount("NotExist", "KR1"))
+                .thenThrow(new IllegalStateException("Account not found"));
+
+        // when & then
+        mockMvc.perform(
+                MockMvcRequestBuilders.patch("/api/v1/riot/accounts/renew/{gameName}/{tagLine}", "NotExist", "KR1"))
                 .andExpect(status().isNotFound())
                 .andDo(print());
     }
