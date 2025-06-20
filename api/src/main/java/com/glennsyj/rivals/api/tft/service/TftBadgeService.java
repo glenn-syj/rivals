@@ -88,7 +88,8 @@ public class TftBadgeService {
             updateBadgeProgress(account, badgeType);
         }
 
-        return initializeOrGetBadges(account);
+        // 업데이트된 배지 반환
+        return getBadges(account);
     }
 
     private void updateBadgeProgress(RiotAccount account, TftBadgeProgress.BadgeType badgeType) {
@@ -170,7 +171,7 @@ public class TftBadgeService {
 
     /**
      * 계정의 뱃지를 초기화하거나 가져옵니다.
-     * 뱃지가 없는 경우 새로 생성하고, 있는 경우 기존 뱃지를 업데이트합니다.
+     * 뱃지가 없는 경우 새로 생성하고, 있는 경우 기존 뱃지를 반환합니다.
      */
     private List<TftBadgeDto> initializeOrGetBadges(RiotAccount account) {
         List<TftBadgeProgress> existingBadges = badgeProgressRepository.findByRiotAccount(account);
@@ -196,13 +197,12 @@ public class TftBadgeService {
             return newBadges.stream()
                 .map(TftBadgeDto::from)
                 .collect(Collectors.toList());
-        } else {
-            // 기존 뱃지가 있는 경우, 모든 뱃지 업데이트
-            renewAccountBadges(account);
-            return existingBadges.stream()
-                .map(TftBadgeDto::from)
-                .collect(Collectors.toList());
         }
+        
+        // 기존 뱃지가 있는 경우, 그대로 반환
+        return existingBadges.stream()
+            .map(TftBadgeDto::from)
+            .collect(Collectors.toList());
     }
 
     /**
@@ -210,10 +210,8 @@ public class TftBadgeService {
      */
     private List<TftBadgeDto> getBadges(RiotAccount account) {
         List<TftBadgeProgress> existingBadges = badgeProgressRepository.findByRiotAccount(account);
-
         return existingBadges.stream()
                 .map(TftBadgeDto::from)
                 .collect(Collectors.toList());
-
     }
 } 
