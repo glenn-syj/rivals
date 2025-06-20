@@ -1,6 +1,7 @@
 package com.glennsyj.rivals.api.tft.service;
 
 import com.glennsyj.rivals.api.config.EntityTestUtil;
+import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.tft.TftApiClient;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
@@ -11,6 +12,7 @@ import com.glennsyj.rivals.api.tft.model.match.TftMatchResponse;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
 import com.glennsyj.rivals.api.tft.repository.TftMatchParticipantRepository;
 import com.glennsyj.rivals.api.tft.repository.TftMatchRepository;
+import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -18,9 +20,12 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -41,7 +46,13 @@ class TftMatchManagerTest {
     private TftMatchRepository tftMatchRepository;
 
     @Mock
+    private RiotAccountRepository riotAccountRepository;
+
+    @Mock
     private TftApiClient tftApiClient;
+
+    @Mock
+    private TftBadgeService tftBadgeService;
 
     @InjectMocks
     private TftMatchManager tftMatchManager;
@@ -61,19 +72,24 @@ class TftMatchManagerTest {
         // then
         assertThat(result).isEmpty();
         verify(tftApiClient, never()).getMatchIdsFromPuuid(any());
+        verify(riotAccountRepository, never()).findById(any());
     }
 
     @Test
-    @DisplayName("TFT 엔트리가 있고 매치 기록도 있는 경우 기존 매치를 반환한다")
-    void whenHasEntriesAndMatches_thenReturnExistingMatches() {
+    @DisplayName("첫 검색이 아닌 경우(updatedAt이 존재하는 경우) DB에 있는 매치만 반환한다")
+    void whenNotFirstSearch_thenReturnOnlyExistingMatches() {
         // given
         Long accountId = 1L;
         String puuid = "test-puuid";
         List<TftLeagueEntry> entries = List.of(mock(TftLeagueEntry.class));
         List<TftMatch> existingMatches = List.of(mock(TftMatch.class));
-
+        RiotAccount existingAccount = mock(RiotAccount.class);
+        
+        given(existingAccount.getUpdatedAt()).willReturn(LocalDateTime.now());
         given(tftLeagueEntryRepository.findLatestEntriesForEachQueueTypeByAccountId(accountId))
                 .willReturn(entries);
+        given(riotAccountRepository.findById(accountId))
+                .willReturn(Optional.of(existingAccount));
         given(tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid))
                 .willReturn(existingMatches);
 
@@ -86,26 +102,64 @@ class TftMatchManagerTest {
     }
 
     @Test
-    @DisplayName("TFT 엔트리는 있지만 매치 기록이 없는 경우 API를 호출하여 매치를 생성한다")
-    void whenHasEntriesButNoMatches_thenCreateNewMatches() {
+    @DisplayName("첫 검색인 경우(updatedAt이 null인 경우) API를 호출하여 매치를 생성한다")
+    void whenFirstSearch_thenCreateNewMatches() {
         // given
         Long accountId = 1L;
         String puuid = "test-puuid";
-        List<TftLeagueEntry> entries = List.of(mock(TftLeagueEntry.class));
-        List<String> matchIds = List.of("match-1", "match-2");
-
-        // Create mock response using helper method
+        List<TftLeagueEntry> entries = new ArrayList<>(List.of(mock(TftLeagueEntry.class)));
+        List<String> matchIds = new ArrayList<>(List.of("match-1", "match-2"));
+        RiotAccount account = mock(RiotAccount.class);
         TftMatchResponse mockResponse = createMockMatchResponse();
 
+        given(account.getUpdatedAt()).willReturn(null);
         given(tftLeagueEntryRepository.findLatestEntriesForEachQueueTypeByAccountId(accountId))
                 .willReturn(entries);
-        given(tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid))
-                .willReturn(Collections.emptyList());
+        given(riotAccountRepository.findById(accountId))
+                .willReturn(Optional.of(account));
         given(tftApiClient.getMatchIdsFromPuuid(puuid)).willReturn(matchIds);
+        given(tftApiClient.getMatchResponseFromMatchId(any())).willReturn(mockResponse);
+        given(tftMatchRepository.findByMatchIdIn(matchIds))
+                .willReturn(new ArrayList<>());
+        given(tftMatchRepository.saveAll(any())).willAnswer(invocation -> {
+            List<TftMatch> matches = invocation.getArgument(0);
+            return new ArrayList<>(matches);
+        });
+
+        // when
+        List<TftMatch> result = tftMatchManager.findOrCreateRecentTftMatches(accountId, puuid);
+
+        // then
+        assertThat(result).hasSize(2);
+        verify(tftApiClient).getMatchIdsFromPuuid(puuid);
+        verify(tftMatchRepository).saveAll(any());
+        verify(tftBadgeService, times(2)).processMatchAchievements(any());
+    }
+
+    @Test
+    @DisplayName("첫 검색이고 일부 매치가 이미 존재하는 경우 새로운 매치만 저장한다")
+    void whenFirstSearchWithSomeExistingMatches_thenSaveOnlyNewMatches() {
+        // given
+        Long accountId = 1L;
+        String puuid = "test-puuid";
+        List<TftLeagueEntry> entries = new ArrayList<>(List.of(mock(TftLeagueEntry.class)));
+        List<String> matchIds = new ArrayList<>(List.of("match-1", "match-2", "match-3"));
+        List<TftMatch> existingMatches = new ArrayList<>(List.of(createTftMatch("match-1")));
+        RiotAccount account = mock(RiotAccount.class);
+        TftMatchResponse mockResponse = createMockMatchResponse();
+
+        given(account.getUpdatedAt()).willReturn(null);
+        given(tftLeagueEntryRepository.findLatestEntriesForEachQueueTypeByAccountId(accountId))
+                .willReturn(entries);
+        given(riotAccountRepository.findById(accountId))
+                .willReturn(Optional.of(account));
+        given(tftApiClient.getMatchIdsFromPuuid(puuid)).willReturn(matchIds);
+        given(tftMatchRepository.findByMatchIdIn(matchIds))
+                .willReturn(existingMatches);
         given(tftApiClient.getMatchResponseFromMatchId(any())).willReturn(mockResponse);
         given(tftMatchRepository.saveAll(any())).willAnswer(invocation -> {
             List<TftMatch> matches = invocation.getArgument(0);
-            return matches;
+            return new ArrayList<>(matches);
         });
 
         // when
@@ -113,23 +167,26 @@ class TftMatchManagerTest {
 
         // then
         assertThat(result).isNotEmpty();
-        verify(tftApiClient).getMatchIdsFromPuuid(puuid);
+        verify(tftApiClient, times(2)).getMatchResponseFromMatchId(any());
         verify(tftMatchRepository).saveAll(any());
     }
 
     @Test
-    @DisplayName("TFT 엔트리는 있지만 API에서 매치를 찾을 수 없는 경우 예외가 발생한다")
-    void whenHasEntriesButNoMatchesFromApi_thenThrowException() {
+    @DisplayName("첫 검색이지만 API에서 매치를 찾을 수 없는 경우 예외가 발생한다")
+    void whenFirstSearchButNoMatchesFromApi_thenThrowException() {
         // given
         Long accountId = 1L;
         String puuid = "test-puuid";
         List<TftLeagueEntry> entries = List.of(mock(TftLeagueEntry.class));
+        RiotAccount account = mock(RiotAccount.class);
 
+        given(account.getUpdatedAt()).willReturn(null);
         given(tftLeagueEntryRepository.findLatestEntriesForEachQueueTypeByAccountId(accountId))
                 .willReturn(entries);
-        given(tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid))
+        given(riotAccountRepository.findById(accountId))
+                .willReturn(Optional.of(account));
+        given(tftApiClient.getMatchIdsFromPuuid(puuid))
                 .willReturn(Collections.emptyList());
-        given(tftApiClient.getMatchIdsFromPuuid(puuid)).willReturn(Collections.emptyList());
 
         // when & then
         assertThatThrownBy(() -> tftMatchManager.findOrCreateRecentTftMatches(accountId, puuid))
@@ -142,18 +199,22 @@ class TftMatchManagerTest {
     void whenRenewingWithNewMatches_thenSaveAndReturnMatches() {
         // given
         String puuid = "test-puuid";
-        List<String> recentMatchIds = List.of("match-1", "match-2", "match-3");
-        List<TftMatch> existingMatches = List.of(
+        List<String> recentMatchIds = new ArrayList<>(List.of("match-1", "match-2", "match-3"));
+        List<TftMatch> existingMatches = new ArrayList<>(List.of(
             createTftMatch("match-1"),
             createTftMatch("match-2")
-        );
+        ));
         TftMatchResponse mockResponse = createMockMatchResponse();
 
         given(tftApiClient.getMatchIdsFromPuuid(puuid)).willReturn(recentMatchIds);
         given(tftMatchRepository.findByMatchIdIn(recentMatchIds)).willReturn(existingMatches);
         given(tftApiClient.getMatchResponseFromMatchId("match-3")).willReturn(mockResponse);
         given(tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid))
-            .willReturn(List.of(createTftMatch("match-1"), createTftMatch("match-2"), createTftMatch("match-3")));
+            .willReturn(new ArrayList<>(List.of(
+                createTftMatch("match-1"),
+                createTftMatch("match-2"),
+                createTftMatch("match-3")
+            )));
 
         // when
         List<TftMatch> result = tftMatchManager.renewRecentTftMatches(puuid);
@@ -242,7 +303,6 @@ class TftMatchManagerTest {
     }
 
     private List<com.glennsyj.rivals.api.tft.model.match.TftMatchParticipant> createMockParticipants() {
-        // TftMatchInfo는 model.match.TftMatchParticipant를 사용해야 함
         return List.of(new com.glennsyj.rivals.api.tft.model.match.TftMatchParticipant(
                 null,
                 100,               // gold_left
