@@ -228,10 +228,11 @@ const ParticipantRow = ({
   const [badges, setBadges] = useState<TftBadgeDto[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [hasFetchedBadges, setHasFetchedBadges] = useState(false);
 
   const loadBadges = useCallback(async () => {
-    // 이미 배지가 로드되어 있다면 다시 로드하지 않음
-    if (badges.length > 0) return;
+    // 이미 배지를 한 번 가져왔다면 다시 로드하지 않음
+    if (hasFetchedBadges) return;
 
     setIsLoading(true);
     try {
@@ -240,12 +241,13 @@ const ParticipantRow = ({
         participant.riotIdTagline
       );
       setBadges(badgeData);
+      setHasFetchedBadges(true);
     } catch (error) {
       console.error("Failed to load badges:", error);
     } finally {
       setIsLoading(false);
     }
-  }, [participant.riotIdGameName, participant.riotIdTagline, badges.length]);
+  }, [participant.riotIdGameName, participant.riotIdTagline, hasFetchedBadges]);
 
   useEffect(() => {
     loadBadges();

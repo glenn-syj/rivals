@@ -33,9 +33,10 @@ import {
   getTftStatus,
   getTftMatches,
   getTftBadges,
+  renewRiotAccount,
 } from "@/lib/api";
 import type {
-  RiotAccountResponse,
+  RiotAccountDto,
   TftStatusDto,
   TftRecentMatchDto,
   TftBadgeDto,
@@ -79,7 +80,7 @@ export default function SummonerPage() {
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-  const [account, setAccount] = useState<RiotAccountResponse | null>(null);
+  const [account, setAccount] = useState<RiotAccountDto | null>(null);
   const [tftStatuses, setTftStatuses] = useState<TftStatusDto[]>([]);
   const [matches, setMatches] = useState<TftRecentMatchDto[]>([]);
   const [badges, setBadges] = useState<TftBadgeDto[]>([]);
@@ -88,8 +89,9 @@ export default function SummonerPage() {
     useState<string>("RANKED_TFT");
   const [searchInput, setSearchInput] = useState("");
   const [searchError, setSearchError] = useState("");
-  const [selectedPlayer, setSelectedPlayer] =
-    useState<RiotAccountResponse | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<RiotAccountDto | null>(
+    null
+  );
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [isBadgesLoading, setIsBadgesLoading] = useState(false);
 
@@ -199,6 +201,15 @@ export default function SummonerPage() {
         setIsBadgesLoading(true);
         const badgeData = await getTftBadges(account.gameName, account.tagLine);
         setBadges(badgeData);
+
+        // 모든 데이터 로드가 완료된 후 updatedAt이 null이면 renew API 호출
+        if (!account.updatedAt) {
+          const renewedAccount = await renewRiotAccount(
+            account.gameName,
+            account.tagLine
+          );
+          setAccount(renewedAccount);
+        }
       } catch (error) {
         console.error("Failed to load matches and badges:", error);
       } finally {
