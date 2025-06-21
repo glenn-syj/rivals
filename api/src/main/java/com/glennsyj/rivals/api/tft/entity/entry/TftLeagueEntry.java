@@ -17,6 +17,9 @@ public class TftLeagueEntry {
     @Tsid
     private Long id;
 
+    @Version
+    private Long version;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "account_id", nullable = false)
     private RiotAccount account;
@@ -211,5 +214,9 @@ public class TftLeagueEntry {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    public Long getVersion() {
+        return version;
     }
 }
