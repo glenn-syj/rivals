@@ -33,20 +33,17 @@ public class TftFacade {
     private final TftMatchManager tftMatchManager;
     private final TftBadgeService tftBadgeService;
     private final RiotAccountManager riotAccountManager;
-    private final ApplicationEventPublisher eventPublisher;
 
     public TftFacade(
             TftLeagueEntryManager tftLeagueEntryManager,
             TftMatchManager tftMatchManager,
             TftBadgeService tftBadgeService,
-            RiotAccountManager riotAccountManager,
-            ApplicationEventPublisher eventPublisher
+            RiotAccountManager riotAccountManager
     ) {
         this.tftLeagueEntryManager = tftLeagueEntryManager;
         this.tftMatchManager = tftMatchManager;
         this.tftBadgeService = tftBadgeService;
         this.riotAccountManager = riotAccountManager;
-        this.eventPublisher = eventPublisher;
     }
 
     @Transactional
@@ -54,15 +51,20 @@ public class TftFacade {
         try {
             RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
 
-            // 모든 데이터를 병렬로 갱신
             CompletableFuture<List<TftLeagueEntry>> leagueEntriesFuture = CompletableFuture
                     .supplyAsync(() -> tftLeagueEntryManager.renewEntry(account.getId(), account.getPuuid()));
 
-            CompletableFuture<List<TftMatch>> matchesFuture = CompletableFuture
-                    .supplyAsync(() -> tftMatchManager.renewRecentTftMatches(account.getPuuid()));
+            // DTO 변환을 비동기 작업 내부로 이동
+            CompletableFuture<List<TftRecentMatchDto>> matchesFuture = CompletableFuture
+                    .supplyAsync(() -> {
+                        List<TftMatch> matches = tftMatchManager.renewRecentTftMatches(account.getPuuid());
+                        return matches.stream()
+                                .map(match -> TftRecentMatchDto.from(account.getPuuid(), match))
+                                .toList();
+                    });
 
-            CompletableFuture<List<TftBadgeDto>> badgesFuture = matchesFuture.thenApply(
-                    matches -> tftBadgeService.renewAccountBadges(account));
+            CompletableFuture<List<TftBadgeDto>> badgesFuture = matchesFuture
+                    .thenApply(matches -> tftBadgeService.renewAccountBadges(account));
 
             account.renewUpdatedAt();
 
@@ -76,8 +78,7 @@ public class TftFacade {
             // 응답 데이터 구성
             return new TftRenewDto(
                     leagueEntriesFuture.join().stream().map(TftStatusDto::from).toList(),
-                    matchesFuture.join().stream().map(
-                            match -> TftRecentMatchDto.from(account.getPuuid(), match)).toList(),
+                    matchesFuture.join(),
                     badgesFuture.join(),
                     account.getUpdatedAt());
 

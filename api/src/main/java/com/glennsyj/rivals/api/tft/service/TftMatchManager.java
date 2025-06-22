@@ -12,6 +12,7 @@ import com.glennsyj.rivals.api.tft.repository.TftMatchRepository;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.hibernate.Hibernate;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -118,6 +119,14 @@ public class TftMatchManager {
             tftMatchRepository.saveAll(newMatches);
         }
         
-        return tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid);
+        // 배치 사이즈로 나누어 처리
+        return tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid)
+            .stream()
+            .map(match -> {
+                // 각 매치에 대해 필요한 시점에 participants 초기화
+                Hibernate.initialize(match.getParticipants());
+                return match;
+            })
+            .toList();
     }
 }
