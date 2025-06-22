@@ -514,7 +514,7 @@ export default function SummonerPage() {
               <h1 className="text-4xl font-bold text-white mb-2">
                 {account.gameName}#{account.tagLine}
               </h1>
-              <p className="text-gray-400">TFT 전적 정보</p>
+              <p className="text-gray-400">최종 갱신: {account.updatedAt}</p>
             </div>
 
             {/* 큐 타입 선택기 */}
