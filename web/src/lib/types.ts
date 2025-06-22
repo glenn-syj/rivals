@@ -142,3 +142,10 @@ export interface TftBadgeDto {
   requiredCount: number;
   isActive: boolean;
 }
+
+export interface TftRenewDto {
+  matchesUpdated: number;
+  entriesUpdated: boolean;
+  badgesUpdated: boolean;
+  lastUpdatedAt: string;
+}
