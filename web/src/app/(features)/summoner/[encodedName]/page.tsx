@@ -34,6 +34,7 @@ import {
   getTftMatches,
   getTftBadges,
   renewRiotAccount,
+  renewTftData,
 } from "@/lib/api";
 import type {
   RiotAccountDto,
@@ -71,6 +72,20 @@ const formatQueueType = (queueType: string): string => {
   }
 };
 
+const decodeNameAndTag = (encodedName: string): [string, string] => {
+  const decodedName = decodeURIComponent(encodedName);
+  const [gameName, tagLine] = decodedName.split("#");
+
+  // Remove all types of whitespace including &nbsp;(0xA0)
+  const trimmedGameName = gameName.replace(
+    /^[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+|[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+$/g,
+    ""
+  );
+  const trimmedTagLine = tagLine.replace(/^[\s\u00A0]+|[\s\u00A0]+$/g, "");
+
+  return [trimmedGameName, trimmedTagLine];
+};
+
 export default function SummonerPage() {
   const params = useParams();
   const router = useRouter();
@@ -79,12 +94,13 @@ export default function SummonerPage() {
     useRivalry();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isMatchesLoading, setIsMatchesLoading] = useState(false);
+  const [isBadgesLoading, setIsBadgesLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [account, setAccount] = useState<RiotAccountDto | null>(null);
   const [tftStatuses, setTftStatuses] = useState<TftStatusDto[]>([]);
   const [matches, setMatches] = useState<TftRecentMatchDto[]>([]);
   const [badges, setBadges] = useState<TftBadgeDto[]>([]);
-  const [isMatchesLoading, setIsMatchesLoading] = useState(false);
   const [selectedQueueType, setSelectedQueueType] =
     useState<string>("RANKED_TFT");
   const [searchInput, setSearchInput] = useState("");
@@ -93,7 +109,7 @@ export default function SummonerPage() {
     null
   );
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
-  const [isBadgesLoading, setIsBadgesLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   useEffect(() => {
     const initializeData = async () => {
@@ -101,6 +117,58 @@ export default function SummonerPage() {
     };
     initializeData();
   }, []);
+
+  const fetchData = async () => {
+    try {
+      setIsLoading(true);
+      setIsMatchesLoading(true);
+      setIsBadgesLoading(true);
+
+      const [decodedGameName, decodedTagLine] = decodeNameAndTag(encodedName);
+
+      // 1. 계정 정보 조회
+      const accountData = await findRiotAccount(
+        decodedGameName,
+        decodedTagLine
+      );
+      setAccount(accountData);
+
+      // 2. status와 matches는 병렬로 조회
+      const [statusData, matchesData] = await Promise.all([
+        getTftStatus(decodedGameName, decodedTagLine),
+        getTftMatches(decodedGameName, decodedTagLine),
+      ]);
+
+      setTftStatuses(statusData);
+      setMatches(matchesData);
+      setIsMatchesLoading(false);
+
+      // 3. 배지 조회 - 매치 데이터가 표시된 후 로딩
+      const badgeData = await getTftBadges(decodedGameName, decodedTagLine);
+      setBadges(badgeData);
+      setIsBadgesLoading(false);
+
+      // 4. 신규 계정인 경우에만 renew
+      if (!accountData.updatedAt) {
+        const renewedAccount = await renewRiotAccount(
+          accountData.gameName,
+          accountData.tagLine
+        );
+        setAccount(renewedAccount);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError(error instanceof Error ? error.message : "Failed to load data");
+    } finally {
+      setIsLoading(false);
+      setIsMatchesLoading(false);
+      setIsBadgesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [encodedName]);
 
   // 현재 선택된 큐 타입의 상태 정보를 가져오는 함수
   const getCurrentTftStatus = () => {
@@ -111,130 +179,21 @@ export default function SummonerPage() {
     return status && status.tier ? status : null;
   };
 
-  useEffect(() => {
-    if (account && tftStatuses.length > 0) return;
+  const handleRefresh = async () => {
+    if (!account || isRefreshing) return;
 
-    let isMounted = true;
-
-    const fetchData = async () => {
-      if (!encodedName) return;
-
-      try {
-        setIsLoading(true);
-        const decodedName = decodeURIComponent(encodedName);
-
-        const [gameName, tagLine] = decodedName.split("#");
-        // &nbsp;(0xA0)와 일반 공백을 포함한 모든 종류의 공백 제거
-        const trimmedGameName = gameName.replace(
-          /^[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+|[\s\u00A0\u1680\u2000-\u200A\u2028\u2029\u202F\u205F\u3000\uFEFF]+$/g,
-          ""
-        );
-        const trimmedTagLine = tagLine.replace(
-          /^[\s\u00A0]+|[\s\u00A0]+$/g,
-          ""
-        );
-
-        // 먼저 계정 정보를 가져옴
-        const accountResponse = await findRiotAccount(
-          trimmedGameName,
-          trimmedTagLine
-        );
-
-        // 계정 정보를 받은 후 TFT 상태 정보를 가져옴
-        const tftStatusesResponse = await getTftStatus(
-          trimmedGameName,
-          trimmedTagLine
-        );
-
-        if (isMounted) {
-          setAccount(accountResponse);
-          // 빈 응답을 받았을 때 모든 큐 타입에 대해 빈 상태 생성
-          const statuses =
-            tftStatusesResponse.length > 0
-              ? tftStatusesResponse
-              : QUEUE_TYPES.map((queueType) => ({
-                  queueType,
-                  tier: "",
-                  rank: "",
-                  leaguePoints: 0,
-                  wins: 0,
-                  losses: 0,
-                  hotStreak: false,
-                }));
-          setTftStatuses(statuses);
-          setSelectedQueueType("RANKED_TFT");
-        }
-      } catch (err) {
-        if (isMounted) {
-          setError(
-            err instanceof Error ? err.message : "소환사를 찾을 수 없습니다"
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
-        }
-      }
-    };
-
-    fetchData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [encodedName]);
-
-  useEffect(() => {
-    if (!account) return;
-
-    const loadMatchesAndBadges = async () => {
-      setIsMatchesLoading(true);
-      try {
-        // 먼저 매치 데이터를 로드
-        const matchData = await getTftMatches(
-          account.gameName,
-          account.tagLine
-        );
-        setMatches(matchData);
-
-        // 매치 데이터 로드가 완료된 후 배지 데이터 로드
-        setIsBadgesLoading(true);
-        const badgeData = await getTftBadges(account.gameName, account.tagLine);
-        setBadges(badgeData);
-
-        // 모든 데이터 로드가 완료된 후 updatedAt이 null이면 renew API 호출
-        if (!account.updatedAt) {
-          const renewedAccount = await renewRiotAccount(
-            account.gameName,
-            account.tagLine
-          );
-          setAccount(renewedAccount);
-        }
-      } catch (error) {
-        console.error("Failed to load matches and badges:", error);
-      } finally {
-        setIsMatchesLoading(false);
-        setIsBadgesLoading(false);
-      }
-    };
-
-    loadMatchesAndBadges();
-  }, [account]);
-
-  // useEffect(() => {
-  //   console.log("Account state changed:", account);
-  // }, [account]);
-
-  // useEffect(() => {
-  //   console.log("TftStatus state changed:", tftStatuses);
-  // }, [tftStatuses]);
-
-  // console.log("Render States:", {
-  //   isLoading,
-  //   error,
-  //   hasAccount: !!account,
-  //   hasTftStatuses: !!tftStatuses.length,
-  // });
+    try {
+      setIsRefreshing(true);
+      const renewedData = await renewTftData(account.gameName, account.tagLine);
+      setMatches(renewedData.matches);
+      setTftStatuses(renewedData.statuses);
+      setBadges(renewedData.badges);
+    } catch (error) {
+      console.error("Failed to refresh TFT data:", error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const handleAddToRivalry = () => {
     if (account) {
@@ -602,9 +561,10 @@ export default function SummonerPage() {
                   <Button
                     variant="outline"
                     className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50"
-                    onClick={() => window.location.reload()}
+                    onClick={handleRefresh}
+                    disabled={isRefreshing}
                   >
-                    전적 새로고침
+                    {isRefreshing ? "갱신 중..." : "갱신하기"}
                   </Button>
                 </div>
               </div>
