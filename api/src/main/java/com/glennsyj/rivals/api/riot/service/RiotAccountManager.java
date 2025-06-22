@@ -31,6 +31,11 @@ public class RiotAccountManager {
         return riotAccountRepository.findByGameNameAndTagLine(gameName.trim(), tagLine.trim());
     }
 
+    @Transactional(readOnly = true)
+    public Optional<RiotAccount> findByAccountId(Long accountId) {
+        return riotAccountRepository.findById(accountId);
+    }
+
     @Transactional
     public RiotAccount renewAccount(String gameName, String tagLine) {
         RiotAccount fetchedAccount = riotAccountRepository
