@@ -144,8 +144,8 @@ export interface TftBadgeDto {
 }
 
 export interface TftRenewDto {
-  matchesUpdated: number;
-  entriesUpdated: boolean;
-  badgesUpdated: boolean;
-  lastUpdatedAt: string;
+  statuses: TftStatusDto[];
+  matches: TftRecentMatchDto[];
+  badges: TftBadgeDto[];
+  renewedAt: string;
 }
