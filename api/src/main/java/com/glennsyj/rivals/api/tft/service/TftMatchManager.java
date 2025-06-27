@@ -13,7 +13,10 @@ import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.hibernate.Hibernate;
+import reactor.core.publisher.Flux;
+import reactor.core.scheduler.Schedulers;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +49,7 @@ public class TftMatchManager {
         this.tftBadgeService = tftBadgeService;
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public MatchSyncResult findOrCreateRecentTftMatches(Long accountId, String puuid) {
         // 1. 기존 매치 조회
         List<TftMatch> existingMatches = tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid);
@@ -67,12 +70,12 @@ public class TftMatchManager {
 
         // 4. 새로운 매치 상세 정보 조회 및 저장
         List<TftMatch> newMatches = newMatchIds.isEmpty() ? List.of() :
-            newMatchIds.stream()
-                .map(matchId -> {
-                    TftMatchResponse response = tftApiClient.getMatchResponseFromMatchId(matchId);
-                    return TftMatch.from(response);
-                })
-                .toList();
+            Flux.fromIterable(newMatchIds)
+                .delayElements(Duration.ofMillis(51))
+                .flatMap(tftApiClient::getMatchResponseFromMatchIdMono)
+                .map(TftMatch::from)
+                .collectList()
+                .block();
 
         if (!newMatches.isEmpty()) {
             tftMatchRepository.saveAll(newMatches);
@@ -108,12 +111,13 @@ public class TftMatchManager {
                 .toList();
                 
         // 새로운 MatchId에 대해서 MatchResponse 받아옴
-        List<TftMatch> newMatches = newMatchIds.stream()
-                .map(matchId -> {
-                    TftMatchResponse response = tftApiClient.getMatchResponseFromMatchId(matchId);
-                    return TftMatch.from(response);
-                })
-                .toList();
+        List<TftMatch> newMatches = newMatchIds.isEmpty() ? List.of() :
+            Flux.fromIterable(newMatchIds)
+                .delayElements(Duration.ofMillis(51))
+                .flatMap(tftApiClient::getMatchResponseFromMatchIdMono)
+                .map(TftMatch::from)
+                .collectList()
+                .block();
                 
         if (!newMatches.isEmpty()) {
             tftMatchRepository.saveAll(newMatches);
