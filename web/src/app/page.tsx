@@ -26,16 +26,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRivalry } from "@/contexts/RivalryContext";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
-import { RiotAccountResponse } from "@/lib/types";
+import { RiotAccountDto } from "@/lib/types";
 import { findRiotAccount } from "@/lib/api";
 
-export type Player = RiotAccountResponse;
+export type Player = RiotAccountDto;
 
 export default function Component() {
   const [searchInput, setSearchInput] = useState("");
   const [error, setError] = useState("");
-  const [selectedPlayer, setSelectedPlayer] =
-    useState<RiotAccountResponse | null>(null);
+  const [selectedPlayer, setSelectedPlayer] = useState<RiotAccountDto | null>(
+    null
+  );
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const router = useRouter();
   const { openRivalryCart, getTotalPlayerCount } = useRivalry();
