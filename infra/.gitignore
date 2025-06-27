@@ -2,3 +2,5 @@
 compose-prod.yaml
 /env/.env.*
 .env
+
+/k6/summoner-list.csv
