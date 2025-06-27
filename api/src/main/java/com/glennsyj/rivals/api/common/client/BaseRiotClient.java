@@ -29,6 +29,7 @@ public abstract class BaseRiotClient {
     }
 
     protected <T> T handleApiCall(Mono<T> apiCall, String errorMessage) {
+        long startTime = System.currentTimeMillis();
         try {
             return apiCall
                     .retryWhen(Retry.backoff(MAX_RETRIES, INITIAL_BACKOFF)
@@ -45,6 +46,9 @@ public abstract class BaseRiotClient {
                 throw new IllegalStateException("Riot API 호출 횟수 제한 초과. " + retryAfter + "초 후에 다시 시도해주세요.", e);
             }
             throw new IllegalStateException("Riot API 호출 실패: " + e.getResponseBodyAsString(), e);
+        } finally {
+            long duration = System.currentTimeMillis() - startTime;
+            logger.info("Riot API call for '{}' completed in {}ms", this.getClass(), duration);
         }
     }
 
