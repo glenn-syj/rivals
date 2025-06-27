@@ -2,6 +2,7 @@ import http from "k6/http";
 import { check, sleep, group } from "k6";
 import { SharedArray } from "k6/data";
 import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
+import { scenario } from "k6/execution";
 
 // --- Riot API 속도 제한 준수를 위한 계산 ---
 // 우리 백엔드 서비스가 외부 Riot API를 호출하는 구조는 다음과 같습니다.
@@ -64,12 +65,21 @@ export const options = {
 
 // --- 메인 테스트 로직 ---
 export default function () {
+  // CSV 데이터가 정상적으로 로드되었는지 첫 반복에서만 확인
+  if (scenario.iterationInTest === 0) {
+    console.log(`Loaded ${summoners.length} summoners from CSV.`);
+  }
+
   // 매 반복마다 CSV 파일에서 다른 소환사 정보를 가져옵니다.
-  // __ITER는 k6의 내장 변수로, 전체 반복 횟수를 나타냅니다.
-  // '%' 연산자를 사용하여 배열의 인덱스를 순환시킵니다.
-  const currentUser = summoners[__ITER % summoners.length];
+  // __ITER는 특정 실행기에서 문제가 있을 수 있으므로 scenario.iterationInTest를 사용합니다.
+  const currentUser = summoners[scenario.iterationInTest % summoners.length];
   const testSummonerName = currentUser.gameName;
   const testSummonerTag = currentUser.tagLine;
+
+  // 디버깅을 위한 로그 추가
+  console.log(
+    `[Iteration ${scenario.iterationInTest}] Using summoner: ${testSummonerName}#${testSummonerTag}`
+  );
 
   // URL 인코딩은 여전히 필수입니다.
   const encodedSummonerName = encodeURIComponent(testSummonerName);
