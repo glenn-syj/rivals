@@ -2,7 +2,7 @@ import http from "k6/http";
 import { check, sleep, group } from "k6";
 import { SharedArray } from "k6/data";
 import papaparse from "https://jslib.k6.io/papaparse/5.1.1/index.js";
-import { scenario } from "k6/execution";
+import { scenario, exec } from "k6/execution";
 
 // --- Riot API 속도 제한 준수를 위한 계산 ---
 // 우리 백엔드 서비스가 외부 Riot API를 호출하는 구조는 다음과 같습니다.
@@ -45,8 +45,9 @@ export const options = {
       rate: 1,
       timeUnit: "30s",
 
-      // 테스트 지속 시간: 2분으로 설정하여 '2분에 100개' 제한을 확인
-      duration: "2m",
+      // 테스트 지속 시간: 4번의 반복을 보장하기 위해 넉넉하게 설정합니다.
+      // 실제 종료는 스크립트 내에서 제어합니다.
+      duration: "2m30s",
 
       // 이 테스트를 실행할 가상 사용자를 미리 할당합니다.
       // 동시성을 확인하기 위해 여전히 여러 사용자가 필요합니다.
@@ -65,6 +66,12 @@ export const options = {
 
 // --- 메인 테스트 로직 ---
 export default function () {
+  // 총 4번의 반복(iteration 0, 1, 2, 3)만 실행하고 테스트를 중단합니다.
+  if (scenario.iterationInTest >= 4) {
+    exec.test.abort("Completed 4 iterations.");
+    return;
+  }
+
   // CSV 데이터가 정상적으로 로드되었는지 첫 반복에서만 확인
   if (scenario.iterationInTest === 0) {
     console.log(`Loaded ${summoners.length} summoners from CSV.`);
@@ -72,7 +79,7 @@ export default function () {
 
   // 매 반복마다 CSV 파일에서 다른 소환사 정보를 가져옵니다.
   // __ITER는 특정 실행기에서 문제가 있을 수 있으므로 scenario.iterationInTest를 사용합니다.
-  const currentUser = summoners[scenario.iterationInTest % summoners.length];
+  const currentUser = summoners[scenario.iterationInTest % 4];
   const testSummonerName = currentUser.gameName;
   const testSummonerTag = currentUser.tagLine;
 
