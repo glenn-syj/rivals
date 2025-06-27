@@ -30,7 +30,7 @@ public class TftLeagueEntry {
     @Column(name = "league_id", nullable = false)
     private String leagueId;
 
-    @Column(name = "summoner_id", nullable = false)
+    @Column(name = "summoner_id")
     private String summonerId;
 
     @Column(name = "queue_type", nullable = false)
@@ -140,7 +140,7 @@ public class TftLeagueEntry {
     }
 
     public enum Tier {
-        IRON, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND,
+        IRON, BRONZE, SILVER, GOLD, PLATINUM, DIAMOND, EMERALD,
         MASTER, GRANDMASTER, CHALLENGER
     }
 
