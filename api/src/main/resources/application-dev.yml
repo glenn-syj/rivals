@@ -16,7 +16,7 @@ spring:
       hibernate:
         generate_statistics: false
         jdbc:
-          batch_size: 100  # 가장 많이 사용되는 값
+          batch_size: 100 # 가장 많이 사용되는 값
           order_inserts: true
           order_updates: true
           batch_versioned_data: true
@@ -29,6 +29,15 @@ spring:
     compose:
       file: compose-dev.yaml
       enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*" # 개발 환경에서는 모든 엔드포인트를 여는 것이 편합니다.
+  endpoint:
+    health:
+      show-details: always
 
 riot:
   api:
