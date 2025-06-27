@@ -14,7 +14,7 @@ spring:
     show-sql: true
     properties:
       hibernate:
-        generate_statistics: false
+        generate_statistics: true
         jdbc:
           batch_size: 100 # 가장 많이 사용되는 값
           order_inserts: true
