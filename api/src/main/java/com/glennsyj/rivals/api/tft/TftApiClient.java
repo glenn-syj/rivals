@@ -7,6 +7,7 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.reactive.function.client.WebClient;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 
@@ -52,4 +53,11 @@ public class TftApiClient extends BaseRiotClient {
         );
     }
 
+    public Mono<TftMatchResponse> getMatchResponseFromMatchIdMono(String matchId) {
+        return riotAsiaWebClient.get()
+            .uri("/tft/match/v1/matches/{matchId}", matchId)
+            .accept(MediaType.APPLICATION_JSON)
+            .retrieve()
+            .bodyToMono(TftMatchResponse.class);
+    }
 }
