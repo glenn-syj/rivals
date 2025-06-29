@@ -2,7 +2,6 @@ import type React from "react";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { RivalryProvider } from "@/contexts/RivalryContext";
 import RivalryCart from "@/components/RivalryCart";
 import { dataDragonService } from "@/lib/dataDragon";
 
@@ -24,10 +23,8 @@ export default function RootLayout({
   return (
     <html lang="ko">
       <body className={inter.className}>
-        <RivalryProvider>
-          {children}
-          <RivalryCart />
-        </RivalryProvider>
+        {children}
+        <RivalryCart />
       </body>
     </html>
   );

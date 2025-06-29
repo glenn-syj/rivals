@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRivalry } from "@/contexts/RivalryContext";
+import { useRivalryStore } from "@/store/rivalryStore";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -11,7 +11,7 @@ import { ArrowLeft, ShoppingCart, Search, Sword } from "lucide-react";
 
 export function SummonerHeader() {
   const router = useRouter();
-  const { openRivalryCart, getTotalPlayerCount } = useRivalry();
+  const { openRivalryCart, getTotalPlayerCount } = useRivalryStore();
   const [searchInput, setSearchInput] = useState("");
   const [searchError, setSearchError] = useState("");
 

@@ -5,8 +5,6 @@ import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Users, BarChart3 } from "lucide-react";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
-import type { Player } from "@/contexts/RivalryContext";
-import { useRivalry } from "@/contexts/RivalryContext";
 import { findRiotAccount, renewRiotAccount } from "@/lib/api";
 import type { RiotAccountDto } from "@/lib/types";
 import { SummonerHeader } from "./_components/SummonerHeader";
@@ -55,7 +53,6 @@ export default function SummonerPage() {
   const params = useParams();
   const router = useRouter();
   const encodedName = params!.encodedName as string;
-  const { addPlayerToTeam } = useRivalry();
 
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
