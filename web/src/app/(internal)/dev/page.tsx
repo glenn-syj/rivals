@@ -26,9 +26,13 @@ const Unit = ({ unit }: UnitProps) => {
         <div className="border rounded-md p-2">
           <div className="relative w-12 h-12 mx-auto mb-2">
             <Image
-              src={dataDragonService.getChampionImage(unit.character_id)}
+              src={
+                dataDragonService.getChampionImage(unit.character_id) ||
+                "/placeholder.svg"
+              }
               alt={unit.name}
               fill
+              sizes="(max-width: 48px) 100vw"
               className="object-cover rounded-md"
             />
             <div
