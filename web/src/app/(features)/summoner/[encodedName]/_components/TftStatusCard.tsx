@@ -10,9 +10,10 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { Crown, Star, Trophy } from "lucide-react";
-import { getTftStatus, getTftBadges } from "@/lib/api";
-import type { RiotAccountDto, TftStatusDto, TftBadgeDto } from "@/lib/types";
-import { BADGE_EMOJIS, BADGE_DESCRIPTIONS } from "@/lib/constants";
+import { getTftStatus } from "@/lib/api";
+import type { RiotAccountDto, TftStatusDto } from "@/lib/types";
+import { TftBadgeCard } from "@/components/tft/TftBadgeCard";
+import { useSummonerPageLoadStore } from "@/store/summonerPageStore";
 
 type TftStatusCardProps = {
   account: RiotAccountDto;
@@ -25,29 +26,29 @@ export function TftStatusCard({
   selectedQueueType,
   formatQueueType,
 }: TftStatusCardProps) {
+  const { accountStatus, statusStatus, setStatusStatus } =
+    useSummonerPageLoadStore();
   const [statuses, setStatuses] = useState<TftStatusDto[]>([]);
-  const [badges, setBadges] = useState<TftBadgeDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
+      if (accountStatus !== "success") return;
       try {
-        setIsLoading(true);
-        const [statusData, badgeData] = await Promise.all([
-          getTftStatus(account.gameName, account.tagLine),
-          getTftBadges(account.gameName, account.tagLine),
-        ]);
+        setStatusStatus("loading");
+        const statusData = await getTftStatus(
+          account.gameName,
+          account.tagLine
+        );
         setStatuses(statusData);
-        setBadges(badgeData);
+        setStatusStatus("success");
       } catch (error) {
         console.error("Failed to fetch status/badge data:", error);
-      } finally {
-        setIsLoading(false);
+        setStatusStatus("error");
       }
     };
 
     fetchData();
-  }, [account.gameName, account.tagLine]);
+  }, [accountStatus, account.gameName, account.tagLine, setStatusStatus]);
 
   const getCurrentTftStatus = () => {
     if (!statuses || statuses.length === 0) return null;
@@ -59,7 +60,7 @@ export function TftStatusCard({
 
   const currentStatus = getCurrentTftStatus();
 
-  if (isLoading) {
+  if (statusStatus === "loading" || statusStatus === "idle") {
     return (
       <Card className="bg-slate-800/50 border-slate-700/50">
         <CardHeader>
@@ -138,38 +139,10 @@ export function TftStatusCard({
           </div>
 
           <div className="flex flex-wrap gap-2 mt-2">
-            {Object.entries(BADGE_EMOJIS).map(([badgeType, emoji]) => {
-              const badge = badges.find((b) => b.badgeType === badgeType);
-              return (
-                <TooltipProvider key={badgeType}>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <div
-                        className={`text-xl transition-opacity duration-200 cursor-help ${
-                          !badge?.isActive ? "opacity-30" : "opacity-100"
-                        }`}
-                      >
-                        {emoji}
-                      </div>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p className="font-medium">
-                        {
-                          BADGE_DESCRIPTIONS[
-                            badgeType as keyof typeof BADGE_DESCRIPTIONS
-                          ]
-                        }
-                      </p>
-                      {badge && (
-                        <p className="text-sm text-gray-400">
-                          진행도: {badge.currentCount}/{badge.requiredCount}
-                        </p>
-                      )}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              );
-            })}
+            <TftBadgeCard
+              riotIdGameName={account.gameName}
+              riotIdTagline={account.tagLine}
+            />
           </div>
 
           <div className="grid grid-cols-2 gap-3">
