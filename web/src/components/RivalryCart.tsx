@@ -3,13 +3,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X, ArrowLeftRight, Users, Trash2 } from "lucide-react";
-import { useRivalry, type Player } from "@/contexts/RivalryContext";
+import { useRivalryStore, type RivalryPlayer } from "@/store/rivalryStore";
 import { createRivalry } from "@/lib/api";
 import type { RivalryCreationDto } from "@/lib/types";
 import { useRouter } from "next/navigation";
 
 interface PlayerCardProps {
-  player: Player;
+  player: RivalryPlayer;
   team: "left" | "right";
   onRemove: () => void;
   onMove: () => void;
@@ -59,17 +59,13 @@ function TeamSection({
 }: {
   title: string;
   team: "left" | "right";
-  players: Player[];
+  players: RivalryPlayer[];
 }) {
-  const {
-    removePlayerFromTeam,
-    movePlayerToOtherTeam,
-    rivalry,
-    canCreateRivalry,
-  } = useRivalry();
+  const { removePlayerFromTeam, movePlayerToOtherTeam, leftTeam, rightTeam } =
+    useRivalryStore();
 
   const canMovePlayer = (puuid: string): boolean => {
-    const otherTeam = team === "left" ? rivalry.rightTeam : rivalry.leftTeam;
+    const otherTeam = team === "left" ? rightTeam : leftTeam;
     return !otherTeam.some((p) => p.puuid === puuid);
   };
 
@@ -108,12 +104,14 @@ function TeamSection({
 
 export default function RivalryCart() {
   const {
-    rivalry,
+    isOpen,
+    leftTeam,
+    rightTeam,
     closeRivalryCart,
     clearRivalry,
     canCreateRivalry,
     getTotalPlayerCount,
-  } = useRivalry();
+  } = useRivalryStore();
   const router = useRouter();
 
   const handleCreateRivalry = async () => {
@@ -121,11 +119,11 @@ export default function RivalryCart() {
 
     const rivalryCreationDto: RivalryCreationDto = {
       participants: [
-        ...rivalry.leftTeam.map((p) => ({
+        ...leftTeam.map((p) => ({
           id: String(p.id),
           side: "LEFT" as const,
         })),
-        ...rivalry.rightTeam.map((p) => ({
+        ...rightTeam.map((p) => ({
           id: String(p.id),
           side: "RIGHT" as const,
         })),
@@ -146,7 +144,7 @@ export default function RivalryCart() {
       });
   };
 
-  if (!rivalry.isOpen) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex">
@@ -192,11 +190,7 @@ export default function RivalryCart() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <TeamSection
-                    title=""
-                    team="left"
-                    players={rivalry.leftTeam}
-                  />
+                  <TeamSection title="" team="left" players={leftTeam} />
                 </CardContent>
               </Card>
 
@@ -209,11 +203,7 @@ export default function RivalryCart() {
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <TeamSection
-                    title=""
-                    team="right"
-                    players={rivalry.rightTeam}
-                  />
+                  <TeamSection title="" team="right" players={rightTeam} />
                 </CardContent>
               </Card>
             </div>
