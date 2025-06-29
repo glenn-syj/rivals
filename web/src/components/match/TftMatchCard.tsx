@@ -88,9 +88,13 @@ const Unit = ({
             style={{ width: `${size}px`, height: `${size}px` }}
           >
             <Image
-              src={dataDragonService.getChampionImage(unit.character_id)}
+              src={
+                dataDragonService.getChampionImage(unit.character_id) ||
+                "/placeholder.svg"
+              }
               alt={unit.name}
               fill
+              sizes="(max-width: 48px) 100vw"
               className={`object-cover rounded-sm ${borderColor} border-2 ${
                 isSelected ? "ring-2 ring-blue-400" : ""
               } object-[80%_30%]`}
@@ -123,9 +127,10 @@ const Unit = ({
                     style={{ width: `${itemSize}px`, height: `${itemSize}px` }}
                   >
                     <Image
-                      src={itemImageUrl}
+                      src={itemImageUrl || "/placeholder.svg"}
                       alt={dataDragonService.getItemName(itemId) || itemId}
                       fill
+                      sizes="(max-width: 15px) 100vw"
                       className="object-cover rounded-sm"
                     />
                   </div>
