@@ -193,7 +193,7 @@ export default function SummonerPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-[calc(100vh-300px)]">
-          <div className="lg:col-span-1 space-y-6 lg:sticky lg:top-24 lg:h-fit">
+          <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 lg:h-fit">
             <TftStatusCard
               key={`status-${refreshKey}`}
               account={account}
@@ -203,8 +203,8 @@ export default function SummonerPage() {
 
             <Card className="bg-slate-800/50 border-slate-700/50 hover:border-purple-500/50 transition-colors">
               <CardHeader>
-                <CardTitle className="text-lg text-white flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
+                <CardTitle className="text-lg text-white flex items-center gap-2">
+                  <div className="w-8 h-8 bg-gradient-to-br from-purple-500 to-indigo-500 rounded-lg flex items-center justify-center">
                     <BarChart3 className="w-5 h-5 text-white" />
                   </div>
                   Match 통계
@@ -214,8 +214,8 @@ export default function SummonerPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="text-center py-8 text-gray-400">
-                  <BarChart3 className="w-8 h-8 mx-auto mb-3 opacity-50" />
+                <div className="text-center py-4 text-gray-400">
+                  <BarChart3 className="w-6 h-6 mx-auto mb-2 opacity-50" />
                   <p className="text-sm">Match 데이터 수집 중...</p>
                   <p className="text-xs mt-1">
                     게임 기록 분석이 여기에 표시됩니다
