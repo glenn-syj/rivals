@@ -1,8 +1,8 @@
 import { TftSet, TftChampion, TftItem, TftTrait } from "./dataDragonTypes";
 
-const DD_VERSION = "15.12.1";
-const LANG_SET = "ko_KR";
-const BASE_CDN = "https://ddragon.leagueoflegends.com/cdn";
+const DD_VERSION = process.env.NEXT_PUBLIC_DD_VERSION;
+const LANG_SET = process.env.NEXT_PUBLIC_LANG_SET;
+const BASE_CDN = process.env.NEXT_PUBLIC_DD_BASE_CDN;
 const GAME_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/${LANG_SET}`;
 const CHAMPION_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/${LANG_SET}/tft-champion.json`;
 const ITEM_DATA_URL = `${BASE_CDN}/${DD_VERSION}/data/${LANG_SET}/tft-item.json`;
