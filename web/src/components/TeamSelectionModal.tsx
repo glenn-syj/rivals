@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { X } from "lucide-react";
-import { useRivalry, type Player } from "@/contexts/RivalryContext";
+import { useRivalryStore, type RivalryPlayer } from "@/store/rivalryStore";
 
 interface TeamSelectionModalProps {
-  player: Player | null;
+  player: RivalryPlayer | null;
   isOpen: boolean;
   onClose: () => void;
 }
@@ -16,7 +16,8 @@ export default function TeamSelectionModal({
   isOpen,
   onClose,
 }: TeamSelectionModalProps) {
-  const { addPlayerToTeam, rivalry, getTotalPlayerCount } = useRivalry();
+  const { addPlayerToTeam, leftTeam, rightTeam, getTotalPlayerCount } =
+    useRivalryStore();
 
   const handleAddToTeam = (team: "left" | "right") => {
     if (!player) return;
@@ -85,7 +86,7 @@ export default function TeamSelectionModal({
                 variant="secondary"
                 className="mt-1 bg-indigo-900/50 text-indigo-300"
               >
-                {rivalry.leftTeam.length}명
+                {leftTeam.length}명
               </Badge>
             </Button>
 
@@ -99,7 +100,7 @@ export default function TeamSelectionModal({
                 variant="secondary"
                 className="mt-1 bg-red-900/50 text-red-300"
               >
-                {rivalry.rightTeam.length}명
+                {rightTeam.length}명
               </Badge>
             </Button>
           </div>
