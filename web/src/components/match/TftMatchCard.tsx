@@ -1,4 +1,4 @@
-import { TftRecentMatchDto, TftBadgeDto } from "@/lib/types";
+import { TftRecentMatchDto } from "@/lib/types";
 import { dataDragonService } from "@/lib/dataDragon";
 import { getChampionData, getItemData, getTraitData } from "@/lib/tftData";
 import Image from "next/image";
@@ -9,11 +9,10 @@ import {
   TooltipProvider,
 } from "@/components/ui/tooltip";
 import { useState, useEffect, useCallback } from "react";
-import { getTftBadges } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { BADGE_EMOJIS, BADGE_DESCRIPTIONS } from "@/lib/constants";
+import { TftBadgeCard } from "@/components/tft/TftBadgeCard";
 
 const RARITY_COLORS = {
   0: "border-gray-400 text-gray-400", // 1비용
@@ -230,69 +229,15 @@ const ParticipantRow = ({
   showBadgesOnLeft = true,
   scale = 1,
 }: ParticipantRowProps) => {
-  const [badges, setBadges] = useState<TftBadgeDto[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
-  const [hasFetchedBadges, setHasFetchedBadges] = useState(false);
-
-  const loadBadges = useCallback(async () => {
-    // 이미 배지를 한 번 가져왔다면 다시 로드하지 않음
-    if (hasFetchedBadges) return;
-
-    setIsLoading(true);
-    try {
-      const badgeData = await getTftBadges(
-        participant.riotIdGameName,
-        participant.riotIdTagline
-      );
-      setBadges(badgeData);
-      setHasFetchedBadges(true);
-    } catch (error) {
-      console.error("Failed to load badges:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [participant.riotIdGameName, participant.riotIdTagline, hasFetchedBadges]);
-
-  useEffect(() => {
-    loadBadges();
-  }, [loadBadges]);
 
   const badgeDisplay = (
-    <div className="flex gap-1">
-      {isLoading ? (
-        <span className="text-gray-400">로딩중...</span>
-      ) : badges.length > 0 ? (
-        badges.map((badge, index) => (
-          <TooltipProvider key={index}>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <span
-                  className={`text-lg cursor-help transition-opacity duration-200
-                    ${!badge.isActive ? "opacity-30" : "opacity-100"}`}
-                >
-                  {BADGE_EMOJIS[badge.badgeType as keyof typeof BADGE_EMOJIS]}
-                </span>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="font-medium">
-                  {
-                    BADGE_DESCRIPTIONS[
-                      badge.badgeType as keyof typeof BADGE_DESCRIPTIONS
-                    ]
-                  }
-                </p>
-                <p className="text-sm text-gray-400">
-                  진행도: {badge.currentCount}/{badge.requiredCount}
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        ))
-      ) : (
-        <span className="text-gray-400">-</span>
-      )}
-    </div>
+    <TftBadgeCard
+      riotIdGameName={participant.riotIdGameName}
+      riotIdTagline={participant.riotIdTagline}
+      isCompact={true}
+      afterMatchStatus={false}
+    />
   );
 
   const handleUnitClick = (characterId: string) => {

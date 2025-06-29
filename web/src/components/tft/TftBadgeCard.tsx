@@ -16,12 +16,14 @@ type TftBadgeCardProps = {
   riotIdGameName: string;
   riotIdTagline: string;
   isCompact?: boolean;
+  afterMatchStatus?: boolean;
 };
 
 export function TftBadgeCard({
   riotIdGameName,
   riotIdTagline,
   isCompact = false,
+  afterMatchStatus = true,
 }: TftBadgeCardProps) {
   const { matchStatus, badgesStatus, setBadgesStatus } =
     useSummonerPageLoadStore();
@@ -29,8 +31,8 @@ export function TftBadgeCard({
 
   useEffect(() => {
     const fetchBadges = async () => {
-      if (matchStatus !== "success" || !riotIdGameName || !riotIdTagline)
-        return;
+      if (afterMatchStatus && matchStatus !== "success") return;
+      if (!riotIdGameName || !riotIdTagline) return;
       try {
         setBadgesStatus("loading");
         const badgeData = await getTftBadges(riotIdGameName, riotIdTagline);
@@ -43,7 +45,13 @@ export function TftBadgeCard({
     };
 
     fetchBadges();
-  }, [matchStatus, riotIdGameName, riotIdTagline, setBadgesStatus]);
+  }, [
+    matchStatus,
+    riotIdGameName,
+    riotIdTagline,
+    setBadgesStatus,
+    afterMatchStatus,
+  ]);
 
   if (badgesStatus === "loading" || badgesStatus === "idle") {
     return (
