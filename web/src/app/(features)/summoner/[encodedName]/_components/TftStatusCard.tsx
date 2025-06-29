@@ -1,0 +1,209 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Tooltip,
+  TooltipProvider,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
+import { Crown, Star, Trophy } from "lucide-react";
+import { getTftStatus, getTftBadges } from "@/lib/api";
+import type { RiotAccountDto, TftStatusDto, TftBadgeDto } from "@/lib/types";
+import { BADGE_EMOJIS, BADGE_DESCRIPTIONS } from "@/lib/constants";
+
+type TftStatusCardProps = {
+  account: RiotAccountDto;
+  selectedQueueType: string;
+  formatQueueType: (queueType: string) => string;
+};
+
+export function TftStatusCard({
+  account,
+  selectedQueueType,
+  formatQueueType,
+}: TftStatusCardProps) {
+  const [statuses, setStatuses] = useState<TftStatusDto[]>([]);
+  const [badges, setBadges] = useState<TftBadgeDto[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setIsLoading(true);
+        const [statusData, badgeData] = await Promise.all([
+          getTftStatus(account.gameName, account.tagLine),
+          getTftBadges(account.gameName, account.tagLine),
+        ]);
+        setStatuses(statusData);
+        setBadges(badgeData);
+      } catch (error) {
+        console.error("Failed to fetch status/badge data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [account.gameName, account.tagLine]);
+
+  const getCurrentTftStatus = () => {
+    if (!statuses || statuses.length === 0) return null;
+    const status = statuses.find(
+      (status) => status.queueType === selectedQueueType
+    );
+    return status && status.tier ? status : null;
+  };
+
+  const currentStatus = getCurrentTftStatus();
+
+  if (isLoading) {
+    return (
+      <Card className="bg-slate-800/50 border-slate-700/50">
+        <CardHeader>
+          <CardTitle className="text-xl text-white">랭크 정보</CardTitle>
+        </CardHeader>
+        <CardContent className="h-[200px] flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!currentStatus) {
+    return (
+      <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl text-white flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                  <Crown className="w-5 h-5 text-white" />
+                </div>
+                {formatQueueType(selectedQueueType)}
+              </CardTitle>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="py-8 text-center">
+            <div className="w-16 h-16 bg-slate-700/30 rounded-full flex items-center justify-center mx-auto mb-4">
+              <Trophy className="w-8 h-8 text-slate-500" />
+            </div>
+            <h3 className="text-lg font-semibold text-slate-300 mb-2">
+              아직 기록이 없어요!
+            </h3>
+            <p className="text-sm text-slate-400">
+              TFT에서 {formatQueueType(selectedQueueType)} 모드를 플레이하고
+              <br />
+              새로운 기록을 만들어보세요.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="bg-slate-800/50 border-slate-700/50 hover:border-indigo-500/50 transition-colors">
+      <CardHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="text-xl text-white flex items-center gap-3">
+              <div className="w-10 h-10 bg-gradient-to-br from-slate-600 to-indigo-600 rounded-lg flex items-center justify-center">
+                <Crown className="w-5 h-5 text-white" />
+              </div>
+              {formatQueueType(selectedQueueType)}
+            </CardTitle>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <span className="text-xl font-bold text-white">
+              {currentStatus.tier} {currentStatus.rank}
+            </span>
+            <span className="text-gray-300">
+              {currentStatus.leaguePoints} LP
+            </span>
+            {currentStatus.hotStreak && (
+              <Badge className="bg-gradient-to-r from-orange-500 to-red-500 text-white">
+                <Star className="w-3 h-3 mr-1" />
+                연승
+              </Badge>
+            )}
+          </div>
+
+          <div className="flex flex-wrap gap-2 mt-2">
+            {Object.entries(BADGE_EMOJIS).map(([badgeType, emoji]) => {
+              const badge = badges.find((b) => b.badgeType === badgeType);
+              return (
+                <TooltipProvider key={badgeType}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        className={`text-2xl transition-opacity duration-200 cursor-help ${
+                          !badge?.isActive ? "opacity-30" : "opacity-100"
+                        }`}
+                      >
+                        {emoji}
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="font-medium">
+                        {
+                          BADGE_DESCRIPTIONS[
+                            badgeType as keyof typeof BADGE_DESCRIPTIONS
+                          ]
+                        }
+                      </p>
+                      {badge && (
+                        <p className="text-sm text-gray-400">
+                          진행도: {badge.currentCount}/{badge.requiredCount}
+                        </p>
+                      )}
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              );
+            })}
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="text-center p-3 rounded-lg bg-green-500/10 border border-green-500/30">
+              <div className="text-xl font-bold text-green-400">
+                {currentStatus.wins}
+              </div>
+              <div className="text-xs text-gray-400">승리</div>
+            </div>
+            <div className="text-center p-3 rounded-lg bg-red-500/10 border border-red-500/30">
+              <div className="text-xl font-bold text-red-400">
+                {currentStatus.losses}
+              </div>
+              <div className="text-xs text-gray-400">패배</div>
+            </div>
+          </div>
+
+          <div className="space-y-2 pt-2 border-t border-slate-700">
+            <div className="flex justify-between">
+              <span className="text-sm text-gray-400">승률</span>
+              <span className="text-sm text-white">
+                {currentStatus.wins + currentStatus.losses > 0
+                  ? (
+                      (currentStatus.wins /
+                        (currentStatus.wins + currentStatus.losses)) *
+                      100
+                    ).toFixed(1)
+                  : "0.0"}
+                %
+              </span>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
