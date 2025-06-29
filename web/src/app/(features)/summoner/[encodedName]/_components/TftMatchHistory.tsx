@@ -13,34 +13,37 @@ import TftMatchCard from "@/components/match/TftMatchCard";
 import { getTftMatches } from "@/lib/api";
 import { dataDragonService } from "@/lib/dataDragon";
 import type { RiotAccountDto, TftRecentMatchDto } from "@/lib/types";
+import { useSummonerPageLoadStore } from "@/store/summonerPageStore";
 
 type TftMatchHistoryProps = {
   account: RiotAccountDto;
 };
 
 export function TftMatchHistory({ account }: TftMatchHistoryProps) {
+  const { accountStatus, matchStatus, setMatchStatus } =
+    useSummonerPageLoadStore();
   const [matches, setMatches] = useState<TftRecentMatchDto[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchMatches = async () => {
+      if (accountStatus !== "success") return;
       try {
-        setIsLoading(true);
+        setMatchStatus("loading");
         await dataDragonService.initialize(); // Ensure data dragon is ready
         const matchesData = await getTftMatches(
           account.gameName,
           account.tagLine
         );
         setMatches(matchesData);
+        setMatchStatus("success");
       } catch (error) {
         console.error("Failed to fetch match history:", error);
-      } finally {
-        setIsLoading(false);
+        setMatchStatus("error");
       }
     };
 
     fetchMatches();
-  }, [account.gameName, account.tagLine]);
+  }, [accountStatus, account.gameName, account.tagLine, setMatchStatus]);
 
   return (
     <Card className="bg-slate-800/50 border-slate-700/50">
@@ -62,7 +65,7 @@ export function TftMatchHistory({ account }: TftMatchHistoryProps) {
               <Clock className="w-4 h-4" />
               최근 게임
             </h3>
-            {isLoading ? (
+            {matchStatus === "loading" || matchStatus === "idle" ? (
               <div className="text-center py-8 text-gray-400">
                 <div className="w-8 h-8 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin mx-auto mb-2" />
                 <p>매치 기록을 불러오는 중...</p>
