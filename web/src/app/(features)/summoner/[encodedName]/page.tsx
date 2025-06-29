@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Users, BarChart3 } from "lucide-react";
@@ -18,6 +18,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";
+import { useSummonerPageLoadStore } from "@/store/summonerPageStore";
 
 const QUEUE_TYPES = [
   "RANKED_TFT",
@@ -54,7 +55,15 @@ export default function SummonerPage() {
   const router = useRouter();
   const encodedName = params!.encodedName as string;
 
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const {
+    accountStatus,
+    isAllDataLoaded,
+    setAccountStatus,
+    resetLoadStatus,
+    isInitialRefreshPending,
+    setIsInitialRefreshPending,
+  } = useSummonerPageLoadStore();
+
   const [error, setError] = useState<string | null>(null);
   const [account, setAccount] = useState<RiotAccountDto | null>(null);
   const [selectedQueueType, setSelectedQueueType] =
@@ -64,12 +73,16 @@ export default function SummonerPage() {
   );
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
+
+  const isLoading = useMemo(
+    () => accountStatus === "loading" || accountStatus === "idle",
+    [accountStatus]
+  );
 
   useEffect(() => {
     const fetchAccountData = async () => {
       try {
-        setIsLoading(true);
+        setAccountStatus("loading");
         const [decodedGameName, decodedTagLine] = decodeNameAndTag(encodedName);
         const accountData = await findRiotAccount(
           decodedGameName,
@@ -78,37 +91,71 @@ export default function SummonerPage() {
         setAccount(accountData);
 
         if (!accountData.updatedAt) {
-          const renewedAccount = await renewRiotAccount(
-            accountData.gameName,
-            accountData.tagLine
-          );
-          setAccount(renewedAccount);
+          setIsInitialRefreshPending(true);
         }
+        setAccountStatus("success");
       } catch (error) {
         console.error("Error fetching account data:", error);
         setError(
           error instanceof Error ? error.message : "Failed to load account data"
         );
-      } finally {
-        setIsLoading(false);
+        setAccountStatus("error");
       }
     };
 
     fetchAccountData();
-  }, [encodedName]);
+
+    return () => {
+      resetLoadStatus();
+    };
+  }, [
+    encodedName,
+    setAccountStatus,
+    resetLoadStatus,
+    setIsInitialRefreshPending,
+  ]);
+
+  useEffect(() => {
+    const renewDataIfNeeded = async () => {
+      if (isAllDataLoaded() && isInitialRefreshPending && account) {
+        try {
+          setIsRefreshing(true);
+          const renewedAccount = await renewRiotAccount(
+            account.gameName,
+            account.tagLine
+          );
+          setAccount(renewedAccount);
+        } catch (e) {
+          console.error("Failed to refresh account on initial load", e);
+          setError("Failed to refresh account on initial load");
+        } finally {
+          setIsRefreshing(false);
+          setIsInitialRefreshPending(false);
+        }
+      }
+    };
+    renewDataIfNeeded();
+  }, [
+    isAllDataLoaded,
+    isInitialRefreshPending,
+    account,
+    setIsInitialRefreshPending,
+  ]);
 
   const handleRefresh = async () => {
     if (!account || isRefreshing) return;
     try {
       setIsRefreshing(true);
+      resetLoadStatus();
       const renewedAccount = await renewRiotAccount(
         account.gameName,
         account.tagLine
       );
       setAccount(renewedAccount);
-      setRefreshKey((prevKey) => prevKey + 1); // Trigger re-fetch in children
+      setAccountStatus("success");
     } catch (e) {
       console.error("Failed to refresh account", e);
+      setAccountStatus("error");
     } finally {
       setIsRefreshing(false);
     }
@@ -172,7 +219,9 @@ export default function SummonerPage() {
           <h1 className="text-4xl font-bold text-white mb-2">
             {account.gameName}#{account.tagLine}
           </h1>
-          <p className="text-gray-400">최종 갱신: {account.updatedAt}</p>
+          <p className="text-gray-400">
+            최종 갱신: {account.updatedAt || "Now Loading..."}
+          </p>
         </div>
 
         <div className="flex gap-2 mb-4">
@@ -195,7 +244,6 @@ export default function SummonerPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-[calc(100vh-300px)]">
           <div className="lg:col-span-1 space-y-4 lg:sticky lg:top-24 lg:h-fit">
             <TftStatusCard
-              key={`status-${refreshKey}`}
               account={account}
               selectedQueueType={selectedQueueType}
               formatQueueType={formatQueueType}
@@ -236,7 +284,7 @@ export default function SummonerPage() {
                 variant="outline"
                 className="w-full border-slate-600 text-slate-300 hover:bg-slate-800/50"
                 onClick={handleRefresh}
-                disabled={isRefreshing}
+                disabled={isRefreshing || !isAllDataLoaded()}
               >
                 {isRefreshing ? "갱신 중..." : "갱신하기"}
               </Button>
@@ -244,7 +292,7 @@ export default function SummonerPage() {
           </div>
 
           <div className="lg:col-span-3 space-y-6">
-            <TftMatchHistory key={`history-${refreshKey}`} account={account} />
+            <TftMatchHistory account={account} />
           </div>
         </div>
       </main>
