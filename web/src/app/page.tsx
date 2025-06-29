@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useRivalry } from "@/contexts/RivalryContext";
+import { useRivalryStore } from "@/store/rivalryStore";
 import TeamSelectionModal from "@/components/TeamSelectionModal";
 import { RiotAccountDto } from "@/lib/types";
 import { findRiotAccount } from "@/lib/api";
@@ -39,7 +39,7 @@ export default function Component() {
   );
   const [isTeamModalOpen, setIsTeamModalOpen] = useState(false);
   const router = useRouter();
-  const { openRivalryCart, getTotalPlayerCount } = useRivalry();
+  const { openRivalryCart, getTotalPlayerCount } = useRivalryStore();
 
   const handleSearch = async () => {
     if (!searchInput.trim()) return;
