@@ -6,10 +6,13 @@ import com.glennsyj.rivals.api.tft.entity.achievement.TftBadgeProgress;
 import com.glennsyj.rivals.api.tft.entity.achievement.TftMatchAchievement;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatchParticipant;
+import com.glennsyj.rivals.api.tft.model.badge.TftBadgeBulkResponseDto;
 import com.glennsyj.rivals.api.tft.model.badge.TftBadgeDto;
 import com.glennsyj.rivals.api.tft.model.match.TftMatchUnit;
 import com.glennsyj.rivals.api.tft.repository.TftBadgeProgressRepository;
 import com.glennsyj.rivals.api.tft.repository.TftMatchAchievementRepository;
+import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -20,6 +23,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -35,6 +39,9 @@ class TftBadgeServiceTest {
 
     @Mock
     private TftBadgeProgressRepository badgeProgressRepository;
+
+    @Mock
+    private RiotAccountRepository riotAccountRepository;
 
     @Captor
     private ArgumentCaptor<List<TftMatchAchievement>> achievementsCaptor;
@@ -233,6 +240,77 @@ class TftBadgeServiceTest {
 
         // Then
         assertThat(badge).isEmpty();
+    }
+
+    @Test
+    @DisplayName("findBadgesFromPuuids는 account가 존재하면 Badge를 반환한다")
+    void findBadgesFromPuuids_ShouldReturnBadgesForExistingAccountsOnly() {
+        // Given
+        List<String> requestPuuids = List.of("existing-puuid1", "non-existing-puuid", "existing-puuid2");
+        
+        // 계정 2개만 존재하도록 모킹
+        RiotAccount account1 = mock(RiotAccount.class);
+        RiotAccount account2 = mock(RiotAccount.class);
+        
+        // Only 2 accounts are found
+        List<RiotAccount> existingAccounts = List.of(account1, account2);
+        when(riotAccountRepository.findAllByPuuidIn(requestPuuids)).thenReturn(existingAccounts);
+
+        List<TftBadgeProgress> account1Badges = Arrays.stream(TftBadgeProgress.BadgeType.values())
+            .map(type -> {
+                TftBadgeProgress progress = new TftBadgeProgress(account1, type);
+                progress.updateProgress(5);
+                return progress;
+            })
+            .toList();
+
+        List<TftBadgeProgress> account2Badges = Arrays.stream(TftBadgeProgress.BadgeType.values())
+            .map(type -> {
+                TftBadgeProgress progress = new TftBadgeProgress(account2, type);
+                progress.updateProgress(3);
+            })
+            .toList();
+        
+        Map<String, List<TftBadgeProgress>> badgeProgressMap = Map.of(
+            "existing-puuid1", account1Badges,
+            "existing-puuid2", account2Badges
+        );
+        
+        when(badgeProgressRepository.findMapByRiotAccountIn(existingAccounts)).thenReturn(badgeProgressMap);
+        
+        // When
+        TftBadgeBulkResponseDto response = tftBadgeService.findBadgesFromPuuids(requestPuuids);
+        
+        // Then
+        // 존재하는 계정의 puuid만 포함되어 있는지 확인
+        assertThat(response.badgesOnPuuid())
+            .containsOnlyKeys("existing-puuid1", "existing-puuid2")
+            .doesNotContainKey("non-existing-puuid");
+        
+        // 각 계정이 모든 뱃지 타입을 가지고 있는지 확인
+        List<String> expectedBadgeTypes = Arrays.stream(TftBadgeProgress.BadgeType.values())
+            .map(Enum::name)
+            .collect(Collectors.toList());
+        
+        // existing-puuid1의 뱃지 확인
+        List<TftBadgeDto> puuid1Badges = response.badgesOnPuuid().get("existing-puuid1");
+        assertThat(puuid1Badges)
+            .hasSize(TftBadgeProgress.BadgeType.values().length)
+            .extracting(TftBadgeDto::badgeType)
+            .containsExactlyInAnyOrderElementsOf(expectedBadgeTypes);
+        assertThat(puuid1Badges)
+            .extracting(TftBadgeDto::currentCount)
+            .containsOnly(5);
+
+        // existing-puuid2의 뱃지 확인
+        List<TftBadgeDto> puuid2Badges = response.badgesOnPuuid().get("existing-puuid2");
+        assertThat(puuid2Badges)
+            .hasSize(TftBadgeProgress.BadgeType.values().length)
+            .extracting(TftBadgeDto::badgeType)
+            .containsExactlyInAnyOrderElementsOf(expectedBadgeTypes);
+        assertThat(puuid2Badges)
+            .extracting(TftBadgeDto::currentCount)
+            .containsOnly(3);
     }
 
     private TftMatchParticipant createParticipant(int placement, int eliminations, int damage, List<TftMatchUnit> units) {

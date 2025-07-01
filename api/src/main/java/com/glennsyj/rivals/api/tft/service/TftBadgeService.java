@@ -1,11 +1,13 @@
 package com.glennsyj.rivals.api.tft.service;
 
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
+import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import com.glennsyj.rivals.api.tft.entity.achievement.AchievementType;
 import com.glennsyj.rivals.api.tft.entity.achievement.TftBadgeProgress;
 import com.glennsyj.rivals.api.tft.entity.achievement.TftMatchAchievement;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatchParticipant;
+import com.glennsyj.rivals.api.tft.model.badge.TftBadgeBulkResponseDto;
 import com.glennsyj.rivals.api.tft.model.badge.TftBadgeDto;
 import com.glennsyj.rivals.api.tft.repository.TftBadgeProgressRepository;
 import com.glennsyj.rivals.api.tft.repository.TftMatchAchievementRepository;
@@ -24,14 +26,16 @@ public class TftBadgeService {
     private final TftMatchAchievementRepository achievementRepository;
     private final TftBadgeProgressRepository badgeProgressRepository;
     private final RiotAccountManager riotAccountManager;
+    private final RiotAccountRepository riotAccountRepository;
 
     public TftBadgeService(
             TftMatchAchievementRepository achievementRepository,
             TftBadgeProgressRepository badgeProgressRepository,
-            RiotAccountManager riotAccountManager) {
+            RiotAccountManager riotAccountManager, RiotAccountRepository riotAccountRepository) {
         this.achievementRepository = achievementRepository;
         this.badgeProgressRepository = badgeProgressRepository;
         this.riotAccountManager = riotAccountManager;
+        this.riotAccountRepository = riotAccountRepository;
     }
 
     @Transactional
@@ -167,6 +171,21 @@ public class TftBadgeService {
     public Optional<TftBadgeDto> findBadge(RiotAccount account, TftBadgeProgress.BadgeType badgeType) {
         return badgeProgressRepository.findByRiotAccountAndBadgeType(account, badgeType)
             .map(TftBadgeDto::from);
+    }
+
+    @Transactional(readOnly = true)
+    public TftBadgeBulkResponseDto findBadgesFromPuuids(List<String> puuids) {
+        List<RiotAccount> accounts = riotAccountRepository.findAllByPuuidIn(puuids);
+        Map<String, List<TftBadgeProgress>> badgeProgressMap = badgeProgressRepository.findMapByRiotAccountIn(accounts);
+
+        Map<String, List<TftBadgeDto>> badgeDtoMap = badgeProgressMap.entrySet().stream()
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        e -> e.getValue().stream()
+                                .map(TftBadgeDto::from)
+                                .collect(Collectors.toList())));
+
+        return new TftBadgeBulkResponseDto(badgeDtoMap);
     }
 
     /**
