@@ -1,4 +1,4 @@
-import { TftRecentMatchDto } from "@/lib/types";
+import { TftRecentMatchDto, TftBadgeDto } from "@/lib/types";
 import { dataDragonService } from "@/lib/dataDragon";
 import { getChampionData, getItemData, getTraitData } from "@/lib/tftData";
 import Image from "next/image";
@@ -13,6 +13,7 @@ import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TftBadgeCard } from "@/components/tft/TftBadgeCard";
+import { findBadgesFromPuuids } from "@/lib/api";
 
 const RARITY_COLORS = {
   0: "border-gray-400 text-gray-400", // 1비용
@@ -222,23 +223,27 @@ interface ParticipantRowProps {
   participant: TftRecentMatchDto["participants"][0];
   showBadgesOnLeft?: boolean;
   scale?: number;
+  badges?: TftBadgeDto[];
 }
 
 const ParticipantRow = ({
   participant,
   showBadgesOnLeft = true,
   scale = 1,
+  badges,
 }: ParticipantRowProps) => {
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
 
-  const badgeDisplay = (
-    <TftBadgeCard
-      riotIdGameName={participant.riotIdGameName}
-      riotIdTagline={participant.riotIdTagline}
-      isCompact={true}
-      afterMatchStatus={false}
-    />
-  );
+  const badgeDisplay =
+    badges && badges.length > 0 ? (
+      <TftBadgeCard
+        riotIdGameName={participant.riotIdGameName}
+        riotIdTagline={participant.riotIdTagline}
+        isCompact={true}
+        afterMatchStatus={false}
+        badges={badges}
+      />
+    ) : null;
 
   const handleUnitClick = (characterId: string) => {
     setSelectedUnit(selectedUnit === characterId ? null : characterId);
@@ -337,6 +342,11 @@ const globalCache = {
 export default function TftMatchCard({ match }: TftMatchCardProps) {
   const [showParticipants, setShowParticipants] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState<string | null>(null);
+  const [isLoadingBadges, setIsLoadingBadges] = useState(false);
+  const [badgeError, setBadgeError] = useState<string | null>(null);
+  const [participantBadges, setParticipantBadges] = useState<{
+    [puuid: string]: TftBadgeDto[];
+  }>({});
 
   const formatGameLength = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -386,6 +396,29 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
   );
   const leftParticipants = sortedParticipants.slice(0, 4);
   const rightParticipants = sortedParticipants.slice(4, 8);
+
+  useEffect(() => {
+    if (showParticipants && Object.keys(participantBadges).length === 0) {
+      const puuids = match.participants.map((p) => p.puuid);
+      const uniquePuuids = Array.from(new Set(puuids));
+
+      const fetchBadges = async () => {
+        setIsLoadingBadges(true);
+        setBadgeError(null);
+        try {
+          const fetchedBadges = await findBadgesFromPuuids(uniquePuuids);
+          setParticipantBadges(fetchedBadges);
+        } catch (error) {
+          console.error("Failed to fetch badges:", error);
+          setBadgeError("배지 정보를 불러오는데 실패했습니다.");
+        } finally {
+          setIsLoadingBadges(false);
+        }
+      };
+
+      fetchBadges();
+    }
+  }, [showParticipants, match.participants, participantBadges]);
 
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden hover:border-indigo-500/50 transition-all">
@@ -472,6 +505,7 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
                   participant={participant}
                   showBadgesOnLeft={true}
                   scale={0.8}
+                  badges={participantBadges[participant.puuid]}
                 />
               ))}
             </div>
@@ -482,6 +516,7 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
                   participant={participant}
                   showBadgesOnLeft={false}
                   scale={0.8}
+                  badges={participantBadges[participant.puuid]}
                 />
               ))}
             </div>
