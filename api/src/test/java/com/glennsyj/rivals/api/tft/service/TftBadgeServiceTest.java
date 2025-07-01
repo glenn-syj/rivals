@@ -268,6 +268,7 @@ class TftBadgeServiceTest {
             .map(type -> {
                 TftBadgeProgress progress = new TftBadgeProgress(account2, type);
                 progress.updateProgress(3);
+                return progress;
             })
             .toList();
         
