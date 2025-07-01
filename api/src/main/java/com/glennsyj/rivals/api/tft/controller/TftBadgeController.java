@@ -3,8 +3,12 @@ package com.glennsyj.rivals.api.tft.controller;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import com.glennsyj.rivals.api.tft.entity.achievement.TftBadgeProgress;
+import com.glennsyj.rivals.api.tft.model.badge.TftBadgeBulkRequestDto;
+import com.glennsyj.rivals.api.tft.model.badge.TftBadgeBulkResponseDto;
 import com.glennsyj.rivals.api.tft.model.badge.TftBadgeDto;
 import com.glennsyj.rivals.api.tft.service.TftBadgeService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +20,8 @@ public class TftBadgeController {
 
     private final TftBadgeService tftBadgeService;
     private final RiotAccountManager riotAccountManager;
+
+    private final Logger log = LoggerFactory.getLogger(TftBadgeController.class);
 
     public TftBadgeController(TftBadgeService tftBadgeService, RiotAccountManager riotAccountManager) {
         this.tftBadgeService = tftBadgeService;
@@ -54,7 +60,21 @@ public class TftBadgeController {
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
         } catch (IllegalStateException | IllegalArgumentException e) {
+            log.error("Failed to find badge: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<TftBadgeBulkResponseDto> findBadgeBulkWithPuuids(@RequestBody TftBadgeBulkRequestDto requestDto) {
+
+        try {
+            TftBadgeBulkResponseDto responseDto = tftBadgeService.findBadgesFromPuuids(requestDto.puuids());
+            return ResponseEntity.ok(responseDto);
+        } catch (Exception e) {
+            log.error("Failed to find badges: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().build();
+        }
+
     }
 } 
