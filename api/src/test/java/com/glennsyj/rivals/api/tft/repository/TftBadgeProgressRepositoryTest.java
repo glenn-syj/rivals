@@ -12,10 +12,13 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -33,6 +36,7 @@ class TftBadgeProgressRepositoryTest {
     private RiotAccountRepository riotAccountRepository;
 
     private RiotAccount testAccount;
+    private RiotAccount testAccount2;
 
     @BeforeEach
     void setUp() {
@@ -42,13 +46,24 @@ class TftBadgeProgressRepositoryTest {
             "KR1",
             "test-puuid"
         );
-        riotAccountRepository.save(testAccount);
+        testAccount2 = new RiotAccount(
+                "test-gameName2",
+                "KR2",
+                "test-puuid2"
+        );
+
+        riotAccountRepository.saveAll(List.of(testAccount, testAccount2));
 
         // 여러 뱃지 진행도 생성
-        createBadgeProgress(TftBadgeProgress.BadgeType.LUXURY, 6, true);
-        createBadgeProgress(TftBadgeProgress.BadgeType.DAMAGE_DEALER, 3, false);
-        createBadgeProgress(TftBadgeProgress.BadgeType.MVP, 7, true);
-        createBadgeProgress(TftBadgeProgress.BadgeType.STEADY, 4, false);
+        createBadgeProgress(TftBadgeProgress.BadgeType.LUXURY, 6, true, testAccount);
+        createBadgeProgress(TftBadgeProgress.BadgeType.DAMAGE_DEALER, 3, false, testAccount);
+        createBadgeProgress(TftBadgeProgress.BadgeType.MVP, 7, true, testAccount);
+        createBadgeProgress(TftBadgeProgress.BadgeType.STEADY, 4, false, testAccount);
+
+        createBadgeProgress(TftBadgeProgress.BadgeType.LUXURY, 6, true, testAccount2);
+        createBadgeProgress(TftBadgeProgress.BadgeType.DAMAGE_DEALER, 3, false, testAccount2);
+        createBadgeProgress(TftBadgeProgress.BadgeType.MVP, 7, true, testAccount2);
+        createBadgeProgress(TftBadgeProgress.BadgeType.STEADY, 4, false, testAccount2);
     }
 
     @Test
@@ -88,12 +103,27 @@ class TftBadgeProgressRepositoryTest {
             );
     }
 
+    @Test
+    @DisplayName("여러 계정에 대해서 BadgeProgress를 Map 형태로 조회한다")
+    void findMapByRiotAccountIn() {
+
+        // when
+        Map<Long, List<TftBadgeProgress>> badgeMap = badgeProgressRepository
+                .findMapByRiotAccountIn(List.of(testAccount, testAccount2));
+
+        // then
+        assertThat(badgeMap).hasSize(2);
+        assertThat(badgeMap.get(testAccount.getId())).isNotNull();
+        assertThat(badgeMap.get(testAccount2.getId())).isNotNull();
+    }
+
     private void createBadgeProgress(
         TftBadgeProgress.BadgeType badgeType,
         int achievementCount,
-        boolean isActive
+        boolean isActive,
+        RiotAccount account
     ) {
-        TftBadgeProgress progress = new TftBadgeProgress(testAccount, badgeType);
+        TftBadgeProgress progress = new TftBadgeProgress(account, badgeType);
         progress.updateProgress(achievementCount);
         badgeProgressRepository.save(progress);
     }
