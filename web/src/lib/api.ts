@@ -147,13 +147,13 @@ export const initializeOrGetTftBadges = async (
 export const findBadgesFromPuuids = async (
   puuids: string[]
 ): Promise<TftBadgeBulkResponseDto> => {
-  const response = await api.post<TftBadgeBulkResponseDto>(
+  const response = await api.post<{ badgesOnPuuid: TftBadgeBulkResponseDto }>(
     `/api/v1/tft/badges/bulk`,
     {
       puuids,
     }
   );
-  return response.data;
+  return response.data.badgesOnPuuid;
 };
 
 // Error handling middleware
