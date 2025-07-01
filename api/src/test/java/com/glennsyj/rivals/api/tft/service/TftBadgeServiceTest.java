@@ -18,8 +18,10 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.*;
@@ -155,30 +157,44 @@ class TftBadgeServiceTest {
     }
 
     @Test
-    void findAllBadges_ShouldReturnActiveBadges() {
+    void findAllBadges_ShouldReturnAllBadges_WhenBadgesDoesNotExistYet() {
         // Given
         RiotAccount account = mock(RiotAccount.class);
-        
-        TftBadgeProgress mvpBadge = new TftBadgeProgress(account, TftBadgeProgress.BadgeType.MVP);
-        mvpBadge.updateProgress(6); // Required count is 6, so this will be active
-        
-        TftBadgeProgress luxuryBadge = new TftBadgeProgress(account, TftBadgeProgress.BadgeType.LUXURY);
-        luxuryBadge.updateProgress(5); // Required count is 5, so this will be active
+        when(account.getPuuid()).thenReturn("test-puuid");
 
-        when(badgeProgressRepository.findByRiotAccountAndIsActiveTrue(account))
-            .thenReturn(List.of(mvpBadge, luxuryBadge));
+        when(badgeProgressRepository.findByRiotAccount(account))
+            .thenReturn(List.of());
+
+        // 모든 BadgeType에 대해 countRecentAchievements가 호출될 때 0을 반환하도록 설정
+        when(achievementRepository.countRecentAchievements(anyString(), anyString(), anyInt()))
+            .thenReturn(0);
 
         // When
         List<TftBadgeDto> badges = tftBadgeService.findAllBadges(account);
 
         // Then
-        assertThat(badges).hasSize(2);
+        // 모든 뱃지 타입이 생성되고 반환되는지 확인
+        assertThat(badges).hasSize(TftBadgeProgress.BadgeType.values().length);
         assertThat(badges)
             .extracting(TftBadgeDto::badgeType)
-            .containsExactlyInAnyOrder("MVP", "LUXURY");
+            .containsExactlyInAnyOrderElementsOf(
+                Arrays.stream(TftBadgeProgress.BadgeType.values())
+                    .map(Enum::name)
+                    .collect(Collectors.toList())
+            );
+        assertThat(badges)
+            .extracting(TftBadgeDto::achievementType)
+            .containsExactlyInAnyOrderElementsOf(
+                Arrays.stream(TftBadgeProgress.BadgeType.values())
+                    .map(badgeType -> badgeType.getAchievementType().name())
+                    .collect(Collectors.toList())
+            );
         assertThat(badges)
             .extracting(TftBadgeDto::isActive)
-            .containsOnly(true);
+            .containsOnly(false); // 새로 생성된 뱃지는 초기에는 비활성화 상태여야 함
+
+        // saveAll이 호출되었는지 확인
+        verify(badgeProgressRepository).saveAll(anyList());
     }
 
     @Test
