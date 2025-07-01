@@ -15,4 +15,5 @@ public interface RiotAccountRepository extends JpaRepository<RiotAccount, Long> 
     Optional<RiotAccount> findByGameNameAndTagLine(String gameName, String tagLine);
     Optional<RiotAccount> findByPuuid(String puuid);
     List<RiotAccount> findAllByIdIn(List<Long> ids);
+    List<RiotAccount> findAllByPuuidIn(List<String> puuids);
 }
