@@ -143,6 +143,14 @@ export interface TftBadgeDto {
   isActive: boolean;
 }
 
+export interface TftBadgeBulkRequestDto {
+  puuids: string[];
+}
+
+export interface TftBadgeBulkResponseDto {
+  [puuid: string]: TftBadgeDto[];
+}
+
 export interface TftRenewDto {
   statuses: TftStatusDto[];
   matches: TftRecentMatchDto[];

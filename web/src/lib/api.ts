@@ -7,6 +7,8 @@ import type {
   RivalryDetailDto,
   TftRecentMatchDto,
   TftBadgeDto,
+  TftBadgeBulkRequestDto,
+  TftBadgeBulkResponseDto,
   TftRenewDto,
 } from "./types";
 
@@ -122,10 +124,10 @@ export const renewTftData = async (
   return response.data;
 };
 
-export async function initializeOrGetTftBadges(
+export const initializeOrGetTftBadges = async (
   gameName: string,
   tagLine: string
-): Promise<TftBadgeDto[]> {
+): Promise<TftBadgeDto[]> => {
   const response = await fetch(
     `/api/v1/tft/badges/${encodeURIComponent(gameName)}/${encodeURIComponent(
       tagLine
@@ -140,7 +142,19 @@ export async function initializeOrGetTftBadges(
   }
 
   return response.json();
-}
+};
+
+export const findBadgesFromPuuids = async (
+  puuids: string[]
+): Promise<TftBadgeBulkResponseDto> => {
+  const response = await api.post<TftBadgeBulkResponseDto>(
+    `/api/v1/tft/badges/bulk`,
+    {
+      puuids,
+    }
+  );
+  return response.data;
+};
 
 // Error handling middleware
 api.interceptors.response.use(
