@@ -348,6 +348,36 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
     [puuid: string]: TftBadgeDto[];
   }>({});
 
+  // 배지 데이터 가져오기
+  const fetchBadgesData = async () => {
+    setIsLoadingBadges(true);
+    setBadgeError(null);
+    try {
+      const puuids = match.participants.map((p) => p.puuid);
+      const uniquePuuids = Array.from(new Set(puuids));
+
+      const fetchedBadges = await findBadgesFromPuuids(uniquePuuids);
+
+      setParticipantBadges(fetchedBadges);
+    } catch (error) {
+      console.error("[TftMatchCard] Failed to fetch badges:", error);
+      setBadgeError("배지 정보를 불러오는데 실패했습니다.");
+    } finally {
+      setIsLoadingBadges(false);
+    }
+  };
+
+  // 정보 보기 버튼 클릭 핸들러
+  const handleShowParticipants = () => {
+    const newShowParticipants = !showParticipants;
+    setShowParticipants(newShowParticipants);
+
+    // 정보를 보여줄 때만 배지 데이터를 가져옴
+    if (newShowParticipants && Object.keys(participantBadges).length === 0) {
+      fetchBadgesData();
+    }
+  };
+
   const formatGameLength = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = Math.floor(seconds % 60);
@@ -397,29 +427,6 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
   const leftParticipants = sortedParticipants.slice(0, 4);
   const rightParticipants = sortedParticipants.slice(4, 8);
 
-  useEffect(() => {
-    if (showParticipants && Object.keys(participantBadges).length === 0) {
-      const puuids = match.participants.map((p) => p.puuid);
-      const uniquePuuids = Array.from(new Set(puuids));
-
-      const fetchBadges = async () => {
-        setIsLoadingBadges(true);
-        setBadgeError(null);
-        try {
-          const fetchedBadges = await findBadgesFromPuuids(uniquePuuids);
-          setParticipantBadges(fetchedBadges);
-        } catch (error) {
-          console.error("Failed to fetch badges:", error);
-          setBadgeError("배지 정보를 불러오는데 실패했습니다.");
-        } finally {
-          setIsLoadingBadges(false);
-        }
-      };
-
-      fetchBadges();
-    }
-  }, [showParticipants, match.participants, participantBadges]);
-
   return (
     <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg overflow-hidden hover:border-indigo-500/50 transition-all">
       <div className="flex">
@@ -461,7 +468,7 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setShowParticipants(!showParticipants)}
+            onClick={handleShowParticipants}
             className="mt-2 text-gray-400 hover:text-white hover:bg-slate-700/50"
           >
             {showParticipants ? "정보 숨기기" : "정보 보기"}
@@ -497,30 +504,44 @@ export default function TftMatchCard({ match }: TftMatchCardProps) {
 
       {showParticipants && (
         <div className="border-t border-slate-700/50">
-          <div className="grid grid-cols-2 gap-4 p-4 bg-slate-900/30">
-            <div className="space-y-4">
-              {leftParticipants.map((participant) => (
-                <ParticipantRow
-                  key={participant.puuid}
-                  participant={participant}
-                  showBadgesOnLeft={true}
-                  scale={0.8}
-                  badges={participantBadges[participant.puuid]}
-                />
-              ))}
+          {isLoadingBadges ? (
+            <div className="p-4 text-center text-gray-400">배지 로딩 중...</div>
+          ) : badgeError ? (
+            <div className="p-4 text-center text-red-400">{badgeError}</div>
+          ) : Object.keys(participantBadges).length > 0 ? (
+            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-900/30">
+              <div className="space-y-4">
+                {leftParticipants.map((participant) => {
+                  const participantBadgeData =
+                    participantBadges[participant.puuid] || [];
+                  return (
+                    <ParticipantRow
+                      key={participant.puuid}
+                      participant={participant}
+                      showBadgesOnLeft={true}
+                      scale={0.8}
+                      badges={participantBadgeData}
+                    />
+                  );
+                })}
+              </div>
+              <div className="space-y-4">
+                {rightParticipants.map((participant) => {
+                  const participantBadgeData =
+                    participantBadges[participant.puuid] || [];
+                  return (
+                    <ParticipantRow
+                      key={participant.puuid}
+                      participant={participant}
+                      showBadgesOnLeft={false}
+                      scale={0.8}
+                      badges={participantBadgeData}
+                    />
+                  );
+                })}
+              </div>
             </div>
-            <div className="space-y-4">
-              {rightParticipants.map((participant) => (
-                <ParticipantRow
-                  key={participant.puuid}
-                  participant={participant}
-                  showBadgesOnLeft={false}
-                  scale={0.8}
-                  badges={participantBadges[participant.puuid]}
-                />
-              ))}
-            </div>
-          </div>
+          ) : null}
         </div>
       )}
     </div>

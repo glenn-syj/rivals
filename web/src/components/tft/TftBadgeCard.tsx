@@ -90,22 +90,24 @@ export function TftBadgeCard({
         const hasBadge = !!badge;
         const isActive = badge?.isActive ?? false;
 
+        // Skip rendering if compact and no badge
         if (isCompact && !hasBadge) {
           return null;
         }
 
+        // Simplified rendering logic
         return (
           <TooltipProvider key={badgeType}>
             <Tooltip>
               <TooltipTrigger asChild>
                 <div
-                  className={`${emojiTextSize} transition-opacity duration-200 cursor-help ${
-                    !isActive && hasBadge
-                      ? "opacity-30"
-                      : hasBadge
-                      ? "opacity-100"
+                  className={`${emojiTextSize} cursor-help ${
+                    hasBadge
+                      ? isActive
+                        ? "opacity-100"
+                        : "opacity-30"
                       : "opacity-30"
-                  } ${isCompact && !hasBadge ? "hidden" : ""}`}
+                  }`}
                 >
                   {emoji}
                 </div>
