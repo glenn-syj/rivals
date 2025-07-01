@@ -28,8 +28,8 @@ public interface TftBadgeProgressRepository extends JpaRepository<TftBadgeProgre
     List<TftBadgeProgress> findByRiotAccountIn(List<RiotAccount> accounts);
 
     // Return Type을 Map으로 이용하기 위해서 작성
-    default Map<Long, List<TftBadgeProgress>> findMapByRiotAccountIn(List<RiotAccount> accounts) {
+    default Map<String, List<TftBadgeProgress>> findMapByRiotAccountIn(List<RiotAccount> accounts) {
         return findByRiotAccountIn(accounts).stream()
-                .collect(Collectors.groupingBy(bp -> bp.getRiotAccount().getId()));
+                .collect(Collectors.groupingBy(bp -> bp.getRiotAccount().getPuuid()));
     }
 }
