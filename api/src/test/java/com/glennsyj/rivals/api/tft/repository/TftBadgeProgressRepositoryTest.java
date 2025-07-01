@@ -108,13 +108,13 @@ class TftBadgeProgressRepositoryTest {
     void findMapByRiotAccountIn() {
 
         // when
-        Map<Long, List<TftBadgeProgress>> badgeMap = badgeProgressRepository
+        Map<String, List<TftBadgeProgress>> badgeMap = badgeProgressRepository
                 .findMapByRiotAccountIn(List.of(testAccount, testAccount2));
 
         // then
         assertThat(badgeMap).hasSize(2);
-        assertThat(badgeMap.get(testAccount.getId())).isNotNull();
-        assertThat(badgeMap.get(testAccount2.getId())).isNotNull();
+        assertThat(badgeMap.get(testAccount.getPuuid())).isNotNull();
+        assertThat(badgeMap.get(testAccount2.getPuuid())).isNotNull();
     }
 
     private void createBadgeProgress(
