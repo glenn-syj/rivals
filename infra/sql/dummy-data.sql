@@ -787,7 +787,124 @@ FROM
     numbers_table n
 JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
 JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
-WHERE n.rn <= 50000;
+WHERE n.rn BETWEEN 1 AND 5000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 5001 AND 10000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 10001 AND 15000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 15001 AND 20000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 20001 AND 25000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 25001 AND 30000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 30001 AND 35000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 35001 AND 40000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 40001 AND 45000;
+
+INSERT INTO tft_match_achievements (id, value, match_id, participant_id, type)
+SELECT 
+    ((UNIX_TIMESTAMP(NOW(3)) * 1000 + 6) << 22) | (n.rn % (1 << 22)), -- Custom TSID with table offset
+    FLOOR(RAND() * 1000), -- Random achievement value
+    tmi.id, -- Link to tft_matches
+    tpi.id, -- Link to tft_match_participants
+    ELT(1 + FLOOR(RAND() * 5), 'FIRST_PLACE', 'MOST_DAMAGE_DEALT', 'MOST_ELIMINATIONS', 'MOST_EXPENSIVE_SQUAD', 'TOP_FOUR')
+FROM 
+    numbers_table n
+JOIN tft_match_ids tmi ON tmi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_match_ids))
+JOIN tft_participant_ids tpi ON tpi.rn = 1 + ((n.rn-1) % (SELECT COUNT(*) FROM tft_participant_ids))
+WHERE n.rn BETWEEN 45001 AND 50000;
 
 -- Generate tft_league_entries (3000 records, 3 per account for different queue types)
 INSERT INTO tft_league_entries (
