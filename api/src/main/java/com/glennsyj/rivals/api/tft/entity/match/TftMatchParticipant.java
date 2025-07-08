@@ -12,7 +12,10 @@ import org.hibernate.proxy.HibernateProxy;
 import java.util.List;
 
 @Entity
-@Table(name = "tft_match_participants")
+@Table(name = "tft_match_participants",
+        indexes = {
+                @Index(name = "idx_match_puuid", columnList = "match_id, puuid")
+        })
 public class TftMatchParticipant {
     @Id
     @Tsid

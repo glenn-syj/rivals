@@ -18,7 +18,8 @@ import java.util.Objects;
 @Entity
 @Table(name = "tft_matches",
         indexes = {
-                @Index(name = "idx_match_id", columnList = "matchId", unique = true)
+                @Index(name = "idx_match_id", columnList = "matchId", unique = true),
+                @Index(name = "idx_game_creation_id_desc", columnList = "gameCreation DESC, id")
         })
 public class TftMatch {
     @Id
