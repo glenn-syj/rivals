@@ -2,10 +2,13 @@ package com.glennsyj.rivals.api.rivalry.model;
 
 import com.glennsyj.rivals.api.rivalry.entity.RivalSide;
 import jakarta.validation.constraints.NotEmpty;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.util.List;
 
+@Schema(description = "새로운 라이벌리 생성을 위한 요청 DTO")
 public record RivalryCreationDto(
+        @Schema(description = "라이벌리 참여자 목록")
         @NotEmpty(message="participants should not be empty")
         List<RivalryParticipantDto> participants
 ) {

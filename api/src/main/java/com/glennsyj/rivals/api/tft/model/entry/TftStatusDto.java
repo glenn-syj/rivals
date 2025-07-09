@@ -1,17 +1,26 @@
 package com.glennsyj.rivals.api.tft.model.entry;
 
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
+import io.swagger.v3.oas.annotations.media.Schema;
 
 /**
  * TFT 상태 정보 DTO
  */
+@Schema(description = "TFT 리그 엔트리 상태 정보 DTO")
 public record TftStatusDto(
+        @Schema(description = "큐 타입 (예: RANKED_TFT_TURBO)")
         String queueType,         // 큐 타입 (Enum QueueType)
+        @Schema(description = "티어 (예: DIAMOND)")
         String tier,              // 티어 (e.g. DIAMOND)
+        @Schema(description = "랭크 (예: I, II, III, IV)")
         String rank,              // 랭크 (e.g. I, II, III, IV)
+        @Schema(description = "리그 포인트 (LP)")
         int leaguePoints,         // LP
-        int wins,                 // 1등 횟수
-        int losses,               // 2-8등 횟수
+        @Schema(description = "1-4등 횟수")
+        int wins,                 // 1-4등 횟수
+        @Schema(description = "5-8등 횟수")
+        int losses,               // 5-8등 횟수
+        @Schema(description = "연승 여부")
         boolean hotStreak         // 연승 여부
 ) {
 
