@@ -1,11 +1,13 @@
 package com.glennsyj.rivals.api.tft.service;
 
+import com.glennsyj.rivals.api.common.exception.TftNoGameException;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import com.glennsyj.rivals.api.tft.TftApiClient;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.model.entry.TftLeagueEntryResponse;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
+import com.glennsyj.rivals.api.common.exception.RiotAccountNotFoundException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
@@ -49,12 +51,12 @@ public class TftLeagueEntryManager {
         return tftLeagueEntryRepository.findFirstByAccount_IdOrderByUpdatedAtDesc(accountId)
             .orElseGet(() -> {
                 RiotAccount account = riotAccountRepository.findById(accountId)
-                    .orElseThrow(() -> new IllegalStateException("계정을 찾을 수 없습니다: " + accountId));
+                    .orElseThrow(() -> new RiotAccountNotFoundException(accountId));
 
                 List<TftLeagueEntryResponse> responses = tftApiClient.getLeagueEntries(account.getPuuid());
 
                 if (responses.isEmpty()) {
-                    throw new IllegalStateException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다");
+                    throw new TftNoGameException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다");
                 }
 
                 TftLeagueEntryResponse response = responses.get(0);
@@ -80,7 +82,7 @@ public class TftLeagueEntryManager {
             }
 
             RiotAccount account = riotAccountRepository.findById(accountId)
-                    .orElseThrow(() -> new IllegalStateException("계정을 찾을 수 없습니다: " + accountId));
+                    .orElseThrow(() -> new RiotAccountNotFoundException(accountId));
 
             List<TftLeagueEntryResponse> responses = tftApiClient.getLeagueEntries(account.getPuuid());
 
@@ -112,11 +114,11 @@ public class TftLeagueEntryManager {
         try {
             List<TftLeagueEntryResponse> responses = tftApiClient.getLeagueEntries(puuid);
             if (responses.isEmpty()) {
-                throw new IllegalStateException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다");
+                throw new TftNoGameException("이번 시즌 TFT 랭크 기록이 존재하지 않습니다.");
             }
 
             RiotAccount account = riotAccountRepository.findById(accountId).orElseThrow(
-                    EntityNotFoundException::new
+                    () -> new RiotAccountNotFoundException(accountId)
             );
 
             List<TftLeagueEntry> entries = tftLeagueEntryRepository

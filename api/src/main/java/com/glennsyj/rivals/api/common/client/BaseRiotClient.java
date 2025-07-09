@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.common.client;
 
+import com.glennsyj.rivals.api.common.exception.RiotApiException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -33,22 +34,28 @@ public abstract class BaseRiotClient {
         try {
             return apiCall
                     .retryWhen(Retry.backoff(MAX_RETRIES, INITIAL_BACKOFF)
-                            .filter(throwable -> shouldRetry(throwable))
+                            .filter(this::shouldRetry)
                             .doBeforeRetry(retrySignal -> 
                                 logger.warn("Retrying API call after error. Attempt {}/{}",
                                     retrySignal.totalRetries() + 1, MAX_RETRIES)))
                     .blockOptional()
-                    .orElseThrow(() -> new IllegalStateException(errorMessage));
+                    .orElseThrow(() -> new RiotApiException(errorMessage));
         } catch (WebClientResponseException e) {
             if (e.getStatusCode() == HttpStatus.TOO_MANY_REQUESTS) {
                 String retryAfter = e.getHeaders().getFirst("Retry-After");
                 logger.error("Rate limit exceeded. Retry after {} seconds", retryAfter);
-                throw new IllegalStateException("Riot API 호출 횟수 제한 초과. " + retryAfter + "초 후에 다시 시도해주세요.", e);
+                throw new RiotApiException(
+                    "Riot API 호출 횟수 제한 초과. " + retryAfter + "초 후에 다시 시도해주세요.",
+                    e.getStatusCode().value()
+                );
             }
-            throw new IllegalStateException("Riot API 호출 실패: " + e.getResponseBodyAsString(), e);
+            throw new RiotApiException(
+                "Riot API 호출 실패: " + e.getResponseBodyAsString(),
+                e.getStatusCode().value()
+            );
         } finally {
             long duration = System.currentTimeMillis() - startTime;
-            logger.info("Riot API call for '{}' completed in {}ms", this.getClass(), duration);
+            logger.info("Riot API call for '{}' completed in {}ms", this.getClass().getSimpleName(), duration);
         }
     }
 

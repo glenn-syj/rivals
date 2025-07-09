@@ -40,13 +40,9 @@ public class TftBadgeController {
     public ResponseEntity<List<TftBadgeDto>> initializeOrGetBadgesForSummoner(
             @PathVariable String gameName,
             @PathVariable String tagLine) {
-        try {
-            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-            List<TftBadgeDto> badges = tftBadgeService.findAllBadges(account);
-            return ResponseEntity.ok(badges);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        List<TftBadgeDto> badges = tftBadgeService.findAllBadges(account);
+        return ResponseEntity.ok(badges);
     }
 
     @GetMapping("/{gameName}/{tagLine}/{badgeType}")
@@ -54,27 +50,16 @@ public class TftBadgeController {
             @PathVariable String gameName,
             @PathVariable String tagLine,
             @PathVariable String badgeType) {
-        try {
-            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-            return tftBadgeService.findBadge(account, TftBadgeProgress.BadgeType.valueOf(badgeType))
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-        } catch (IllegalStateException | IllegalArgumentException e) {
-            log.error("Failed to find badge: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().build();
-        }
+        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        return tftBadgeService.findBadge(account, TftBadgeProgress.BadgeType.valueOf(badgeType))
+            .map(ResponseEntity::ok)
+            .orElse(ResponseEntity.notFound().build());
     }
 
     @PostMapping("/bulk")
     public ResponseEntity<TftBadgeBulkResponseDto> findBadgeBulkWithPuuids(@RequestBody TftBadgeBulkRequestDto requestDto) {
 
-        try {
-            TftBadgeBulkResponseDto responseDto = tftBadgeService.findBadgesFromPuuids(requestDto.puuids());
-            return ResponseEntity.ok(responseDto);
-        } catch (Exception e) {
-            log.error("Failed to find badges: {}", e.getMessage(), e);
-            return ResponseEntity.badRequest().build();
-        }
-
+        TftBadgeBulkResponseDto responseDto = tftBadgeService.findBadgesFromPuuids(requestDto.puuids());
+        return ResponseEntity.ok(responseDto);
     }
 } 

@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.rivalry.service;
 
+import com.glennsyj.rivals.api.common.exception.RiotAccountNotFoundException;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
 import com.glennsyj.rivals.api.rivalry.entity.RivalSide;
@@ -13,7 +14,7 @@ import com.glennsyj.rivals.api.rivalry.repository.RivalryRepository;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.model.entry.TftStatusDto;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.glennsyj.rivals.api.common.exception.RivalryNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,7 +45,7 @@ public class RivalryService {
 
         // 중간 검증: account를 하나도 찾을 수 없을 시
         if (accounts.isEmpty()) {
-            throw new IllegalStateException("Some of accounts not found");
+            throw new RiotAccountNotFoundException("All of the accounts are not found");
         }
 
         HashMap<Long, RiotAccount> accountMap = new HashMap<>();
@@ -65,7 +66,7 @@ public class RivalryService {
         rivalry = rivalryRepository.save(rivalry);
         // 최종 검증: dto 내 participant 수와 영속화된 participant 수 비교
         if (accountIds.size() != rivalry.getParticipants().size()) {
-            throw new IllegalArgumentException("Some of accounts not found");
+            throw new RiotAccountNotFoundException("Some of accounts not found");
         }
 
         return rivalry.getId();
@@ -75,7 +76,7 @@ public class RivalryService {
     public RivalryDetailDto findRivalryFrom(Long id) {
 
         // 1. Rivalry 정보 불러오고 캐시로 이용할 맵 초기화
-        Rivalry rivalry = rivalryRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Rivalry rivalry = rivalryRepository.findById(id).orElseThrow(() -> new RivalryNotFoundException(id));
         Map<Long, String> nameCacheMap = new HashMap<>();
         Map<Long, TftStatusDto> leagueEntryCacheMap = new HashMap<>();
 

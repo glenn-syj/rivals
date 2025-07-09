@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.riot.service;
 
+import com.glennsyj.rivals.api.common.exception.RiotAccountNotFoundException;
 import com.glennsyj.rivals.api.riot.RiotAccountClient;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
@@ -40,7 +41,8 @@ public class RiotAccountManager {
     public RiotAccount renewAccount(String gameName, String tagLine) {
         RiotAccount fetchedAccount = riotAccountRepository
                 .findByGameNameAndTagLine(gameName, tagLine)
-                .orElseThrow(() -> new IllegalStateException("Account not found"));
+                .orElseThrow(() -> new RiotAccountNotFoundException(
+                        "GameName: " + gameName + ", TagLine: " + tagLine + " 에 해당하는 Riot 계정을 찾을 수 없습니다."));
 
         fetchedAccount.renewUpdatedAt();
         return fetchedAccount;

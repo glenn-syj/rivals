@@ -26,24 +26,14 @@ public class RiotController {
     @GetMapping("/accounts/{gameName}/{tagLine}")
     public ResponseEntity<RiotAccountDto> findAccount(@PathVariable("gameName") String gameName
             , @PathVariable("tagLine") String tagLine) {
-        try {
-            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-            return ResponseEntity.ok(RiotAccountDto.from(account));
-        } catch (IllegalStateException e) {
-            log.error(e.getMessage());
-            return ResponseEntity.notFound().build();
-        }
+        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        return ResponseEntity.ok(RiotAccountDto.from(account));
     }
 
     @PatchMapping("/accounts/renew/{gameName}/{tagLine}")
     public ResponseEntity<RiotAccountDto> renewAccount(@PathVariable("gameName") String gameName
             , @PathVariable("tagLine") String tagLine) {
-        try {
-            RiotAccount account = riotAccountManager.renewAccount(gameName, tagLine);
-            return ResponseEntity.ok(RiotAccountDto.from(account));
-        } catch (IllegalStateException e) {
-            log.error("Failed to renew account for {}#{}: {}", gameName, tagLine, e.getMessage());
-            return ResponseEntity.notFound().build();
-        }
+        RiotAccount account = riotAccountManager.renewAccount(gameName, tagLine);
+        return ResponseEntity.ok(RiotAccountDto.from(account));
     }
 }

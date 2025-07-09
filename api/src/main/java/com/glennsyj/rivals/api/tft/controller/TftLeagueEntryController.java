@@ -35,43 +35,35 @@ public class TftLeagueEntryController {
         // '#' character는 PathVariable로 전달되지 않음.
         String[] parts = encodedFullName.split("#");
         if (parts.length != 2) {
-            return ResponseEntity.badRequest().body("Invalid format for encodedFullName: " + encodedFullName);
+            throw new IllegalArgumentException("Invalid format for encodedFullName: " + encodedFullName);
         }
 
         String gameName = parts[0];
         String tagLine = parts[1];
 
-        try {
-            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-            List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
+        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
 
-            List<TftStatusDto> dtos = new ArrayList<>(entries.size());
-            for (TftLeagueEntry entry : entries) {
-                TftStatusDto dto = TftStatusDto.from(entry);
-                dtos.add(dto);
-            }
-
-            return ResponseEntity.ok(dtos);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.notFound().build();
+        List<TftStatusDto> dtos = new ArrayList<>(entries.size());
+        for (TftLeagueEntry entry : entries) {
+            TftStatusDto dto = TftStatusDto.from(entry);
+            dtos.add(dto);
         }
+
+        return ResponseEntity.ok(dtos);
     }
 
     @GetMapping(path="/{gameName}/{tagLine}")
     public ResponseEntity<?> getTftStatusFrom(@PathVariable String gameName, @PathVariable String tagLine) {
-        try {
-            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
-            List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
+        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
 
-            List<TftStatusDto> dtos = new ArrayList<>(entries.size());
-            for (TftLeagueEntry entry : entries) {
-                TftStatusDto dto = TftStatusDto.from(entry);
-                dtos.add(dto);
-            }
-
-            return ResponseEntity.ok(dtos);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.notFound().build();
+        List<TftStatusDto> dtos = new ArrayList<>(entries.size());
+        for (TftLeagueEntry entry : entries) {
+            TftStatusDto dto = TftStatusDto.from(entry);
+            dtos.add(dto);
         }
+
+        return ResponseEntity.ok(dtos);
     }
 }

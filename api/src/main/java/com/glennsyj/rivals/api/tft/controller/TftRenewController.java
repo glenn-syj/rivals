@@ -26,12 +26,7 @@ public class TftRenewController {
             @PathVariable String gameName,
             @PathVariable String tagLine
     ) {
-        try {
-            TftRenewDto result = tftFacade.renewAllTftData(gameName, tagLine);
-            return ResponseEntity.ok(result);
-        } catch (TftRenewException e) {
-            log.error("Failed to renew TFT data for {}#{}", gameName, tagLine, e);
-            return ResponseEntity.internalServerError().build();
-        }
+        TftRenewDto result = tftFacade.renewAllTftData(gameName, tagLine);
+        return ResponseEntity.ok(result);
     }
 }
