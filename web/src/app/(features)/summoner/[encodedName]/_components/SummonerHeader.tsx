@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ShoppingCart, Search, Sword } from "lucide-react";
+import { findRiotAccount } from "@/lib/api";
 
 export function SummonerHeader() {
   const router = useRouter();
@@ -26,7 +27,13 @@ export function SummonerHeader() {
 
     const searchKey = searchInput.trim();
     if (searchKey) {
-      router.push(`/summoner/${encodeURIComponent(searchInput.trim())}`);
+      const [gameName, tagLine] = parts;
+      const accountData = await findRiotAccount(gameName, tagLine);
+      if (accountData) {
+        router.push(`/summoner/${encodeURIComponent(searchInput.trim())}`);
+      } else {
+        setSearchError("소환사를 찾을 수 없습니다");
+      }
     } else {
       setSearchError("소환사를 찾을 수 없습니다");
     }

@@ -64,7 +64,6 @@ export default function SummonerPage() {
     setIsInitialRefreshPending,
   } = useSummonerPageLoadStore();
 
-  const [error, setError] = useState<string | null>(null);
   const [account, setAccount] = useState<RiotAccountDto | null>(null);
   const [selectedQueueType, setSelectedQueueType] =
     useState<string>("RANKED_TFT");
@@ -96,9 +95,6 @@ export default function SummonerPage() {
         setAccountStatus("success");
       } catch (error) {
         console.error("Error fetching account data:", error);
-        setError(
-          error instanceof Error ? error.message : "Failed to load account data"
-        );
         setAccountStatus("error");
       }
     };
@@ -127,7 +123,7 @@ export default function SummonerPage() {
           setAccount(renewedAccount);
         } catch (e) {
           console.error("Failed to refresh account on initial load", e);
-          setError("Failed to refresh account on initial load");
+          setAccountStatus("error");
         } finally {
           setIsRefreshing(false);
           setIsInitialRefreshPending(false);
@@ -179,17 +175,18 @@ export default function SummonerPage() {
     );
   }
 
-  if (error) {
+  if (accountStatus === "error" && !account) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center">
         <div className="text-center max-w-md">
           <Card className="bg-red-900/20 border-red-700/50">
             <CardHeader>
               <CardTitle className="text-red-400 flex items-center justify-center">
-                오류 발생
+                소환사를 찾을 수 없습니다
               </CardTitle>
               <CardDescription className="text-red-300">
-                {error}
+                요청하신 소환사 정보를 찾을 수 없습니다. 이름과 태그를
+                확인해주세요.
               </CardDescription>
               <Button
                 onClick={() => router.push("/")}
@@ -207,7 +204,7 @@ export default function SummonerPage() {
   }
 
   if (!account) {
-    return null; // Should be handled by isLoading or error state
+    return null; // Should ideally not be reached if accountStatus is handled correctly, but as a fallback
   }
 
   return (
