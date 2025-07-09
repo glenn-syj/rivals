@@ -13,7 +13,7 @@ import com.glennsyj.rivals.api.rivalry.repository.RivalryRepository;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.model.entry.TftStatusDto;
 import com.glennsyj.rivals.api.tft.repository.TftLeagueEntryRepository;
-import jakarta.persistence.EntityNotFoundException;
+import com.glennsyj.rivals.api.common.exception.RivalryNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,7 +75,7 @@ public class RivalryService {
     public RivalryDetailDto findRivalryFrom(Long id) {
 
         // 1. Rivalry 정보 불러오고 캐시로 이용할 맵 초기화
-        Rivalry rivalry = rivalryRepository.findById(id).orElseThrow(EntityNotFoundException::new);
+        Rivalry rivalry = rivalryRepository.findById(id).orElseThrow(() -> new RivalryNotFoundException(id));
         Map<Long, String> nameCacheMap = new HashMap<>();
         Map<Long, TftStatusDto> leagueEntryCacheMap = new HashMap<>();
 
