@@ -21,11 +21,7 @@ public class TftMatchController {
     public ResponseEntity<List<TftRecentMatchDto>> getRecentMatches(
             @PathVariable String gameName,
             @PathVariable String tagLine) {
-        try {
-            List<TftRecentMatchDto> dtos = tftFacade.findAndProcessMatches(gameName, tagLine);
-            return ResponseEntity.ok(dtos);
-        } catch (IllegalStateException e) {
-            return ResponseEntity.badRequest().build();
-        }
+        List<TftRecentMatchDto> dtos = tftFacade.findAndProcessMatches(gameName, tagLine);
+        return ResponseEntity.ok(dtos);
     }
 }

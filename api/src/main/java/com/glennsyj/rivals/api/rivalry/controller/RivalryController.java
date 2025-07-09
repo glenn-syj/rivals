@@ -24,28 +24,18 @@ public class RivalryController {
     @PostMapping("")
     public ResponseEntity<?> createRivalry(@Valid @RequestBody RivalryCreationDto creationDto) {
 
-        try {
-            Long rivalryId = rivalryService.createRivalryFrom(creationDto);
-            RivalryResultDto response = new RivalryResultDto(rivalryId.toString());
+        Long rivalryId = rivalryService.createRivalryFrom(creationDto);
+        RivalryResultDto response = new RivalryResultDto(rivalryId.toString());
 
-            URI uri = URI.create("/api/v1/rivalries/" + rivalryId);
+        URI uri = URI.create("/api/v1/rivalries/" + rivalryId);
 
-            return ResponseEntity.created(uri).body(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        } catch (IllegalStateException e) {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.created(uri).body(response);
     }
 
     @GetMapping("/{rivalryId}")
     public ResponseEntity<?> getRivalryById(@PathVariable String rivalryId) {
 
-        try {
-            RivalryDetailDto response = rivalryService.findRivalryFrom(Long.valueOf(rivalryId));
-            return ResponseEntity.ok(response);
-        } catch (EntityNotFoundException e) {
-            return ResponseEntity.notFound().build();
-        }
+        RivalryDetailDto response = rivalryService.findRivalryFrom(Long.valueOf(rivalryId));
+        return ResponseEntity.ok(response);
     }
 }
