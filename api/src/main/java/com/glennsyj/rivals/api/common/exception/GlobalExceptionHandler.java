@@ -91,5 +91,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity.of(problemDetail).build();
     }
 
-    // TODO: Sub-issue 3: 커스텀 비즈니스 예외 정의 및 적용 시 여기에 핸들러 추가 예정
+    @ExceptionHandler(CustomException.class)
+    public ResponseEntity<ProblemDetail> handleCustomException(CustomException ex, HttpServletRequest request) {
+        log.warn("Custom business exception: {}", ex.getBody().getDetail());
+
+        // CustomException에서 생성된 ProblemDetail을 그대로 사용
+        ProblemDetail problemDetail = ex.getBody();
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+
+        return ResponseEntity.of(problemDetail).build();
+    }
 }
