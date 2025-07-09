@@ -17,4 +17,11 @@ public class RiotApiException extends CustomException {
             getBody().setProperty("riotApiStatusCode", riotApiStatusCode);
         }
     }
+
+    public RiotApiException(HttpStatus status, String message, Integer riotApiStatusCode) {
+        super(status, TITLE, message, null);
+        if (riotApiStatusCode != null) {
+            getBody().setProperty("riotApiStatusCode", riotApiStatusCode);
+        }
+    }
 } 

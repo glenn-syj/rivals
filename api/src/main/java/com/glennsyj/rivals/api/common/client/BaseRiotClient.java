@@ -48,9 +48,15 @@ public abstract class BaseRiotClient {
                     "Riot API 호출 횟수 제한 초과. " + retryAfter + "초 후에 다시 시도해주세요.",
                     e.getStatusCode().value()
                 );
+            } else if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new RiotApiException(
+                        HttpStatus.NOT_FOUND,
+                        errorMessage,
+                        e.getStatusCode().value()
+                );
             }
             throw new RiotApiException(
-                "Riot API 호출 실패: " + e.getResponseBodyAsString(),
+                "Riot API 호출 실패: " + errorMessage,
                 e.getStatusCode().value()
             );
         } finally {
