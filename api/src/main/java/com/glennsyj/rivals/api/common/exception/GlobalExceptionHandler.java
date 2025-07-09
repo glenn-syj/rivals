@@ -1,6 +1,7 @@
 package com.glennsyj.rivals.api.common.exception;
 
 import com.glennsyj.rivals.api.common.model.ErrorDetail;
+import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -12,6 +13,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
+import java.net.URI;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -22,31 +24,33 @@ public class GlobalExceptionHandler {
     private static final Logger log = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
-    public ResponseEntity<ProblemDetail> handleMethodArgumentNotValid(MethodArgumentNotValidException ex) {
+    public ResponseEntity<ProblemDetail> handleMethodArgumentNotValid(MethodArgumentNotValidException ex, HttpServletRequest request) {
         log.warn("Validation failed: {}", ex.getMessage());
 
         ProblemDetail problemDetail = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
         problemDetail.setTitle("Validation Error");
         problemDetail.setDetail("입력 값 유효성 검사에 실패했습니다.");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
 
         return ResponseEntity.of(problemDetail).build();
     }
 
     @ExceptionHandler(NoSuchElementException.class)
-    public ResponseEntity<ProblemDetail> handleNoSuchElementException(NoSuchElementException ex) {
+    public ResponseEntity<ProblemDetail> handleNoSuchElementException(NoSuchElementException ex, HttpServletRequest request) {
         log.warn("Resource not found: {}", ex.getMessage());
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.NOT_FOUND,
                 ex.getMessage() != null ? ex.getMessage() : "요청하신 리소스를 찾을 수 없습니다."
         );
-        problemDetail.setTitle("Resource Not Found"); // ProblemDetail.forStatusAndDetail은 title을 설정하지 않으므로 필요시 추가
-        ErrorResponse err;
+        problemDetail.setTitle("Resource Not Found");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+
         return ResponseEntity.of(problemDetail).build();
     }
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
-    public ResponseEntity<ProblemDetail> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex) {
+    public ResponseEntity<ProblemDetail> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
         log.warn("Malformed JSON request: {}", ex.getMessage());
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -54,12 +58,13 @@ public class GlobalExceptionHandler {
                 "요청 본문 형식이 잘못되었거나 읽을 수 없습니다. JSON 형식을 확인해주세요."
         );
         problemDetail.setTitle("Malformed Request Body");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
 
         return ResponseEntity.of(problemDetail).build();
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ProblemDetail> handleIllegalArgumentException(IllegalArgumentException ex) {
+    public ResponseEntity<ProblemDetail> handleIllegalArgumentException(IllegalArgumentException ex, HttpServletRequest request) {
         log.warn("Illegal argument: {}", ex.getMessage());
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -67,12 +72,13 @@ public class GlobalExceptionHandler {
                 ex.getMessage() != null ? ex.getMessage() : "잘못된 요청 인자입니다."
         );
         problemDetail.setTitle("Bad Request");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
 
         return ResponseEntity.of(problemDetail).build();
     }
 
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<ProblemDetail> handleGenericException(Exception ex) {
+    public ResponseEntity<ProblemDetail> handleGenericException(Exception ex, HttpServletRequest request) {
         log.error("An unexpected error occurred: {}", ex.getMessage(), ex); // 스택 트레이스와 함께 에러 로그 기록
 
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
@@ -80,6 +86,8 @@ public class GlobalExceptionHandler {
                 "서버에서 예기치 않은 오류가 발생했습니다. 잠시 후 다시 시도해주세요."
         );
         problemDetail.setTitle("Internal Server Error");
+        problemDetail.setInstance(URI.create(request.getRequestURI()));
+
         return ResponseEntity.of(problemDetail).build();
     }
 
