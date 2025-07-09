@@ -10,37 +10,40 @@ export function cn(...inputs: ClassValue[]) {
 export function handleAxiosError(
   error: AxiosError<ProblemDetail | any>
 ): BackendError {
-  if (error.response) {
-    const problemDetail = error.response.data as ProblemDetail;
-    const status = error.response.status;
+  let userFriendlyMessage: string = "An unexpected error occurred.";
+  let status: number | undefined = undefined;
+  let problemDetail: ProblemDetail | undefined = undefined;
 
-    let message = "알 수 없는 오류가 발생했습니다.";
+  if (error.response) {
+    problemDetail = error.response.data as ProblemDetail;
+    status = error.response.status;
 
     if (problemDetail && problemDetail.detail) {
-      message = problemDetail.detail;
+      // Prioritize backend detail message if available and user-friendly
+      userFriendlyMessage = problemDetail.detail;
     } else if (problemDetail && problemDetail.title) {
-      message = problemDetail.title;
+      // Fallback to title if detail is not available
+      userFriendlyMessage = problemDetail.title;
+    } else if (status && status >= 500) {
+      // Generic message for server errors
+      userFriendlyMessage =
+        "Our server is experiencing issues. Please try again later.";
     } else if (error.message) {
-      message = error.message;
+      // Fallback to axios error message
+      userFriendlyMessage = error.message;
     }
-
-    return {
-      message: message,
-      status: status,
-      problemDetail: problemDetail,
-    };
   } else if (error.request) {
-    // 요청이 이루어졌으나 응답을 받지 못한 경우
-    return {
-      message:
-        "서버로부터 응답을 받지 못했습니다. 네트워크 연결을 확인해주세요.",
-      status: undefined,
-    };
+    // The request was made but no response was received (e.g., network error)
+    userFriendlyMessage =
+      "Network error: Could not connect to the server. Please check your internet connection.";
   } else {
-    // 요청을 설정하는 중에 발생한 오류
-    return {
-      message: `요청을 보내는 중 오류가 발생했습니다: ${error.message}`,
-      status: undefined,
-    };
+    // Something happened in setting up the request that triggered an Error
+    userFriendlyMessage = `An error occurred while setting up the request: ${error.message}`;
   }
+
+  return {
+    message: userFriendlyMessage,
+    status: status,
+    problemDetail: problemDetail,
+  };
 }
