@@ -11,6 +11,7 @@ import type {
   TftBadgeBulkResponseDto,
   TftRenewDto,
 } from "./types";
+import { handleAxiosError } from "./utils";
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8080";
 
@@ -160,9 +161,7 @@ export const findBadgesFromPuuids = async (
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    }
-    throw error;
+    // Use the new utility function to handle the error
+    throw handleAxiosError(error);
   }
 );

@@ -157,3 +157,20 @@ export interface TftRenewDto {
   badges: TftBadgeDto[];
   renewedAt: string;
 }
+
+// Backend Error Handling Types
+export interface ProblemDetail {
+  type?: string;
+  title?: string;
+  status?: number;
+  detail?: string;
+  instance?: string;
+  // For custom properties that might be sent in ProblemDetail
+  [key: string]: any;
+}
+
+export interface BackendError {
+  message: string;
+  status?: number;
+  problemDetail?: ProblemDetail;
+}
