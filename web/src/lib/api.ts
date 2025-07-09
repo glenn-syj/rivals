@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosError } from "axios";
 import type {
   RiotAccountDto,
   TftStatusDto,
@@ -11,6 +11,8 @@ import type {
   TftBadgeBulkResponseDto,
   TftRenewDto,
 } from "./types";
+import { handleAxiosError } from "./utils";
+import { useErrorStore } from "@/store/errorStore"; // useErrorStore 임포트
 
 const API_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://127.0.0.1:8080";
 
@@ -159,10 +161,9 @@ export const findBadgesFromPuuids = async (
 // Error handling middleware
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.data?.message) {
-      throw new Error(error.response.data.message);
-    }
-    throw error;
+  (error: AxiosError) => {
+    const backendError = handleAxiosError(error);
+    useErrorStore.getState().setError(backendError); // 전역 에러 스토어에 에러 설정
+    return Promise.reject(backendError); // 에러를 다시 던져서 호출자의 catch 블록으로 전달
   }
 );

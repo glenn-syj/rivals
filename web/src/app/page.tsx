@@ -52,8 +52,10 @@ export default function Component() {
 
     try {
       const [gameName, tagLine] = parts;
-      await findRiotAccount(gameName, tagLine);
-      router.push(`/summoner/${encodeURIComponent(searchInput.trim())}`);
+      const accountData = await findRiotAccount(gameName, tagLine);
+      if (accountData) {
+        router.push(`/summoner/${encodeURIComponent(searchInput.trim())}`);
+      }
     } catch (err) {
       setError("소환사를 찾을 수 없습니다");
     }
