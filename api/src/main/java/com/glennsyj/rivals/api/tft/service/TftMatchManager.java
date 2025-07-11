@@ -50,6 +50,7 @@ public class TftMatchManager {
     }
 
     @Transactional
+    @Deprecated
     public MatchSyncResult findOrCreateRecentTftMatches(Long accountId, String puuid) {
         // 1. 기존 매치 조회
         List<TftMatch> existingMatches = tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid);
