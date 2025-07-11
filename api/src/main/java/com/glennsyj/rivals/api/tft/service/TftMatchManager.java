@@ -49,6 +49,14 @@ public class TftMatchManager {
         this.tftBadgeService = tftBadgeService;
     }
 
+    @Transactional(readOnly = true)
+    public Set<String> getTop20ExistingMatches(String puuid) {
+        List<TftMatch> existingMatches = tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid);
+        return existingMatches.stream()
+                .map(TftMatch::getMatchId)
+                .collect(Collectors.toSet());
+    }
+
     @Transactional
     @Deprecated
     public MatchSyncResult findOrCreateRecentTftMatches(Long accountId, String puuid) {
