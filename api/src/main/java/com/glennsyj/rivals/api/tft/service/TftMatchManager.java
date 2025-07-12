@@ -57,6 +57,14 @@ public class TftMatchManager {
                 .collect(Collectors.toSet());
     }
 
+    public List<String> fetchRecentMatchIdFromRiot(String puuid) {
+        List<String> recentMatchIds = tftApiClient.getMatchIdsFromPuuid(puuid);
+        if (recentMatchIds.size() > RECENT_MATCHES_LIMIT) {
+            recentMatchIds = recentMatchIds.subList(0, RECENT_MATCHES_LIMIT);
+        }
+        return recentMatchIds;
+    }
+
     @Transactional
     @Deprecated
     public MatchSyncResult findOrCreateRecentTftMatches(Long accountId, String puuid) {
