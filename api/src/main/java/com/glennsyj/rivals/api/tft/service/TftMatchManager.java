@@ -65,6 +65,17 @@ public class TftMatchManager {
         return recentMatchIds;
     }
 
+    public List<TftMatch> fetchLatestMatchesFromRiot(List<String> newMatchIds) {
+
+        return newMatchIds.isEmpty() ? List.of() :
+                Flux.fromIterable(newMatchIds)
+                        .delayElements(Duration.ofMillis(51))
+                        .flatMap(tftApiClient::getMatchResponseFromMatchIdMono)
+                        .map(TftMatch::from)
+                        .collectList()
+                        .block();
+    }
+
     @Transactional
     @Deprecated
     public MatchSyncResult findOrCreateRecentTftMatches(Long accountId, String puuid) {
