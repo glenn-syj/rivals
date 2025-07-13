@@ -50,11 +50,12 @@ public class TftMatchManager {
     }
 
     @Transactional(readOnly = true)
-    public Set<String> getTop20ExistingMatches(String puuid) {
+    public List<TftMatch> getTop20ExistingMatches(String puuid) {
         List<TftMatch> existingMatches = tftMatchRepository.findTop20ByParticipantsPuuidOrderByGameCreationDesc(puuid);
-        return existingMatches.stream()
-                .map(TftMatch::getMatchId)
-                .collect(Collectors.toSet());
+//        return existingMatches.stream()
+//                .map(TftMatch::getMatchId)
+//                .collect(Collectors.toSet());
+        return existingMatches;
     }
 
     public List<String> fetchRecentMatchIdFromRiot(String puuid) {
@@ -65,15 +66,19 @@ public class TftMatchManager {
         return recentMatchIds;
     }
 
-    public List<TftMatch> fetchLatestMatchesFromRiot(List<String> newMatchIds) {
+    public List<TftMatchResponse> fetchLatestMatchesFromRiot(List<String> newMatchIds) {
 
         return newMatchIds.isEmpty() ? List.of() :
                 Flux.fromIterable(newMatchIds)
                         .delayElements(Duration.ofMillis(51))
                         .flatMap(tftApiClient::getMatchResponseFromMatchIdMono)
-                        .map(TftMatch::from)
                         .collectList()
                         .block();
+    }
+
+    @Transactional
+    public List<TftMatch> saveAllMatches(List<TftMatch> matches) {
+        return tftMatchRepository.saveAll(matches);
     }
 
     @Transactional
