@@ -44,6 +44,55 @@ public class TftBadgeService {
         calculateAndSaveAchievements(match);
     }
 
+    @Transactional
+    public void processMatchAchievements(List<TftMatch> matches) {
+        // 한 번의 트랜잭션으로 모든 매치의 업적 처리
+        matches.forEach(this::calculateAndSaveAchievements);
+        // 또는
+        List<TftMatchAchievement> achievements = matches.stream()
+                .map(this::calculateAchievements)
+                .flatMap(List::stream)
+                .toList();
+
+        achievementRepository.saveAll(achievements);
+    }
+
+    private List<TftMatchAchievement> calculateAchievements(TftMatch match) {
+        List<TftMatchParticipant> participants = match.getParticipants();
+        List<TftMatchAchievement> achievements = new ArrayList<>();
+
+        // 가장 비싼 스쿼드 찾기
+        TftMatchParticipant mostExpensive = findMostExpensiveSquad(participants);
+        achievements.add(createAchievement(match, AchievementType.MOST_EXPENSIVE_SQUAD,
+                mostExpensive, calculateSquadValue(mostExpensive)));
+
+        // 최대 데미지
+        TftMatchParticipant mostDamage = findHighestDamageDealer(participants);
+        achievements.add(createAchievement(match, AchievementType.MOST_DAMAGE_DEALT,
+                mostDamage, mostDamage.getTotalDamageToPlayers()));
+
+        // 최다 처치
+        TftMatchParticipant mostEliminations = findMostEliminations(participants);
+        achievements.add(createAchievement(match, AchievementType.MOST_ELIMINATIONS,
+                mostEliminations, mostEliminations.getPlayersEliminated()));
+
+        // 1등
+        participants.stream()
+                .filter(p -> p.getPlacement() == 1)
+                .findFirst()
+                .ifPresent(winner -> achievements.add(
+                        createAchievement(match, AchievementType.FIRST_PLACE, winner, 1)));
+
+        // 상위 4등
+        participants.stream()
+                .filter(p -> p.getPlacement() <= 4)
+                .map(p -> createAchievement(match, AchievementType.TOP_FOUR, p, p.getPlacement()))
+                .forEach(achievements::add);
+
+        // 한 번에 모든 업적 저장
+        return achievements;
+    }
+
     private void calculateAndSaveAchievements(TftMatch match) {
         List<TftMatchParticipant> participants = match.getParticipants();
         List<TftMatchAchievement> achievements = new ArrayList<>();
