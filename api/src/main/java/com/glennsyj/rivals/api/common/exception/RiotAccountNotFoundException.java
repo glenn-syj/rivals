@@ -12,6 +12,10 @@ public class RiotAccountNotFoundException extends CustomException {
         getBody().setProperty("accountId", accountId);
     }
 
+    public RiotAccountNotFoundException(String gameName, String tagLine) {
+        super(HttpStatus.NOT_FOUND, TITLE, "유저명: " + gameName + "#" + tagLine + "에 해당하는 Riot 계정을 찾을 수 없습니다.", null);
+    }
+
     public RiotAccountNotFoundException(String message) {
         super(HttpStatus.NOT_FOUND, TITLE, message, null);
     }
