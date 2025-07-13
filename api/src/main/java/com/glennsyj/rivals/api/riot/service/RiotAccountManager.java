@@ -5,6 +5,7 @@ import com.glennsyj.rivals.api.riot.RiotAccountClient;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
 import com.glennsyj.rivals.api.riot.repository.RiotAccountRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,10 +22,23 @@ public class RiotAccountManager {
         this.riotAccountClient = riotAccountClient;
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
-    public RiotAccount findOrRegisterAccount(String gameName, String tagLine) {
-        Optional<RiotAccount> existingAccount = riotAccountRepository.findByGameNameAndTagLine(gameName.trim(), tagLine.trim());
-        return existingAccount.orElseGet(() -> registerNewAccount(gameName, tagLine));
+    @Transactional(readOnly = true)
+    public Optional<RiotAccount> findAccount(String gameName, String tagLine) {
+        return riotAccountRepository
+                .findByGameNameAndTagLine(gameName, tagLine);
+    }
+
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public RiotAccount registerNewAccountFromRiot(RiotAccountResponse response) {
+        try {
+            RiotAccount newAccount = new RiotAccount(response.gameName(), response.tagLine(), response.puuid());
+            return riotAccountRepository.save(newAccount);
+        } catch (DataIntegrityViolationException e) {
+            return riotAccountRepository.findByGameNameAndTagLine(
+                    response.gameName(),
+                    response.tagLine()
+            ).get(); // DataIntegrityViolationException 이 뜬다면 계정이 존재함
+        }
     }
 
     @Transactional(readOnly = true)
@@ -46,6 +60,10 @@ public class RiotAccountManager {
 
         fetchedAccount.renewUpdatedAt();
         return fetchedAccount;
+    }
+
+    public RiotAccountResponse fetchRiotAccountResponseFromRiot(String gameName, String tagLine) {
+        return riotAccountClient.getAccountInfo(gameName, tagLine);
     }
 
     private RiotAccount registerNewAccount(String gameName, String tagLine) {
