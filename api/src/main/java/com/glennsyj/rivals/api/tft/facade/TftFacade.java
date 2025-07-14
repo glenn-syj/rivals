@@ -1,6 +1,8 @@
 package com.glennsyj.rivals.api.tft.facade;
 
+import com.glennsyj.rivals.api.common.exception.RiotAccountNotFoundException;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
+import com.glennsyj.rivals.api.riot.model.RiotAccountResponse;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
 import com.glennsyj.rivals.api.tft.entity.match.TftMatch;
@@ -8,6 +10,7 @@ import com.glennsyj.rivals.api.tft.facade.exception.TftRenewException;
 import com.glennsyj.rivals.api.tft.model.badge.TftBadgeDto;
 import com.glennsyj.rivals.api.tft.model.entry.TftStatusDto;
 import com.glennsyj.rivals.api.tft.model.match.MatchSyncResult;
+import com.glennsyj.rivals.api.tft.model.match.TftMatchResponse;
 import com.glennsyj.rivals.api.tft.model.match.TftRecentMatchDto;
 import com.glennsyj.rivals.api.tft.model.renew.TftRenewDto;
 import com.glennsyj.rivals.api.tft.service.TftBadgeService;
@@ -49,7 +52,8 @@ public class TftFacade {
     @Transactional
     public TftRenewDto renewAllTftData(String gameName, String tagLine) {
         try {
-            RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+            RiotAccount account = riotAccountManager.findAccount(gameName, tagLine)
+                    .orElseThrow(() -> new RiotAccountNotFoundException(gameName, tagLine));
 
             CompletableFuture<List<TftLeagueEntry>> leagueEntriesFuture = CompletableFuture
                     .supplyAsync(() -> tftLeagueEntryManager.renewEntry(account.getId(), account.getPuuid()));
@@ -94,7 +98,7 @@ public class TftFacade {
      */
     @Transactional
     public List<TftRecentMatchDto> findAndProcessMatches(String gameName, String tagLine) {
-        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        RiotAccount account = riotAccountManager.findAccount(gameName, tagLine).get();
         
         List<TftMatch> matches;
         // updatedAt이 null인 경우에만 매치 데이터 조회 및 처리 진행
@@ -123,4 +127,29 @@ public class TftFacade {
             .map(match -> TftRecentMatchDto.from(account.getPuuid(), match))
             .toList();
     }
+
+    public List<TftRecentMatchDto> findMatchesAndProcessBadgesIfNeeded(String gameName, String tagLine) {
+
+        // orElseGet은 lazy하므로 외부 API와 트랜잭션 분리 달성
+        RiotAccount account = riotAccountManager.findAccount(gameName, tagLine).orElseGet(() -> {
+            RiotAccountResponse response = riotAccountManager.fetchRiotAccountResponseFromRiot(gameName, tagLine);
+            return riotAccountManager.registerNewAccountFromRiot(response);
+        });
+
+        List<TftMatch> tftMatches;
+        if (account.getUpdatedAt() != null) {
+             tftMatches = tftMatchManager.getTop20ExistingMatches(account.getPuuid());
+             return tftMatches.stream().map((match) -> TftRecentMatchDto.from(account.getPuuid(), match)).toList();
+        }
+
+        List<String> recentMatchIds = tftMatchManager.fetchRecentMatchIdFromRiot(account.getPuuid());
+        List<TftMatchResponse> matchResponses = tftMatchManager.fetchLatestMatchesFromRiot(recentMatchIds);
+
+        List<TftMatch> matches = tftMatchManager.saveAllMatches(matchResponses.stream().map((TftMatch::from)).toList());
+        tftBadgeService.processMatchAchievements(matches);
+        tftBadgeService.renewAccountBadges(account);
+
+        return matches.stream().map((match) -> TftRecentMatchDto.from(account.getPuuid(), match)).toList();
+    }
+
 } 
