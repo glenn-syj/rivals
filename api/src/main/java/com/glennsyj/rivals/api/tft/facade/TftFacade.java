@@ -136,9 +136,9 @@ public class TftFacade {
             return riotAccountManager.registerNewAccountFromRiot(response);
         });
 
-        List<TftMatch> tftMatches;
+        // early return: 이미 이용자가 데이터를 불러왔을 때.
         if (account.getUpdatedAt() != null) {
-             tftMatches = tftMatchManager.getTop20ExistingMatches(account.getPuuid());
+            List<TftMatch> tftMatches = tftMatchManager.getTop20ExistingMatches(account.getPuuid());
              return tftMatches.stream().map((match) -> TftRecentMatchDto.from(account.getPuuid(), match)).toList();
         }
 
@@ -146,10 +146,13 @@ public class TftFacade {
         List<TftMatchResponse> matchResponses = tftMatchManager.fetchLatestMatchesFromRiot(recentMatchIds);
 
         List<TftMatch> matches = tftMatchManager.saveAllMatches(matchResponses.stream().map((TftMatch::from)).toList());
-        tftBadgeService.processMatchAchievements(matches);
-        tftBadgeService.renewAccountBadges(account);
+        processBadgesForNewMatches(account, matches);
 
         return matches.stream().map((match) -> TftRecentMatchDto.from(account.getPuuid(), match)).toList();
     }
 
+    private void processBadgesForNewMatches(RiotAccount account, List<TftMatch> newMatches) {
+        tftBadgeService.processMatchAchievements(newMatches);
+        tftBadgeService.renewAccountBadges(account);
+    }
 } 
