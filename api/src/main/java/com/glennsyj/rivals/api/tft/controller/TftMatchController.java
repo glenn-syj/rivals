@@ -32,7 +32,7 @@ public class TftMatchController {
     public ResponseEntity<List<TftRecentMatchDto>> getRecentMatches(
             @PathVariable String gameName,
             @PathVariable String tagLine) {
-        List<TftRecentMatchDto> dtos = tftFacade.findAndProcessMatches(gameName, tagLine);
+        List<TftRecentMatchDto> dtos = tftFacade.findMatchesAndProcessBadgesIfNeeded(gameName, tagLine);
         return ResponseEntity.ok(dtos);
     }
 }
