@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.tft.controller;
 
+import com.glennsyj.rivals.api.common.exception.RiotAccountNotFoundException;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import com.glennsyj.rivals.api.tft.entity.entry.TftLeagueEntry;
@@ -53,7 +54,8 @@ public class TftLeagueEntryController {
         String gameName = parts[0];
         String tagLine = parts[1];
 
-        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        RiotAccount account = riotAccountManager.findAccount(gameName, tagLine)
+                .orElseThrow(() -> new RiotAccountNotFoundException(gameName, tagLine));
         List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
 
         List<TftStatusDto> dtos = new ArrayList<>(entries.size());
@@ -74,7 +76,8 @@ public class TftLeagueEntryController {
             })
     @GetMapping(path="/{gameName}/{tagLine}")
     public ResponseEntity<?> getTftStatusFrom(@PathVariable String gameName, @PathVariable String tagLine) {
-        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        RiotAccount account = riotAccountManager.findAccount(gameName, tagLine)
+                .orElseThrow(() -> new RiotAccountNotFoundException(gameName, tagLine));
         List<TftLeagueEntry> entries = tftLeagueEntryManager.findOrCreateLeagueEntries(account.getId());
 
         List<TftStatusDto> dtos = new ArrayList<>(entries.size());

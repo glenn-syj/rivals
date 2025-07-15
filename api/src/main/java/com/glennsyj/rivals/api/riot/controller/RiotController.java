@@ -37,7 +37,10 @@ public class RiotController {
     @GetMapping("/accounts/{gameName}/{tagLine}")
     public ResponseEntity<RiotAccountDto> findAccount(@PathVariable("gameName") String gameName
             , @PathVariable("tagLine") String tagLine) {
-        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        RiotAccount account = riotAccountManager.findAccount(gameName, tagLine).orElseGet(() -> {
+            RiotAccountResponse response = riotAccountManager.fetchRiotAccountResponseFromRiot(gameName, tagLine);
+            return riotAccountManager.registerNewAccountFromRiot(response);
+        });
         return ResponseEntity.ok(RiotAccountDto.from(account));
     }
 

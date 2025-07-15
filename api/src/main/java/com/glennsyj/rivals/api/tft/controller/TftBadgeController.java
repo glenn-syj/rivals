@@ -1,5 +1,6 @@
 package com.glennsyj.rivals.api.tft.controller;
 
+import com.glennsyj.rivals.api.common.exception.RiotAccountNotFoundException;
 import com.glennsyj.rivals.api.riot.entity.RiotAccount;
 import com.glennsyj.rivals.api.riot.service.RiotAccountManager;
 import com.glennsyj.rivals.api.tft.entity.achievement.TftBadgeProgress;
@@ -58,7 +59,7 @@ public class TftBadgeController {
     public ResponseEntity<List<TftBadgeDto>> initializeOrGetBadgesForSummoner(
             @PathVariable String gameName,
             @PathVariable String tagLine) {
-        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        RiotAccount account = riotAccountManager.findAccount(gameName, tagLine).get();
         List<TftBadgeDto> badges = tftBadgeService.findAllBadges(account);
         return ResponseEntity.ok(badges);
     }
@@ -75,7 +76,8 @@ public class TftBadgeController {
             @PathVariable String gameName,
             @PathVariable String tagLine,
             @PathVariable String badgeType) {
-        RiotAccount account = riotAccountManager.findOrRegisterAccount(gameName, tagLine);
+        RiotAccount account = riotAccountManager.findAccount(gameName, tagLine)
+                .orElseThrow(() -> new RiotAccountNotFoundException(gameName, tagLine));
         return tftBadgeService.findBadge(account, TftBadgeProgress.BadgeType.valueOf(badgeType))
             .map(ResponseEntity::ok)
             .orElse(ResponseEntity.notFound().build());
